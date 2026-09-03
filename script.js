@@ -10,6 +10,12 @@
 const grid =
     document.getElementById("grid");
 
+const scrollLeftButton =
+    document.getElementById("scrollLeftButton");
+
+const scrollRightButton =
+    document.getElementById("scrollRightButton");
+
 
 const playButton =
     document.getElementById("playButton");
@@ -3066,3 +3072,58 @@ downloadButton.addEventListener(
     "click",
     downloadTrack
 );
+
+// ============================================================
+// GRID SCROLL ARROWS
+// ============================================================
+
+if (scrollLeftButton) {
+
+    scrollLeftButton.addEventListener(
+        "click",
+        () => {
+
+            const container =
+                document.querySelector(
+                    ".grid-container"
+                );
+
+            if (!container) {
+                return;
+            }
+
+            container.scrollBy({
+                left: -container.clientWidth * 0.8,
+                behavior: "smooth"
+            });
+
+        }
+    );
+
+}
+
+
+if (scrollRightButton) {
+
+    scrollRightButton.addEventListener(
+        "click",
+        () => {
+
+            const container =
+                document.querySelector(
+                    ".grid-container"
+                );
+
+            if (!container) {
+                return;
+            }
+
+            container.scrollBy({
+                left: container.clientWidth * 0.8,
+                behavior: "smooth"
+            });
+
+        }
+    );
+
+}

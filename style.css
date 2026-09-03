@@ -954,3 +954,71 @@ label {
         font-size: 13px;
     }
 }
+
+/* ============================================================
+   MOBILE GRID NAVIGATION
+   ============================================================ */
+
+.grid-navigation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.grid-arrow {
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #555;
+    color: white;
+
+    font-size: 28px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.grid-arrow:hover {
+    background: #444;
+}
+
+.grid-arrow:active {
+    background: #333;
+    transform: scale(0.95);
+}
+
+.grid-container {
+    flex: 1;
+    min-width: 0;
+}
+
+
+/* Make the arrows particularly useful on phones */
+
+@media (max-width: 600px) {
+
+    .grid-arrow {
+        flex-basis: 48px;
+        width: 48px;
+        height: 48px;
+
+        font-size: 30px;
+    }
+
+    .grid-navigation {
+        gap: 6px;
+    }
+}
