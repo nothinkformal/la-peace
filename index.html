@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>La Peace Lab</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="app">
+
+
+        <!-- ==============================
+             TITLE
+        =============================== -->
+
+        <h1>
+            La Peace Lab
+        </h1>
+
+
+        <!-- ==============================
+             MUSIC GRID
+        =============================== -->
+
+        <div class="grid-container">
+
+            <div id="grid"></div>
+
+        </div>
+
+
+        <!-- ==============================
+             CONTROLS
+        =============================== -->
+
+        <div class="controls">
+
+
+            <!-- PLAY -->
+
+            <button id="playButton">
+                Play
+            </button>
+
+
+            <!-- STOP -->
+
+            <button id="stopButton">
+                Stop
+            </button>
+
+
+            <!-- CLEAR -->
+
+            <button id="clearButton">
+                Clear
+            </button>
+
+            <button id="downloadButton">Download</button>
+
+
+            <!-- TEMPO -->
+
+            <div class="tempo-control">
+
+                <label for="tempoInput">
+                    BPM
+                </label>
+
+                <input
+                    type="range"
+                    id="tempoInput"
+                    min="40"
+                    max="240"
+                    value="120"
+                    step="1"
+                >
+
+                <span id="tempoValue">
+                    120
+                </span>
+
+            </div>
+
+
+            <!-- SETTINGS -->
+
+            <button id="settingsButton">
+                Settings
+            </button>
+
+
+        </div>
+
+
+        <!-- ==============================
+             INSTRUMENT SECTION
+        =============================== -->
+
+        <div class="instrument-section">
+
+
+            <h2>
+                Instrument
+            </h2>
+
+
+            <div id="instrumentSelector">
+
+
+                <!-- PIANO -->
+
+                <div
+                    class="instrument active"
+                    data-instrument="piano"
+                >
+
+                    <div class="instrument-icon">
+                        🎹
+                    </div>
+
+                    <div class="instrument-name">
+                        Piano
+                    </div>
+
+                </div>
+
+
+                <!-- SYNTH -->
+
+                <div
+                    class="instrument"
+                    data-instrument="synth"
+                >
+
+                    <div class="instrument-icon">
+                        🎛️
+                    </div>
+
+                    <div class="instrument-name">
+                        Synth
+                    </div>
+
+                </div>
+
+
+                <!-- MARIMBA -->
+
+                <div
+                    class="instrument"
+                    data-instrument="marimba"
+                >
+
+                    <div class="instrument-icon">
+                        🪵
+                    </div>
+
+                    <div class="instrument-name">
+                        Marimba
+                    </div>
+
+                </div>
+
+
+                <!-- STRINGS -->
+
+                <div
+                    class="instrument"
+                    data-instrument="strings"
+                >
+
+                    <div class="instrument-icon">
+                        🎻
+                    </div>
+
+                    <div class="instrument-name">
+                        Strings
+                    </div>
+
+                </div>
+
+
+                <!-- FLUTE -->
+
+                <div
+                    class="instrument"
+                    data-instrument="flute"
+                >
+
+                    <div class="instrument-icon">
+                        🎶
+                    </div>
+
+                    <div class="instrument-name">
+                        Flute
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             SETTINGS OVERLAY
+        =============================== -->
+
+        <div
+            id="settingsOverlay"
+            class="settings-overlay"
+        >
+
+
+            <div class="settings-panel">
+
+
+                <!-- ==============================
+                     SETTINGS HEADER
+                =============================== -->
+
+                <div class="settings-header">
+
+
+                    <h2>
+                        Settings
+                    </h2>
+
+
+                    <button
+                        id="closeSettingsButton"
+                        class="close-settings"
+                        type="button"
+                    >
+                        ×
+                    </button>
+
+
+                </div>
+
+
+                <!-- ==============================
+                     VOLUME
+                =============================== -->
+
+                <div class="setting">
+
+
+                    <div class="setting-label">
+
+
+                        <label for="volumeInput">
+                            Volume
+                        </label>
+
+
+                        <span id="volumeValue">
+                            100%
+                        </span>
+
+
+                    </div>
+
+
+                    <input
+                        type="range"
+                        id="volumeInput"
+                        min="0"
+                        max="100"
+                        value="100"
+                        step="1"
+                    >
+
+
+                </div>
+
+
+                <!-- ==============================
+                     MUTE
+                =============================== -->
+
+                <div class="setting mute-setting">
+
+
+                    <label for="muteInput">
+                        Mute
+                    </label>
+
+
+                    <label class="switch">
+
+
+                        <input
+                            type="checkbox"
+                            id="muteInput"
+                        >
+
+
+                        <span class="slider"></span>
+
+
+                    </label>
+
+
+                </div>
+
+
+                <!-- ==============================
+                     TRACK LENGTH
+                =============================== -->
+
+                <div class="setting">
+
+
+                    <div class="setting-label">
+
+                        <label>
+                            Track Length
+                        </label>
+
+                    </div>
+
+
+                    <div class="track-length-control">
+
+
+                        <button
+                            type="button"
+                            id="decreaseLengthButton"
+                            class="length-button"
+                        >
+                            −
+                        </button>
+
+
+                        <span id="trackLengthValue">
+                            32
+                        </span>
+
+
+                        <button
+                            type="button"
+                            id="increaseLengthButton"
+                            class="length-button"
+                        >
+                            +
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==============================
+         TONE.JS
+    =============================== -->
+
+    <script src="https://unpkg.com/tone@15.1.22/build/Tone.js"></script>
+
+
+    <!-- ==============================
+         MAIN SCRIPT
+    =============================== -->
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>

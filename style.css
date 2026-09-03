@@ -1,0 +1,956 @@
+/* ==============================
+   GENERAL PAGE
+============================== */
+
+body {
+    margin: 0;
+
+    background-image: url("");
+
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    background-attachment: fixed;
+
+    font-family: Arial, sans-serif;
+}
+
+
+/* ==============================
+   MAIN APP
+============================== */
+
+.app {
+    width: 100%;
+    min-height: 100vh;
+
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+h1 {
+    text-align: center;
+
+    margin: 0;
+
+    padding: 18px;
+
+    background: #f5f5f5;
+
+    font-size: 28px;
+}
+
+
+/* ==============================
+   GRID CONTAINER
+============================== */
+
+/*
+    This container allows the grid to become
+    horizontally scrollable when the track
+    becomes longer than the screen.
+*/
+
+.grid-container {
+    width: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    height: 52vh;
+    flex: 0 0 52vh;
+
+    border-bottom: 2px solid #ccc;
+
+    background: white;
+
+    box-sizing: border-box;
+
+    user-select: none;
+}
+
+
+/* ==============================
+   MUSIC GRID
+============================== */
+
+#grid {
+    display: grid;
+
+    /*
+        The JavaScript controls the number
+        of columns using --columns.
+    */
+
+    grid-template-columns:
+        repeat(
+            var(--columns, 32),
+            minmax(35px, 1fr)
+        );
+
+    /*
+        14 melody rows
+        2 drum rows
+        16 rows total
+    */
+
+    grid-template-rows:
+        repeat(16, 1fr);
+
+    /*
+        The grid needs to become wider than
+        the screen when there are many columns.
+    */
+
+    width: 100%;
+
+    min-width: calc(var(--columns, 32) * 35px);
+
+    /*
+        Reduced from the previous height so
+        the controls and instrument section
+        have more room below the grid.
+    */
+
+    height: 52vh;
+
+    border: none;
+
+    overflow: hidden;
+
+    background: white;
+
+    box-sizing: border-box;
+
+    user-select: none;
+
+    touch-action: none;
+}
+
+
+/* ==============================
+   CELLS
+============================== */
+
+.cell {
+    width: 100%;
+    height: 100%;
+
+    border: 1px solid #e0e0e0;
+
+    background: white;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.08s ease,
+        filter 0.08s ease;
+
+    box-sizing: border-box;
+
+    user-select: none;
+}
+
+
+/* ==============================
+   MOUSE OVER
+============================== */
+
+.cell:hover {
+    filter: brightness(0.93);
+}
+
+
+/* ==============================
+   SLIGHTLY SHRINK WHEN CLICKED
+============================== */
+
+.cell:active {
+    transform: scale(0.92);
+}
+
+
+/* ==============================
+   PLAYHEAD
+============================== */
+
+.cell.playing {
+    outline: 3px solid #222;
+
+    outline-offset: -3px;
+
+    z-index: 2;
+}
+
+
+/* ==============================
+   BEAT DIVISIONS
+============================== */
+
+/*
+    Every 4th cell gets a slightly stronger
+    divider to make beats easier to see.
+*/
+
+.cell:nth-child(4n) {
+    border-right: 2px solid #cfcfcf;
+}
+
+
+/* ==============================
+   DRUM SECTION
+============================== */
+
+/*
+    The final two rows of the grid are
+    reserved for drums.
+
+    Row 15 = Kick
+    Row 16 = Snare
+*/
+
+
+.cell.drum-cell {
+    background: #fafafa;
+}
+
+
+/*
+    The first drum row gets a stronger
+    top border to separate the drums
+    from the melody section.
+
+    JavaScript should assign:
+    data-row="14"
+    to the first drum row.
+*/
+
+.cell[data-row="14"] {
+    border-top: 3px solid #999;
+}
+
+
+/*
+    Both drum rows have a slightly
+    different background from melody cells.
+*/
+
+.cell[data-row="14"],
+.cell[data-row="15"] {
+    background: #fafafa;
+}
+
+
+/*
+    Keep the drum rows visually distinct
+    when they are not active.
+*/
+
+.cell.drum-cell:hover {
+    background: #eeeeee;
+}
+
+
+/*
+    Active drum cells can still be given
+    their normal active color by JavaScript.
+*/
+
+.cell.drum-cell.active {
+    background: #333;
+}
+
+
+/* ==============================
+   CONTROLS
+============================== */
+
+.controls {
+    padding: 16px 20px 10px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 20px;
+
+    background: #f5f5f5;
+
+    box-sizing: border-box;
+
+    flex-wrap: wrap;
+}
+
+
+button {
+    padding: 10px 25px;
+
+    font-size: 16px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #333;
+
+    color: white;
+
+    cursor: pointer;
+}
+
+
+button:hover {
+    filter: brightness(1.2);
+}
+
+
+button:active {
+    transform: scale(0.97);
+}
+
+
+label {
+    font-size: 16px;
+}
+
+
+/* ==============================
+   TEMPO SLIDER
+============================== */
+
+.tempo-control {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    font-size: 16px;
+}
+
+
+#tempoInput {
+    width: 180px;
+
+    cursor: pointer;
+}
+
+
+#tempoValue {
+    min-width: 35px;
+
+    font-weight: bold;
+
+    text-align: center;
+}
+
+
+/* ==============================
+   INSTRUMENT SECTION
+============================== */
+
+.instrument-section {
+    margin-top: 0;
+
+    padding: 8px 20px 24px;
+
+    background: #f5f5f5;
+
+    /*
+        Fill all remaining vertical space below
+        the playback controls instead of leaving
+        an empty white area at the bottom.
+    */
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-start;
+
+    box-sizing: border-box;
+}
+
+
+.instrument-section h2 {
+    text-align: center;
+
+    margin: 0 0 10px;
+}
+
+
+/* ==============================
+   INSTRUMENT SELECTOR
+============================== */
+
+#instrumentSelector {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: flex-start;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+}
+
+
+/* ==============================
+   INDIVIDUAL INSTRUMENT
+============================== */
+
+.instrument {
+    width: 120px;
+
+    padding: 12px;
+
+    box-sizing: border-box;
+
+    border-radius: 10px;
+
+    background: white;
+
+    border: 2px solid transparent;
+
+    cursor: pointer;
+
+    text-align: center;
+
+    transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+/* ==============================
+   INSTRUMENT ICON
+============================== */
+
+.instrument-icon {
+    font-size: 45px;
+
+    height: 55px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+/* ==============================
+   INSTRUMENT NAME
+============================== */
+
+.instrument-name {
+    margin-top: 8px;
+
+    font-size: 15px;
+
+    font-weight: bold;
+}
+
+
+/* ==============================
+   INSTRUMENT HOVER
+============================== */
+
+.instrument:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 4px 12px
+        rgba(0, 0, 0, 0.12);
+}
+
+
+/* ==============================
+   SELECTED INSTRUMENT
+============================== */
+
+.instrument.active {
+    border-color: #333;
+
+    box-shadow:
+        0 4px 12px
+        rgba(0, 0, 0, 0.15);
+
+    transform: translateY(-3px);
+}
+
+
+/* ==============================
+   SETTINGS BUTTON
+============================== */
+
+#settingsButton {
+    padding: 10px 20px;
+}
+
+
+/* ==============================
+   SETTINGS OVERLAY
+============================== */
+
+.settings-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.35);
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+
+.settings-overlay.open {
+    display: flex;
+}
+
+
+/* ==============================
+   SETTINGS PANEL
+============================== */
+
+.settings-panel {
+    width: min(430px, 90%);
+
+    background: white;
+
+    border-radius: 14px;
+
+    padding: 25px;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 15px 40px
+        rgba(0, 0, 0, 0.25);
+}
+
+
+/* ==============================
+   SETTINGS HEADER
+============================== */
+
+.settings-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 25px;
+}
+
+
+.settings-header h2 {
+    margin: 0;
+
+    font-size: 24px;
+}
+
+
+.close-settings {
+    width: 38px;
+
+    height: 38px;
+
+    padding: 0;
+
+    font-size: 28px;
+
+    line-height: 1;
+
+    border-radius: 50%;
+
+    background: #eee;
+
+    color: #333;
+}
+
+
+.close-settings:hover {
+    background: #ddd;
+}
+
+
+/* ==============================
+   INDIVIDUAL SETTING
+============================== */
+
+.setting {
+    margin-bottom: 25px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+.setting-label {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    font-weight: bold;
+}
+
+
+.setting label {
+    font-weight: bold;
+}
+
+
+/* ==============================
+   SETTINGS SLIDER
+============================== */
+
+#volumeInput {
+    width: 100%;
+
+    cursor: pointer;
+}
+
+
+#volumeValue {
+    min-width: 45px;
+
+    text-align: right;
+
+    font-weight: bold;
+}
+
+
+/* ==============================
+   MUTE SETTING
+============================== */
+
+.mute-setting {
+    flex-direction: row;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+
+/* ==============================
+   TOGGLE SWITCH
+============================== */
+
+.switch {
+    position: relative;
+
+    display: inline-block;
+
+    width: 48px;
+
+    height: 26px;
+}
+
+
+.switch input {
+    opacity: 0;
+
+    width: 0;
+
+    height: 0;
+}
+
+
+.slider {
+    position: absolute;
+
+    inset: 0;
+
+    background: #ccc;
+
+    border-radius: 30px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+
+.slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 20px;
+
+    height: 20px;
+
+    left: 3px;
+
+    top: 3px;
+
+    background: white;
+
+    border-radius: 50%;
+
+    transition: 0.2s;
+}
+
+
+.switch input:checked + .slider {
+    background: #333;
+}
+
+
+.switch input:checked + .slider::before {
+    transform: translateX(22px);
+}
+
+
+/* ==============================
+   TRACK LENGTH
+============================== */
+
+.track-length-control {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 18px;
+}
+
+
+/* ==============================
+   TRACK LENGTH BUTTONS
+============================== */
+
+.length-button {
+    width: 42px;
+
+    height: 42px;
+
+    padding: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    border-radius: 8px;
+}
+
+
+.length-button:hover {
+    filter: brightness(1.15);
+}
+
+
+.length-button:active {
+    transform: scale(0.94);
+}
+
+
+/* ==============================
+   TRACK LENGTH VALUE
+============================== */
+
+#trackLengthValue {
+    min-width: 50px;
+
+    text-align: center;
+
+    font-size: 20px;
+
+    font-weight: bold;
+}
+
+
+/* ==============================
+   SMALL SCREENS
+============================== */
+
+@media (max-width: 700px) {
+
+    .app {
+        width: 100%;
+
+        margin-top: 0;
+    }
+
+
+    /*
+        Keep the cells large enough to tap
+        comfortably on phones.
+    */
+
+    .cell {
+        border-width: 0.5px;
+    }
+
+
+    /*
+        The grid becomes slightly shorter
+        on small screens so the controls
+        remain accessible.
+    */
+
+    .grid-container {
+        height: 48vh;
+        flex-basis: 48vh;
+    }
+
+    #grid {
+        height: 100%;
+    }
+
+
+    .controls {
+        flex-wrap: wrap;
+
+        padding: 15px;
+    }
+
+
+    .tempo-control {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+
+    #tempoInput {
+        max-width: 180px;
+    }
+
+
+    .settings-panel {
+        width: 92%;
+
+        padding: 20px;
+    }
+
+
+    .track-length-control {
+        gap: 14px;
+    }
+
+
+    .instrument-section {
+        flex: 1;
+
+        min-height: 0;
+    }
+
+    .instrument {
+        width: 105px;
+    }
+
+
+    .instrument-icon {
+        font-size: 38px;
+
+        height: 48px;
+    }
+}
+
+
+/* ==============================
+   VERY SMALL SCREENS
+============================== */
+
+@media (max-width: 450px) {
+
+    h1 {
+        font-size: 24px;
+
+        padding: 14px;
+    }
+
+
+    .grid-container {
+        height: 44vh;
+        flex-basis: 44vh;
+    }
+
+    #grid {
+        /*
+            Keep enough vertical room for
+            16 rows while still leaving
+            space for the controls.
+        */
+
+        height: 100%;
+    }
+
+
+    .controls {
+        gap: 10px;
+    }
+
+
+    button {
+        padding: 9px 16px;
+
+        font-size: 14px;
+    }
+
+
+    .instrument-section {
+        padding-left: 10px;
+
+        padding-right: 10px;
+
+        flex: 1;
+    }
+
+
+    #instrumentSelector {
+        gap: 8px;
+    }
+
+
+    .instrument {
+        width: 90px;
+
+        padding: 9px;
+    }
+
+
+    .instrument-icon {
+        font-size: 32px;
+
+        height: 42px;
+    }
+
+
+    .instrument-name {
+        font-size: 13px;
+    }
+}
