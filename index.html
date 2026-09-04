@@ -38,35 +38,32 @@
              MUSIC GRID
         =============================== -->
 
-        <div class="grid-container">
+        <div class="grid-navigation">
+    <button id="scrollLeftButton" class="grid-arrow">←</button>
 
-            <div id="grid"></div>
+    <div class="grid-container">
+        <div id="grid"></div>
+    </div>
 
-        </div>
-
-
-        <!-- ==============================
-             CONTROLS
-        =============================== -->
-
-        <div class="controls">
+    <button id="scrollRightButton" class="grid-arrow">→</button>
+</div>
 
 
-            <!-- PLAY -->
+            <div class="controls">
+
+
 
             <button id="playButton">
                 Play
             </button>
 
 
-            <!-- STOP -->
 
             <button id="stopButton">
                 Stop
             </button>
 
 
-            <!-- CLEAR -->
 
             <button id="clearButton">
                 Clear
@@ -75,7 +72,6 @@
             <button id="downloadButton">Download</button>
 
 
-            <!-- TEMPO -->
 
             <div class="tempo-control">
 
@@ -99,7 +95,6 @@
             </div>
 
 
-            <!-- SETTINGS -->
 
             <button id="settingsButton">
                 Settings
@@ -109,11 +104,7 @@
         </div>
 
 
-        <!-- ==============================
-             INSTRUMENT SECTION
-        =============================== -->
-
-        <div class="instrument-section">
+              <div class="instrument-section">
 
 
             <h2>
@@ -123,8 +114,6 @@
 
             <div id="instrumentSelector">
 
-
-                <!-- PIANO -->
 
                 <div
                     class="instrument active"
@@ -142,8 +131,6 @@
                 </div>
 
 
-                <!-- SYNTH -->
-
                 <div
                     class="instrument"
                     data-instrument="synth"
@@ -159,8 +146,6 @@
 
                 </div>
 
-
-                <!-- MARIMBA -->
 
                 <div
                     class="instrument"
@@ -178,8 +163,6 @@
                 </div>
 
 
-                <!-- STRINGS -->
-
                 <div
                     class="instrument"
                     data-instrument="strings"
@@ -195,8 +178,6 @@
 
                 </div>
 
-
-                <!-- FLUTE -->
 
                 <div
                     class="instrument"
@@ -218,11 +199,6 @@
 
         </div>
 
-
-        <!-- ==============================
-             SETTINGS OVERLAY
-        =============================== -->
-
         <div
             id="settingsOverlay"
             class="settings-overlay"
@@ -230,11 +206,6 @@
 
 
             <div class="settings-panel">
-
-
-                <!-- ==============================
-                     SETTINGS HEADER
-                =============================== -->
 
                 <div class="settings-header">
 
@@ -254,11 +225,6 @@
 
 
                 </div>
-
-
-                <!-- ==============================
-                     VOLUME
-                =============================== -->
 
                 <div class="setting">
 
@@ -291,11 +257,6 @@
 
                 </div>
 
-
-                <!-- ==============================
-                     MUTE
-                =============================== -->
-
                 <div class="setting mute-setting">
 
 
@@ -320,11 +281,6 @@
 
 
                 </div>
-
-
-                <!-- ==============================
-                     TRACK LENGTH
-                =============================== -->
 
                 <div class="setting">
 
@@ -378,10 +334,6 @@
 
     </div>
 
-
-    <!-- ==============================
-         TONE.JS
-    =============================== -->
 
     <script src="https://unpkg.com/tone@15.1.22/build/Tone.js"></script>
 

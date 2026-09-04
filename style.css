@@ -1,7 +1,3 @@
-/* ==============================
-   GENERAL PAGE
-============================== */
-
 body {
     margin: 0;
 
@@ -15,11 +11,6 @@ body {
 
     font-family: Arial, sans-serif;
 }
-
-
-/* ==============================
-   MAIN APP
-============================== */
 
 .app {
     width: 100%;
@@ -44,17 +35,6 @@ h1 {
     font-size: 28px;
 }
 
-
-/* ==============================
-   GRID CONTAINER
-============================== */
-
-/*
-    This container allows the grid to become
-    horizontally scrollable when the track
-    becomes longer than the screen.
-*/
-
 .grid-container {
     width: 100%;
 
@@ -73,18 +53,8 @@ h1 {
     user-select: none;
 }
 
-
-/* ==============================
-   MUSIC GRID
-============================== */
-
 #grid {
     display: grid;
-
-    /*
-        The JavaScript controls the number
-        of columns using --columns.
-    */
 
     grid-template-columns:
         repeat(
@@ -92,29 +62,12 @@ h1 {
             minmax(35px, 1fr)
         );
 
-    /*
-        14 melody rows
-        2 drum rows
-        16 rows total
-    */
-
-    grid-template-rows:
+        grid-template-rows:
         repeat(16, 1fr);
-
-    /*
-        The grid needs to become wider than
-        the screen when there are many columns.
-    */
 
     width: 100%;
 
     min-width: calc(var(--columns, 32) * 35px);
-
-    /*
-        Reduced from the previous height so
-        the controls and instrument section
-        have more room below the grid.
-    */
 
     height: 52vh;
 
@@ -130,11 +83,6 @@ h1 {
 
     touch-action: none;
 }
-
-
-/* ==============================
-   CELLS
-============================== */
 
 .cell {
     width: 100%;
@@ -155,28 +103,13 @@ h1 {
     user-select: none;
 }
 
-
-/* ==============================
-   MOUSE OVER
-============================== */
-
 .cell:hover {
     filter: brightness(0.93);
 }
 
-
-/* ==============================
-   SLIGHTLY SHRINK WHEN CLICKED
-============================== */
-
 .cell:active {
     transform: scale(0.92);
 }
-
-
-/* ==============================
-   PLAYHEAD
-============================== */
 
 .cell.playing {
     outline: 3px solid #222;
@@ -186,32 +119,9 @@ h1 {
     z-index: 2;
 }
 
-
-/* ==============================
-   BEAT DIVISIONS
-============================== */
-
-/*
-    Every 4th cell gets a slightly stronger
-    divider to make beats easier to see.
-*/
-
 .cell:nth-child(4n) {
     border-right: 2px solid #cfcfcf;
 }
-
-
-/* ==============================
-   DRUM SECTION
-============================== */
-
-/*
-    The final two rows of the grid are
-    reserved for drums.
-
-    Row 15 = Kick
-    Row 16 = Snare
-*/
 
 
 .cell.drum-cell {
@@ -219,55 +129,23 @@ h1 {
 }
 
 
-/*
-    The first drum row gets a stronger
-    top border to separate the drums
-    from the melody section.
-
-    JavaScript should assign:
-    data-row="14"
-    to the first drum row.
-*/
-
 .cell[data-row="14"] {
     border-top: 3px solid #999;
 }
-
-
-/*
-    Both drum rows have a slightly
-    different background from melody cells.
-*/
 
 .cell[data-row="14"],
 .cell[data-row="15"] {
     background: #fafafa;
 }
 
-
-/*
-    Keep the drum rows visually distinct
-    when they are not active.
-*/
-
 .cell.drum-cell:hover {
     background: #eeeeee;
 }
-
-
-/*
-    Active drum cells can still be given
-    their normal active color by JavaScript.
-*/
 
 .cell.drum-cell.active {
     background: #333;
 }
 
-
-/* ==============================
-   CONTROLS
-============================== */
 
 .controls {
     padding: 16px 20px 10px;
@@ -320,10 +198,6 @@ label {
 }
 
 
-/* ==============================
-   TEMPO SLIDER
-============================== */
-
 .tempo-control {
     display: flex;
 
@@ -350,11 +224,6 @@ label {
     text-align: center;
 }
 
-
-/* ==============================
-   INSTRUMENT SECTION
-============================== */
-
 .instrument-section {
     margin-top: 0;
 
@@ -362,11 +231,6 @@ label {
 
     background: #f5f5f5;
 
-    /*
-        Fill all remaining vertical space below
-        the playback controls instead of leaving
-        an empty white area at the bottom.
-    */
     flex: 1;
 
     min-height: 0;
@@ -387,11 +251,6 @@ label {
     margin: 0 0 10px;
 }
 
-
-/* ==============================
-   INSTRUMENT SELECTOR
-============================== */
-
 #instrumentSelector {
     display: flex;
 
@@ -403,11 +262,6 @@ label {
 
     flex-wrap: wrap;
 }
-
-
-/* ==============================
-   INDIVIDUAL INSTRUMENT
-============================== */
 
 .instrument {
     width: 120px;
@@ -449,11 +303,6 @@ label {
     justify-content: center;
 }
 
-
-/* ==============================
-   INSTRUMENT NAME
-============================== */
-
 .instrument-name {
     margin-top: 8px;
 
@@ -462,11 +311,6 @@ label {
     font-weight: bold;
 }
 
-
-/* ==============================
-   INSTRUMENT HOVER
-============================== */
-
 .instrument:hover {
     transform: translateY(-3px);
 
@@ -474,11 +318,6 @@ label {
         0 4px 12px
         rgba(0, 0, 0, 0.12);
 }
-
-
-/* ==============================
-   SELECTED INSTRUMENT
-============================== */
 
 .instrument.active {
     border-color: #333;
@@ -490,19 +329,9 @@ label {
     transform: translateY(-3px);
 }
 
-
-/* ==============================
-   SETTINGS BUTTON
-============================== */
-
 #settingsButton {
     padding: 10px 20px;
 }
-
-
-/* ==============================
-   SETTINGS OVERLAY
-============================== */
 
 .settings-overlay {
     position: fixed;
@@ -526,10 +355,6 @@ label {
 }
 
 
-/* ==============================
-   SETTINGS PANEL
-============================== */
-
 .settings-panel {
     width: min(430px, 90%);
 
@@ -545,11 +370,6 @@ label {
         0 15px 40px
         rgba(0, 0, 0, 0.25);
 }
-
-
-/* ==============================
-   SETTINGS HEADER
-============================== */
 
 .settings-header {
     display: flex;
@@ -592,11 +412,6 @@ label {
     background: #ddd;
 }
 
-
-/* ==============================
-   INDIVIDUAL SETTING
-============================== */
-
 .setting {
     margin-bottom: 25px;
 
@@ -623,11 +438,6 @@ label {
     font-weight: bold;
 }
 
-
-/* ==============================
-   SETTINGS SLIDER
-============================== */
-
 #volumeInput {
     width: 100%;
 
@@ -643,11 +453,6 @@ label {
     font-weight: bold;
 }
 
-
-/* ==============================
-   MUTE SETTING
-============================== */
-
 .mute-setting {
     flex-direction: row;
 
@@ -655,11 +460,6 @@ label {
 
     align-items: center;
 }
-
-
-/* ==============================
-   TOGGLE SWITCH
-============================== */
 
 .switch {
     position: relative;
@@ -726,11 +526,6 @@ label {
     transform: translateX(22px);
 }
 
-
-/* ==============================
-   TRACK LENGTH
-============================== */
-
 .track-length-control {
     display: flex;
 
@@ -740,11 +535,6 @@ label {
 
     gap: 18px;
 }
-
-
-/* ==============================
-   TRACK LENGTH BUTTONS
-============================== */
 
 .length-button {
     width: 42px;
@@ -776,11 +566,6 @@ label {
     transform: scale(0.94);
 }
 
-
-/* ==============================
-   TRACK LENGTH VALUE
-============================== */
-
 #trackLengthValue {
     min-width: 50px;
 
@@ -791,11 +576,6 @@ label {
     font-weight: bold;
 }
 
-
-/* ==============================
-   SMALL SCREENS
-============================== */
-
 @media (max-width: 700px) {
 
     .app {
@@ -804,24 +584,12 @@ label {
         margin-top: 0;
     }
 
-
-    /*
-        Keep the cells large enough to tap
-        comfortably on phones.
-    */
-
     .cell {
         border-width: 0.5px;
     }
 
 
-    /*
-        The grid becomes slightly shorter
-        on small screens so the controls
-        remain accessible.
-    */
-
-    .grid-container {
+       .grid-container {
         height: 48vh;
         flex-basis: 48vh;
     }
@@ -880,11 +648,6 @@ label {
     }
 }
 
-
-/* ==============================
-   VERY SMALL SCREENS
-============================== */
-
 @media (max-width: 450px) {
 
     h1 {
@@ -900,12 +663,6 @@ label {
     }
 
     #grid {
-        /*
-            Keep enough vertical room for
-            16 rows while still leaving
-            space for the controls.
-        */
-
         height: 100%;
     }
 
@@ -952,5 +709,66 @@ label {
 
     .instrument-name {
         font-size: 13px;
+    }
+}
+
+.grid-navigation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.grid-arrow {
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #555;
+    color: white;
+
+    font-size: 28px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.grid-arrow:hover {
+    background: #444;
+}
+
+.grid-arrow:active {
+    background: #333;
+    transform: scale(0.95);
+}
+
+.grid-container {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 600px) {
+
+    .grid-arrow {
+        flex-basis: 48px;
+        width: 48px;
+        height: 48px;
+
+        font-size: 30px;
+    }
+
+    .grid-navigation {
+        gap: 6px;
     }
 }

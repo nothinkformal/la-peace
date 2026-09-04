@@ -1,14 +1,13 @@
-// ============================================================
-// MUSIC MAKER
-// ============================================================
-
-
-// ============================================================
-// HTML ELEMENTS
-// ============================================================
-
+// la peace
+//elements
 const grid =
     document.getElementById("grid");
+
+const scrollLeftButton =
+    document.getElementById("scrollLeftButton");
+
+const scrollRightButton =
+    document.getElementById("scrollRightButton");
 
 
 const playButton =
@@ -35,28 +34,11 @@ const downloadButton =
     document.getElementById("downloadButton");
 
 
-/*
-    Optional download format selector.
-
-    If your HTML contains:
-
-    <select id="downloadFormat">
-        <option value="wav">WAV</option>
-        <option value="webm">WebM</option>
-    </select>
-
-    the selected format will be used.
-
-    If it doesn't exist, WAV is used automatically.
-*/
-
 const downloadFormat =
     document.getElementById("downloadFormat");
 
 
-// ============================================================
-// SETTINGS ELEMENTS
-// ============================================================
+//settings
 
 const settingsButton =
     document.getElementById("settingsButton");
@@ -94,19 +76,17 @@ const trackLengthValue =
     document.getElementById("trackLengthValue");
 
 
-// ============================================================
-// GRID SETTINGS
-// ============================================================
+//grid
 
 let columns = 32;
 
 
 /*
-    16 rows total:
+    16 rows:
 
-    0  - 13 = melody
-    14      = kick
-    15      = snare
+    0  - 13 is melody
+    14      is kick
+    15      is snare
 */
 
 const rows = 16;
@@ -129,30 +109,7 @@ const MAX_COLUMNS = 128;
 
 const COLUMN_STEP = 4;
 
-
-// ============================================================
-// NOTES
-// ============================================================
-
-/*
-    The 14 melody rows use:
-
-    C6
-    B5
-    A5
-    G5
-    F5
-    E5
-    D5
-    C5
-    B4
-    A4
-    G4
-    F4
-    E4
-    D4
-*/
-
+//notes
 const notePool = [
 
     "C6",
@@ -186,9 +143,7 @@ const notePool = [
 ];
 
 
-// ============================================================
-// CELL COLORS
-// ============================================================
+// possible cell colors
 
 const cellColors = [
 
@@ -214,24 +169,16 @@ const cellColors = [
 
 ];
 
-
-// ============================================================
-// CURRENT INSTRUMENT
-// ============================================================
+//current instrument
 
 let currentInstrument = "piano";
 
 
-// ============================================================
-// SONG DATA
-// ============================================================
-
+//song data
 let song = [];
 
 
-// ============================================================
-// CREATE EMPTY SONG DATA
-// ============================================================
+// creates empty song data as starting point
 
 function createSongData() {
 
@@ -270,21 +217,11 @@ function createSongData() {
 }
 
 
-// ============================================================
-// CREATE INITIAL SONG
-// ============================================================
-
+//function call
 createSongData();
 
 
-// ============================================================
-// RESIZE SONG DATA
-// ============================================================
-
-/*
-    Changes the number of columns while
-    preserving existing notes wherever possible.
-*/
+// optimization
 
 function resizeSongData(newColumns) {
 
@@ -344,11 +281,7 @@ function resizeSongData(newColumns) {
 
 }
 
-
-// ============================================================
-// AUDIO MASTER
-// ============================================================
-
+// audio stuff
 const masterVolume =
     new Tone.Volume(0)
         .toDestination();
@@ -356,14 +289,7 @@ const masterVolume =
 
 let recorder = null;
 
-// ============================================================
-// AUDIO EFFECTS
-// ============================================================
-
-
-// ------------------------------------------------------------
-// STRINGS FILTER
-// ------------------------------------------------------------
+// more audio stuff
 
 const stringFilter =
     new Tone.Filter(
@@ -372,10 +298,7 @@ const stringFilter =
     ).connect(masterVolume);
 
 
-// ------------------------------------------------------------
-// STRINGS VIBRATO
-// ------------------------------------------------------------
-
+// even more audio stuff
 const stringVibrato =
     new Tone.Vibrato(
         5,
@@ -383,10 +306,7 @@ const stringVibrato =
     ).connect(stringFilter);
 
 
-// ------------------------------------------------------------
-// FLUTE FILTER
-// ------------------------------------------------------------
-
+// flute
 const fluteFilter =
     new Tone.Filter(
         2800,
@@ -394,10 +314,7 @@ const fluteFilter =
     ).connect(masterVolume);
 
 
-// ------------------------------------------------------------
-// FLUTE VIBRATO
-// ------------------------------------------------------------
-
+// flute configuration 
 const fluteVibrato =
     new Tone.Vibrato(
         5.5,
@@ -405,9 +322,7 @@ const fluteVibrato =
     ).connect(fluteFilter);
 
 
-// ------------------------------------------------------------
-// FLUTE REVERB
-// ------------------------------------------------------------
+// phonk reverb
 
 const fluteReverb =
     new Tone.Reverb({
@@ -419,15 +334,7 @@ const fluteReverb =
     }).connect(fluteVibrato);
 
 
-// ============================================================
-// INSTRUMENTS
-// ============================================================
-
-
-// ============================================================
-// PIANO
-// ============================================================
-
+// instruments
 const piano =
     new Tone.PolySynth(
         Tone.FMSynth,
@@ -477,10 +384,7 @@ const piano =
 
     ).connect(masterVolume);
 
-
-// ============================================================
-// SYNTH
-// ============================================================
+//synth
 
 const synthFilter =
     new Tone.Filter(
@@ -517,9 +421,7 @@ const synth =
     ).connect(synthFilter);
 
 
-// ============================================================
-// MARIMBA
-// ============================================================
+//marimba
 
 const marimba =
     new Tone.PolySynth(
@@ -570,10 +472,7 @@ const marimba =
 
     ).connect(masterVolume);
 
-
-// ============================================================
-// STRINGS
-// ============================================================
+//string
 
 const strings =
     new Tone.PolySynth(
@@ -602,10 +501,7 @@ const strings =
 
     ).connect(stringVibrato);
 
-
-// ============================================================
-// FLUTE
-// ============================================================
+//flute again
 
 const flute =
     new Tone.FMSynth({
@@ -652,16 +548,7 @@ const flute =
 
     }).connect(fluteReverb);
 
-
-// ============================================================
-// DRUMS
-// ============================================================
-
-
-// ------------------------------------------------------------
-// KICK
-// ------------------------------------------------------------
-
+// kick
 const kick =
     new Tone.MembraneSynth({
 
@@ -690,9 +577,7 @@ const kick =
     }).connect(masterVolume);
 
 
-// ------------------------------------------------------------
-// SNARE
-// ------------------------------------------------------------
+//snare
 
 const snare =
     new Tone.NoiseSynth({
@@ -718,9 +603,7 @@ const snare =
     }).connect(masterVolume);
 
 
-// ============================================================
-// PLAY DRUM
-// ============================================================
+//drums
 
 function playDrum(
     row,
@@ -751,10 +634,7 @@ function playDrum(
 
 }
 
-
-// ============================================================
-// INSTRUMENT COLLECTION
-// ============================================================
+//instrument table
 
 const instruments = {
 
@@ -771,26 +651,12 @@ const instruments = {
 };
 
 
-// ============================================================
-// GRID CELL REFERENCES
-// ============================================================
+//cells
 
 let cells = [];
 
-
-// ============================================================
-// GET NOTES
-// ============================================================
-
+// notes receiver
 function getNotes() {
-
-    /*
-        Only the first 14 rows are melodic.
-
-        The final two rows are drums and
-        therefore never use this list.
-    */
-
     return notePool.slice(
         0,
         MELODY_ROWS
@@ -798,10 +664,7 @@ function getNotes() {
 
 }
 
-
-// ============================================================
-// ACTIVATE CELL
-// ============================================================
+//active cell
 
 function activateCell(
     row,
@@ -824,12 +687,6 @@ function activateCell(
 
 
     cellData.active = true;
-
-
-    /*
-        Drum rows don't use the selected
-        melody instrument.
-    */
 
     if (row < MELODY_ROWS) {
 
@@ -861,11 +718,7 @@ function activateCell(
         randomColor;
 
 
-    /*
-        Preview the sound immediately.
-    */
-
-    if (row >= MELODY_ROWS) {
+        if (row >= MELODY_ROWS) {
 
         playDrum(row);
 
@@ -885,10 +738,7 @@ function activateCell(
 
 }
 
-
-// ============================================================
-// DEACTIVATE CELL
-// ============================================================
+//deactivate the cells so no more music
 
 function deactivateCell(
     row,
@@ -924,10 +774,7 @@ function deactivateCell(
 
 }
 
-
-// ============================================================
-// TOGGLE CELL
-// ============================================================
+// select cell so it makes music
 
 function toggleCell(
     row,
@@ -956,10 +803,7 @@ function toggleCell(
 
 }
 
-
-// ============================================================
-// CREATE GRID
-// ============================================================
+//create grid
 
 function createGrid() {
 
@@ -1007,11 +851,6 @@ function createGrid() {
 
             cell.dataset.column =
                 column;
-
-
-            /*
-                Mark the drum rows.
-            */
 
             if (
                 row >= MELODY_ROWS
@@ -1078,17 +917,11 @@ function createGrid() {
 
 }
 
-
-// ============================================================
-// CREATE INITIAL GRID
-// ============================================================
+//function call
 
 createGrid();
 
-
-// ============================================================
-// UPDATE TRACK LENGTH DISPLAY
-// ============================================================
+//more track
 
 function updateTrackLengthDisplay() {
 
@@ -1100,11 +933,7 @@ function updateTrackLengthDisplay() {
 
 updateTrackLengthDisplay();
 
-
-// ============================================================
-// NORMAL CLICK
-// ============================================================
-
+// click
 let suppressNextClick = false;
 
 
@@ -1158,9 +987,7 @@ grid.addEventListener(
 );
 
 
-// ============================================================
-// DRAG SYSTEM
-// ============================================================
+//drag click
 
 let isPointerDown = false;
 
@@ -1180,10 +1007,7 @@ let dragStartColumn = null;
 let draggedCells =
     new Set();
 
-
-// ============================================================
-// POINTER DOWN
-// ============================================================
+//pointer
 
 grid.addEventListener(
     "pointerdown",
@@ -1253,9 +1077,7 @@ grid.addEventListener(
 );
 
 
-// ============================================================
-// POINTER MOVE
-// ============================================================
+//pointer again
 
 grid.addEventListener(
     "pointermove",
@@ -1393,9 +1215,7 @@ grid.addEventListener(
 );
 
 
-// ============================================================
-// POINTER UP
-// ============================================================
+//pointer
 
 document.addEventListener(
     "pointerup",
@@ -1421,10 +1241,7 @@ document.addEventListener(
     }
 );
 
-
-// ============================================================
-// POINTER CANCEL
-// ============================================================
+//cancel pointer
 
 document.addEventListener(
     "pointercancel",
@@ -1450,19 +1267,7 @@ document.addEventListener(
     }
 );
 
-
-// ============================================================
-// PLAY NOTE
-// ============================================================
-
-/*
-    The important change here is the optional
-    "time" parameter.
-
-    When called by Tone.Transport, the note is
-    scheduled at the exact Transport time instead
-    of being triggered immediately.
-*/
+//play note
 
 function playNote(
     note,
@@ -1526,10 +1331,7 @@ function playNote(
 
 }
 
-
-// ============================================================
-// INSTRUMENT SELECTION
-// ============================================================
+//instruments
 
 const instrumentButtons =
     document.querySelectorAll(
@@ -1578,10 +1380,7 @@ instrumentButtons.forEach(
     }
 );
 
-
-// ============================================================
-// SEQUENCER
-// ============================================================
+//sequencer
 
 let currentColumn = 0;
 
@@ -1595,10 +1394,7 @@ let bpm =
     );
 
 
-// ============================================================
-// TEMPO
-// ============================================================
-
+// thats quite my tempo
 function updateTempo() {
 
     let newTempo =
@@ -1672,11 +1468,6 @@ tempoInput.addEventListener(
 
 updateTempo();
 
-
-// ============================================================
-// SETTINGS — OPEN
-// ============================================================
-
 settingsButton.addEventListener(
     "click",
     () => {
@@ -1689,10 +1480,6 @@ settingsButton.addEventListener(
 );
 
 
-// ============================================================
-// SETTINGS — CLOSE
-// ============================================================
-
 closeSettingsButton.addEventListener(
     "click",
     () => {
@@ -1704,10 +1491,6 @@ closeSettingsButton.addEventListener(
     }
 );
 
-
-// ============================================================
-// SETTINGS — CLICK OUTSIDE
-// ============================================================
 
 settingsOverlay.addEventListener(
     "click",
@@ -1727,10 +1510,7 @@ settingsOverlay.addEventListener(
     }
 );
 
-
-// ============================================================
-// VOLUME
-// ============================================================
+//volume
 
 function updateVolume() {
 
@@ -1776,10 +1556,7 @@ volumeInput.addEventListener(
 
 updateVolume();
 
-
-// ============================================================
-// MUTE
-// ============================================================
+//mute
 
 muteInput.addEventListener(
     "change",
@@ -1792,9 +1569,7 @@ muteInput.addEventListener(
 );
 
 
-// ============================================================
-// CHANGE TRACK LENGTH
-// ============================================================
+//track length configuration
 
 function changeTrackLength(
     amount
@@ -1849,10 +1624,7 @@ function changeTrackLength(
 
 }
 
-
-// ============================================================
-// DECREASE TRACK LENGTH
-// ============================================================
+//decrease the track length
 
 decreaseLengthButton.addEventListener(
     "click",
@@ -1865,10 +1637,7 @@ decreaseLengthButton.addEventListener(
     }
 );
 
-
-// ============================================================
-// INCREASE TRACK LENGTH
-// ============================================================
+//increase the track length
 
 increaseLengthButton.addEventListener(
     "click",
@@ -1882,9 +1651,7 @@ increaseLengthButton.addEventListener(
 );
 
 
-// ============================================================
-// CLEAR PLAYHEAD
-// ============================================================
+//clear
 
 function clearPlayhead() {
 
@@ -1912,11 +1679,7 @@ function clearPlayhead() {
 
 }
 
-
-// ============================================================
-// SHOW PLAYHEAD
-// ============================================================
-
+// yeah
 function showPlayhead(
     column
 ) {
@@ -1940,10 +1703,7 @@ function showPlayhead(
 
 }
 
-
-// ============================================================
-// PLAY COLUMN
-// ============================================================
+//play column
 
 function playColumn(
     column,
@@ -2005,10 +1765,7 @@ function playColumn(
 
 }
 
-
-// ============================================================
-// START SEQUENCER
-// ============================================================
+//sequencer starter
 
 async function startSequencer() {
 
@@ -2033,26 +1790,10 @@ async function startSequencer() {
     Tone.Transport.bpm.value =
         bpm;
 
-
-    /*
-        Remove any previous scheduled events.
-    */
-
     Tone.Transport.cancel();
 
 
-    /*
-        IMPORTANT:
-
-        The old version played column 0 immediately
-        and then started the transport.
-
-        That meant the first note was not actually
-        synchronized with the transport clock.
-
-        Now column 0 is scheduled at transport time 0.
-    */
-
+    
     Tone.Transport.scheduleRepeat(
         (time) => {
 
@@ -2088,11 +1829,6 @@ async function startSequencer() {
 
 }
 
-
-// ============================================================
-// STOP SEQUENCER
-// ============================================================
-
 function stopSequencer() {
 
     isPlaying = false;
@@ -2111,37 +1847,14 @@ function stopSequencer() {
 
 }
 
-
-// ============================================================
-// EXPORT SETTINGS
-// ============================================================
-
+// recorder
 let isRecording = false;
 
-
-/*
-    Extra time after the final column.
-
-    This allows instruments such as strings,
-    flute and piano to finish their releases
-    instead of being abruptly cut off.
-*/
 
 const EXPORT_TAIL_SECONDS = 2.0;
 
 
-// ============================================================
-// WAV CONVERTER
-// ============================================================
-
-/*
-    Tone.Recorder produces a browser recording,
-    normally using a compressed MediaRecorder
-    format such as WebM.
-
-    This function converts the decoded audio
-    into a genuine 16-bit PCM WAV file.
-*/
+//wav maker
 
 function audioBufferToWav(
     audioBuffer
@@ -2198,11 +1911,7 @@ function audioBufferToWav(
     }
 
 
-    /*
-        RIFF header.
-    */
-
-    writeString(
+      writeString(
         0,
         "RIFF"
     );
@@ -2220,11 +1929,6 @@ function audioBufferToWav(
         "WAVE"
     );
 
-
-    /*
-        fmt chunk.
-    */
-
     writeString(
         12,
         "fmt "
@@ -2238,11 +1942,7 @@ function audioBufferToWav(
     );
 
 
-    /*
-        PCM format.
-    */
-
-    view.setUint16(
+       view.setUint16(
         20,
         1,
         true
@@ -2287,10 +1987,6 @@ function audioBufferToWav(
     );
 
 
-    /*
-        Data chunk.
-    */
-
     writeString(
         36,
         "data"
@@ -2304,11 +2000,7 @@ function audioBufferToWav(
     );
 
 
-    /*
-        Get each channel's samples.
-    */
-
-    const channelData = [];
+        const channelData = [];
 
 
     for (
@@ -2327,11 +2019,6 @@ function audioBufferToWav(
 
 
     let offset = 44;
-
-
-    /*
-        Interleave the channels.
-    */
 
     for (
         let sample = 0;
@@ -2352,11 +2039,6 @@ function audioBufferToWav(
                     sample
                 ];
 
-
-            /*
-                Clamp the sample.
-            */
-
             value =
                 Math.max(
                     -1,
@@ -2365,12 +2047,6 @@ function audioBufferToWav(
                         value
                     )
                 );
-
-
-            /*
-                Convert float [-1, 1]
-                into signed 16-bit PCM.
-            */
 
             const pcmValue =
                 value < 0
@@ -2401,10 +2077,7 @@ function audioBufferToWav(
 
 }
 
-
-// ============================================================
-// SAVE AUDIO FILE
-// ============================================================
+// save audio file
 
 function saveAudioBlob(
     blob,
@@ -2457,10 +2130,7 @@ function saveAudioBlob(
 
 }
 
-
-// ============================================================
-// DOWNLOAD TRACK
-// ============================================================
+//download track
 
 async function downloadTrack() {
 
@@ -2470,6 +2140,13 @@ async function downloadTrack() {
 
     await Tone.start();
 
+    const audioContext = Tone.getContext().rawContext;
+
+await audioContext.resume();
+
+if (audioContext.state !== "running") {
+    throw new Error("Audio context could not be started.");
+}
     if (!Tone.Recorder.supported) {
 
         alert(
@@ -2504,104 +2181,44 @@ async function downloadTrack() {
 
     try {
 
-        // ========================================================
-        // STOP NORMAL PLAYBACK
-        // ========================================================
+                stopSequencer();
 
-        stopSequencer();
+Tone.Transport.stop();
+Tone.Transport.cancel();
+Tone.Transport.position = 0;
 
-
-        // ========================================================
-        // SET TRANSPORT TEMPO
-        // ========================================================
-
-        Tone.Transport.bpm.value =
-            bpm;
-
-
-        // ========================================================
-        // CALCULATE TIMING
-        // ========================================================
-
-        /*
-            Every step in the sequencer is an eighth note.
-
-            Tone.Transport is used for the entire export so
-            the recording follows exactly the same musical
-            clock as playback.
-        */
+await new Promise(resolve => setTimeout(resolve, 100));
+await Tone.start();
+await audioContext.resume();
+Tone.Transport.bpm.value =
+    bpm;
 
         const stepDuration =
             Tone.Time(
                 "8n"
             ).toSeconds();
 
-
-        /*
-            One complete pass through the song.
-        */
-
         const trackDuration =
             columns *
             stepDuration;
 
 
-        /*
-            Extra time at the end allows instruments with
-            longer releases to finish naturally.
-        */
-
-        const exportDuration =
+            const exportDuration =
             trackDuration +
             EXPORT_TAIL_SECONDS;
 
-
-        // ========================================================
-        // CREATE A FRESH RECORDER
-        // ========================================================
-
-        /*
-            IMPORTANT:
-
-            Never reuse the recorder from a previous export.
-
-            A completely new Tone.Recorder is created every
-            time Download is pressed.
-        */
-
         recorder =
             new Tone.Recorder();
-
-
-        /*
-            Connect this recorder to the master output.
-
-            The recorder receives exactly what the user hears.
-        */
 
         masterVolume.connect(
             recorder
         );
 
 
-        // ========================================================
-        // START RECORDING
-        // ========================================================
-
-        /*
-            Start recording BEFORE starting Tone.Transport.
-
-            This ensures the first column is captured.
-        */
-
-        await recorder.start();
+             await recorder.start();
 
 
-        // ========================================================
-        // RESET TRANSPORT
-        // ========================================================
-
-        currentColumn = 0;
+             currentColumn = 0;
 
         isPlaying = true;
 
@@ -2610,18 +2227,6 @@ async function downloadTrack() {
         Tone.Transport.cancel();
 
         Tone.Transport.position = 0;
-
-
-        // ========================================================
-        // SCHEDULE EVERY COLUMN
-        // ========================================================
-
-        /*
-            Schedule every column individually.
-
-            We do NOT use scheduleRepeat here because the
-            downloaded song should only play once.
-        */
 
         for (
             let column = 0;
@@ -2653,11 +2258,7 @@ async function downloadTrack() {
         }
 
 
-        // ========================================================
-        // END EXPORT
-        // ========================================================
-
-        Tone.Transport.scheduleOnce(
+            Tone.Transport.scheduleOnce(
             async () => {
 
                 try {
@@ -2685,37 +2286,15 @@ async function downloadTrack() {
                     const recording =
                         await recorder.stop();
 
-
-                    // ====================================================
-                    // DISPOSE RECORDER
-                    // ====================================================
-
-                    /*
-                        This is important.
-
-                        The recorder is destroyed after every export,
-                        so the next download gets a completely fresh
-                        MediaRecorder.
-                    */
-
                     recorder.dispose();
 
                     recorder = null;
-
-
-                    // ====================================================
-                    // DETERMINE FORMAT
-                    // ====================================================
 
                     const format =
                         downloadFormat
                             ? downloadFormat.value
                             : "wav";
 
-
-                    // ====================================================
-                    // WEBM
-                    // ====================================================
 
                     if (
                         format === "webm"
@@ -2728,21 +2307,10 @@ async function downloadTrack() {
 
                     }
 
-
-                    // ====================================================
-                    // WAV
-                    // ====================================================
-
                     else {
 
                         downloadButton.textContent =
                             "Converting...";
-
-
-                        /*
-                            Convert the WebM recording into
-                            an AudioBuffer.
-                        */
 
                         const arrayBuffer =
                             await recording.arrayBuffer();
@@ -2761,11 +2329,7 @@ async function downloadTrack() {
                                 );
 
 
-                        /*
-                            Convert the AudioBuffer into
-                            a standard 16-bit PCM WAV.
-                        */
-
+                        
                         const wavBlob =
                             audioBufferToWav(
                                 audioBuffer
@@ -2784,13 +2348,13 @@ async function downloadTrack() {
                 catch (error) {
 
                     console.error(
-                        "Could not export track:",
+                        "no export ",
                         error
                     );
 
 
                     alert(
-                        "The track could not be exported. Check the browser console for details."
+                        "sorry i cant fulfill this request"
                     );
 
                 }
@@ -2798,9 +2362,7 @@ async function downloadTrack() {
 
                 finally {
 
-                    // ====================================================
-                    // RESTORE CONTROLS
-                    // ====================================================
+                    //start controls
 
                     isRecording = false;
 
@@ -2839,11 +2401,7 @@ async function downloadTrack() {
         );
 
 
-        // ========================================================
-        // START TRANSPORT
-        // ========================================================
-
-        Tone.Transport.start();
+        Tone.Transport.start("+0.05");
 
     }
 
@@ -2854,11 +2412,6 @@ async function downloadTrack() {
             "Could not start export:",
             error
         );
-
-
-        // ========================================================
-        // CLEAN UP TRANSPORT
-        // ========================================================
 
         try {
 
@@ -2877,19 +2430,9 @@ async function downloadTrack() {
 
         }
 
-
-        // ========================================================
-        // CLEAN UP RECORDER
-        // ========================================================
-
         try {
 
             if (recorder) {
-
-                /*
-                    Only stop the recorder if it is actually
-                    recording.
-                */
 
                 if (
                     recorder.state ===
@@ -2919,20 +2462,11 @@ async function downloadTrack() {
         }
 
 
-        // ========================================================
-        // RESET SEQUENCER STATE
-        // ========================================================
-
         isPlaying = false;
 
         currentColumn = 0;
 
         clearPlayhead();
-
-
-        // ========================================================
-        // RESTORE STATE
-        // ========================================================
 
         isRecording = false;
 
@@ -2965,9 +2499,6 @@ async function downloadTrack() {
     }
 
 }
-// ============================================================
-// CLEAR SONG
-// ============================================================
 
 function clearSong() {
 
@@ -3015,11 +2546,6 @@ function clearSong() {
 
 }
 
-
-// ============================================================
-// PLAY BUTTON
-// ============================================================
-
 playButton.addEventListener(
     "click",
     async () => {
@@ -3028,11 +2554,6 @@ playButton.addEventListener(
 
     }
 );
-
-
-// ============================================================
-// STOP BUTTON
-// ============================================================
 
 stopButton.addEventListener(
     "click",
@@ -3043,11 +2564,6 @@ stopButton.addEventListener(
     }
 );
 
-
-// ============================================================
-// CLEAR BUTTON
-// ============================================================
-
 clearButton.addEventListener(
     "click",
     () => {
@@ -3057,12 +2573,58 @@ clearButton.addEventListener(
     }
 );
 
-
-// ============================================================
-// DOWNLOAD BUTTON
-// ============================================================
-
 downloadButton.addEventListener(
     "click",
     downloadTrack
 );
+
+if (scrollLeftButton) {
+
+    scrollLeftButton.addEventListener(
+        "click",
+        () => {
+
+            const container =
+                document.querySelector(
+                    ".grid-container"
+                );
+
+            if (!container) {
+                return;
+            }
+
+            container.scrollBy({
+                left: -container.clientWidth * 0.8,
+                behavior: "smooth"
+            });
+
+        }
+    );
+
+}
+
+
+if (scrollRightButton) {
+
+    scrollRightButton.addEventListener(
+        "click",
+        () => {
+
+            const container =
+                document.querySelector(
+                    ".grid-container"
+                );
+
+            if (!container) {
+                return;
+            }
+
+            container.scrollBy({
+                left: container.clientWidth * 0.8,
+                behavior: "smooth"
+            });
+
+        }
+    );
+
+}
