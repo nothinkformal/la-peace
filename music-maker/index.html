@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>La Peace Lab</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="app">
+
+
+        <h1>
+            La Peace Lab
+        </h1>
+
+
+        <div class="grid-navigation">
+    <button id="scrollLeftButton" class="grid-arrow">←</button>
+
+    <div class="grid-container">
+        <div id="grid"></div>
+    </div>
+
+    <button id="scrollRightButton" class="grid-arrow">→</button>
+</div>
+
+<div class = "toggle_theme">
+<button id = "light_mode_button"
+
+class = "theme_button active"
+
+type = "button" >
+🌞
+</button>
+
+<button id = "dark_mode_button"
+class = "theme_button"
+type = "button" >
+🌕
+</button>
+</div>
+
+
+            <div class="controls">
+
+
+
+            <button id="playButton">
+                Play
+            </button>
+
+
+
+            <button id="stopButton">
+                Stop
+            </button>
+
+
+
+            <button id="clearButton">
+                Clear
+            </button>
+
+            <button id="downloadButton">Download</button>
+
+
+
+            <div class="tempo-control">
+
+                <label for="tempoInput">
+                    BPM
+                </label>
+
+                <input
+                    type="range"
+                    id="tempoInput"
+                    min="40"
+                    max="240"
+                    value="120"
+                    step="1"
+                >
+
+                <span id="tempoValue">
+                    120
+                </span>
+
+            </div>
+
+
+
+            <button id="settingsButton">
+                Settings
+            </button>
+
+
+        </div>
+
+
+              <div class="instrument-section">
+
+
+            <h2>
+                Instrument
+            </h2>
+
+
+            <div id="instrumentSelector">
+
+
+                <div
+                    class="instrument active"
+                    data-instrument="piano"
+                >
+
+                    <div class="instrument-icon">
+                        🎹
+                    </div>
+
+                    <div class="instrument-name">
+                        Piano
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="instrument"
+                    data-instrument="synth"
+                >
+
+                    <div class="instrument-icon">
+                        🎛️
+                    </div>
+
+                    <div class="instrument-name">
+                        Synth
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="instrument"
+                    data-instrument="marimba"
+                >
+
+                    <div class="instrument-icon">
+                        🪵
+                    </div>
+
+                    <div class="instrument-name">
+                        Marimba
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="instrument"
+                    data-instrument="strings"
+                >
+
+                    <div class="instrument-icon">
+                        🎻
+                    </div>
+
+                    <div class="instrument-name">
+                        Strings
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="instrument"
+                    data-instrument="flute"
+                >
+
+                    <div class="instrument-icon">
+                        🎶
+                    </div>
+
+                    <div class="instrument-name">
+                        Flute
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <div
+            id="settingsOverlay"
+            class="settings-overlay"
+        >
+
+
+            <div class="settings-panel">
+
+                <div class="settings-header">
+
+
+                    <h2>
+                        Settings
+                    </h2>
+
+
+                    <button
+                        id="closeSettingsButton"
+                        class="close-settings"
+                        type="button"
+                    >
+                        ×
+                    </button>
+
+
+                </div>
+
+                <div class="setting">
+
+
+                    <div class="setting-label">
+
+
+                        <label for="volumeInput">
+                            Volume
+                        </label>
+
+
+                        <span id="volumeValue">
+                            100%
+                        </span>
+
+
+                    </div>
+
+
+                    <input
+                        type="range"
+                        id="volumeInput"
+                        min="0"
+                        max="100"
+                        value="100"
+                        step="1"
+                    >
+
+
+                </div>
+
+                <div class="setting mute-setting">
+
+
+                    <label for="muteInput">
+                        Mute
+                    </label>
+
+
+                    <label class="switch">
+
+
+                        <input
+                            type="checkbox"
+                            id="muteInput"
+                        >
+
+
+                        <span class="slider"></span>
+
+
+                    </label>
+
+
+                </div>
+
+                <div class="setting">
+
+
+                    <div class="setting-label">
+
+                        <label>
+                            Track Length
+                        </label>
+
+                    </div>
+
+
+                    <div class="track-length-control">
+
+
+                        <button
+                            type="button"
+                            id="decreaseLengthButton"
+                            class="length-button"
+                        >
+                            −
+                        </button>
+
+
+                        <span id="trackLengthValue">
+                            32
+                        </span>
+
+
+                        <button
+                            type="button"
+                            id="increaseLengthButton"
+                            class="length-button"
+                        >
+                            +
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <script src="https://unpkg.com/tone@15.1.22/build/Tone.js"></script>
+
+
+    <!-- ==============================
+         MAIN SCRIPT
+    =============================== -->
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>
