@@ -1,0 +1,51 @@
+.tutorial {
+	max-width: 800px;
+	margin: 60px auto;
+	padding: 40px;
+	text-align: center;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+
+.tutorial-p {
+	background-image: url("background.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.tutorial h1{
+	margin-bottom: 40px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+
+.tutorial-step{
+	margin-bottom: 30px;
+	padding: 25px;
+	border: 3px soldier #222;
+	background: #eeeee;
+	font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+
+.tutorial-step h2 {
+	margin-top: 0;
+}
+
+.start-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 30px;
+    background: #f7bb52;
+    border: 3px solid #222;
+    color: #FFF;
+    text-decoration: none;
+	font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+
+.start-button:hover {
+    transform: scale(1.03);
+}
