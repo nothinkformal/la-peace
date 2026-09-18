@@ -1,0 +1,526 @@
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+.drawing_lab {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: white;
+    touch-action: none;
+}
+
+.bottom_toolbar {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    height: 60px;
+    padding: 8px 15px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    background: white;
+    border: none;
+    border-radius: 12px;
+
+    z-index: 100;
+
+    font-family: Arial, sans-serif;
+}
+
+.bottom_toolbar button {
+    padding: 8px 12px;
+    border: 2px solid #222;
+    background: #eeeeee;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.bottom_toolbar button:hover {
+    background: #dddddd;
+}
+
+.bottom_toolbar button.active {
+    background: #f7bb52;
+}
+
+.bottom_toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+}
+
+.bottom_toolbar input[type="color"] {
+    width: 35px;
+    height: 35px;
+    padding: 2px;
+    border: 2px solid #222;
+    border-radius: 7px;
+    background: white;
+    cursor: pointer;
+}
+
+.bottom_toolbar input[type="range"] {
+    width: 100px;
+    cursor: pointer;
+}
+
+.drawing_title {
+    position: fixed;
+    top: 15px;
+    left: 20px;
+
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+
+    z-index: 1000;
+}
+
+.reference_panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+
+    padding: 70px 15px 100px;
+
+    background: #f5f5f5;
+    border-left: 3px solid #222;
+
+    font-family: Arial, sans-serif;
+
+    z-index: 500;
+    overflow-y: auto;
+}
+
+.reference_panel h2 {
+    margin-top: 0;
+}
+
+.reference_upload {
+    display: block;
+    padding: 10px;
+
+    background: #eeeeee;
+    border: 2px solid #222;
+    border-radius: 7px;
+
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.reference_upload input {
+    display: none;
+}
+
+.reference_image {
+    margin-top: 15px;
+    width: 100%;
+}
+
+.reference_image img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: contain;
+}
+
+.reference_resize {
+    position: absolute;
+    left: -5px;
+    top: 0;
+    width: 10px;
+    height: 100%;
+    cursor: ew-resize;
+}
+
+.layers_section {
+    margin-top: 25px;
+    padding-bottom: 30px;
+}
+
+.layers_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    margin-bottom: 8px;
+}
+
+.layers_header h2 {
+    margin: 0;
+}
+
+.add_layer_button {
+    padding: 6px 9px;
+
+    border: 2px solid #222;
+    border-radius: 6px;
+
+    background: #eeeeee;
+
+    cursor: pointer;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.add_layer_button:hover {
+    background: #dddddd;
+}
+
+.active_layer_info {
+    margin-bottom: 10px;
+
+    padding: 7px 9px;
+
+    background: white;
+
+    border: 2px solid #222;
+    border-radius: 6px;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+.active_layer_info strong {
+    margin-left: 4px;
+}
+
+
+/* ============================================================
+   LAYER LIST
+============================================================ */
+
+.layers_list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    /*
+        Much larger than the previous version.
+        The list can occupy most of the reference panel.
+    */
+    max-height: 55vh;
+
+    overflow-y: auto;
+
+    padding-right: 4px;
+}
+
+
+/* ============================================================
+   LAYER ITEM
+============================================================ */
+
+.layer_item {
+    width: 100%;
+
+    min-height: 40px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    box-sizing: border-box;
+
+    padding: 5px 6px;
+
+    border: 2px solid #222;
+    border-radius: 7px;
+
+    background: #eeeeee;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    font-family: Arial, sans-serif;
+}
+
+.layer_item:hover {
+    background: #dddddd;
+}
+
+.layer_item.active {
+    background: #4169E1;
+    color: white;
+}
+
+.layer_item.dragging {
+    opacity: 0.45;
+}
+
+
+/* ============================================================
+   DRAG HANDLE
+============================================================ */
+
+.layer_drag_handle {
+    width: 20px;
+
+    flex-shrink: 0;
+
+    text-align: center;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    color: #777;
+
+    cursor: grab;
+}
+
+.layer_item.active .layer_drag_handle {
+    color: white;
+}
+
+
+/* ============================================================
+   LAYER NAME
+============================================================ */
+
+.layer_name {
+    flex: 1;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    font-size: 13px;
+}
+
+.layer_name_input {
+    flex: 1;
+
+    min-width: 0;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 4px 5px;
+
+    border: 1px solid #222;
+    border-radius: 4px;
+
+    outline: none;
+
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   LAYER CONTROLS
+============================================================ */
+
+.layer_control {
+    width: 29px;
+    height: 29px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid #222;
+    border-radius: 5px;
+
+    background: white;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+.layer_control:hover {
+    background: #dddddd;
+}
+
+.layer_item.active .layer_control {
+    color: #222;
+}
+
+
+/* ============================================================
+   DELETE LAYER
+============================================================ */
+
+.delete_layer:hover {
+    background: #ffcccc;
+}
+
+
+/* ============================================================
+   LAYER SCROLLBAR
+============================================================ */
+
+.layers_list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.layers_list::-webkit-scrollbar-track {
+    background: #dddddd;
+    border-radius: 5px;
+}
+
+.layers_list::-webkit-scrollbar-thumb {
+    background: #999999;
+    border-radius: 5px;
+}
+
+.layers_list::-webkit-scrollbar-thumb:hover {
+    background: #777777;
+}
+
+
+/* ============================================================
+   SHAPE MENU
+============================================================ */
+
+.shape_menu {
+    position: relative;
+    overflow: visible;
+}
+
+.shape_dropdown {
+    position: absolute;
+
+    left: 50%;
+
+    bottom: calc(100% + 8px);
+
+    transform: translateX(-50%);
+
+    display: none;
+
+    min-width: 240px;
+
+    padding: 6px;
+
+    background: white;
+
+    border: 2px solid #222;
+
+    border-radius: 8px;
+
+    box-shadow:
+        3px 4px 8px rgba(0, 0, 0, 0.18);
+
+    z-index: 1000;
+}
+
+.shape_menu:hover .shape_dropdown,
+.shape_menu:focus-within .shape_dropdown {
+    display: block;
+}
+
+.shape_grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 55px);
+
+    gap: 5px;
+}
+
+.shape_grid button {
+    width: 55px;
+    height: 55px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+
+    padding: 4px;
+
+    border: 2px solid #222;
+
+    border-radius: 7px;
+
+    background: #eeeeee;
+
+    cursor: pointer;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 16px;
+}
+
+.shape_grid button:hover {
+    background: #dddddd;
+}
+
+.shape_grid button span {
+    font-size: 9px;
+}
+
+
+/* ============================================================
+   TOOLBAR
+============================================================ */
+
+.bottom_toolbar {
+    overflow: visible;
+}
+
+
+/* ============================================================
+   IMAGE BUTTON
+============================================================ */
+
+.image_button {
+    padding: 8px 12px;
+
+    border: 2px solid #222;
+
+    background: #eeeeee;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 14px;
+}
+
+.image_button:hover {
+    background: #dddddd;
+}
+
+.image_button input {
+    display: none;
+}
