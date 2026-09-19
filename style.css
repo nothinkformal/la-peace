@@ -74,6 +74,17 @@ body {
 	margin: 35px auto;
 }
 
+.app-card a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    text-decoration: none;
+}
+
 .app-card {
 	width: 320px;
 	height: 220px;
