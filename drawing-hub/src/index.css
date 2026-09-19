@@ -204,32 +204,18 @@ body,
     margin-left: 4px;
 }
 
-
-/* ============================================================
-   LAYER LIST
-============================================================ */
-
 .layers_list {
     display: flex;
     flex-direction: column;
 
     gap: 5px;
 
-    /*
-        Much larger than the previous version.
-        The list can occupy most of the reference panel.
-    */
     max-height: 55vh;
 
     overflow-y: auto;
 
     padding-right: 4px;
 }
-
-
-/* ============================================================
-   LAYER ITEM
-============================================================ */
 
 .layer_item {
     width: 100%;
@@ -270,11 +256,6 @@ body,
     opacity: 0.45;
 }
 
-
-/* ============================================================
-   DRAG HANDLE
-============================================================ */
-
 .layer_drag_handle {
     width: 20px;
 
@@ -293,11 +274,6 @@ body,
 .layer_item.active .layer_drag_handle {
     color: white;
 }
-
-
-/* ============================================================
-   LAYER NAME
-============================================================ */
 
 .layer_name {
     flex: 1;
@@ -333,11 +309,6 @@ body,
     font-size: 13px;
 }
 
-
-/* ============================================================
-   LAYER CONTROLS
-============================================================ */
-
 .layer_control {
     width: 29px;
     height: 29px;
@@ -368,19 +339,9 @@ body,
     color: #222;
 }
 
-
-/* ============================================================
-   DELETE LAYER
-============================================================ */
-
 .delete_layer:hover {
     background: #ffcccc;
 }
-
-
-/* ============================================================
-   LAYER SCROLLBAR
-============================================================ */
 
 .layers_list::-webkit-scrollbar {
     width: 8px;
@@ -399,11 +360,6 @@ body,
 .layers_list::-webkit-scrollbar-thumb:hover {
     background: #777777;
 }
-
-
-/* ============================================================
-   SHAPE MENU
-============================================================ */
 
 .shape_menu {
     position: relative;
@@ -488,18 +444,9 @@ body,
 }
 
 
-/* ============================================================
-   TOOLBAR
-============================================================ */
-
 .bottom_toolbar {
     overflow: visible;
 }
-
-
-/* ============================================================
-   IMAGE BUTTON
-============================================================ */
 
 .image_button {
     padding: 8px 12px;
@@ -523,4 +470,45 @@ body,
 
 .image_button input {
     display: none;
+}
+
+.export_section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid #222;
+}
+
+.export_section h2 {
+    margin: 0 0 10px;
+    font-family: Arial, sans-serif;
+}
+
+.export_button {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 2px solid #222;
+    border-radius: 7px;
+    background: #4169E1;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.export_button:hover {
+    background: #3157c7;
+}
+
+.export_button:active {
+    transform: translateY(1px);
+}
+
+.export_hint {
+    margin: 8px 0 0;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #555;
 }

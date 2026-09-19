@@ -4820,14 +4820,10 @@ const handleElementMouseDown =
                     font-family: Arial, sans-serif;
                 }
             `}</style>
-            {}
 
             <div className="drawing_title">
                 Drawing Lab
             </div>
-
-
-            {}
 
             <Stage
 
@@ -4885,8 +4881,6 @@ const handleElementMouseDown =
 
             >
 
-                {}
-
                 <Layer listening={false}>
                     <Rect
                         x={0}
@@ -4897,7 +4891,6 @@ const handleElementMouseDown =
                     />
                 </Layer>
 
-                {}
 
                 {layers.map(
                     layer => (
@@ -4927,8 +4920,6 @@ const handleElementMouseDown =
                     )
                 )}
 
-
-                {}
 
                 <Layer
                     ref={selectionUiLayerRef}
@@ -4991,8 +4982,6 @@ const handleElementMouseDown =
                 </Layer>
 
 
-                {}
-
                 <Layer
                     ref={transformerUiLayerRef}
                 >
@@ -5053,8 +5042,6 @@ const handleElementMouseDown =
 
             </Stage>
 
-
-            {}
 
             {editingText !== null &&
                 objects[
@@ -5204,8 +5191,6 @@ const handleElementMouseDown =
                 )
             }
 
-
-            {}
 
             {editingNote !== null &&
                 objects[
@@ -5357,8 +5342,6 @@ const handleElementMouseDown =
             }
 
 
-            {}
-
             <div
 
                 className={
@@ -5430,9 +5413,6 @@ const handleElementMouseDown =
                     </div>
 
                 )}
-
-
-                {}
 
                 <div className="layers_section">
 
@@ -5563,14 +5543,10 @@ const handleElementMouseDown =
 
                                         >
 
-                                            {}
 
                                             <span className="layer_drag_handle">
                                                 ⋮⋮
                                             </span>
-
-
-                                            {}
 
                                             <button
 
@@ -5606,8 +5582,6 @@ const handleElementMouseDown =
                                                 }
                                             </button>
 
-
-                                            {}
 
                                             {editingLayerId ===
                                                 layer.id ? (
@@ -5681,7 +5655,6 @@ const handleElementMouseDown =
                                             )}
 
 
-                                            {}
 
                                             <button
 
@@ -5721,27 +5694,24 @@ const handleElementMouseDown =
                     </div>
 
                 </div>
+				
+<div className="export_section">
+    <h2>Export</h2>
 
-                {}
+    <button
+        type="button"
+        className="export_button"
+        onClick={exportCanvas}
+    >
+        Export Canvas
+    </button>
 
-                <div className="export_section">
+    <p className="export_hint">
+        Export and Download your canvas as a image
+    </p>
+</div>
 
-                    <button
-                        type="button"
-                        className="export_button"
-                        onClick={exportCanvas}
-                    >
-                        Export Canvas
-                    </button>
-
-                    <p className="export_hint">
-                        Export the visible canvas as a PNG image.
-                    </p>
-
-                </div>
-
-            </div>
-
+</div>
 
             {layerDeleteConfirm && (
                 <div
@@ -5810,8 +5780,6 @@ const handleElementMouseDown =
                 </div>
             )}
 
-            {}
-
             <div className="bottom_toolbar">
 
                 <button
@@ -5867,7 +5835,7 @@ const handleElementMouseDown =
                     }}
 
                 >
-                    🖐 Drag
+                   Drag
                 </button>
 
 
@@ -5911,9 +5879,6 @@ const handleElementMouseDown =
                 >
                     Eraser
                 </button>
-
-
-                {}
 
                 <div className="shape_menu">
 
@@ -6178,9 +6143,6 @@ const handleElementMouseDown =
 
                 </div>
 
-
-                {}
-
                 <button
                     type="button"
                     className={
@@ -6193,9 +6155,6 @@ const handleElementMouseDown =
                     Text
                 </button>
 
-
-                {}
-
                 <button
                     type="button"
                     className={
@@ -6207,9 +6166,6 @@ const handleElementMouseDown =
                 >
                     Note
                 </button>
-
-
-                {}
 
                 <label className="image_button">
 
@@ -6228,9 +6184,6 @@ const handleElementMouseDown =
                     />
 
                 </label>
-
-
-                {}
 
                 <label>
 
@@ -6254,9 +6207,6 @@ const handleElementMouseDown =
                     />
 
                 </label>
-
-
-                {}
 
                 <label>
 
