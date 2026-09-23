@@ -361,6 +361,12 @@ function App() {
             height: window.innerHeight - 90
         });
 
+    const [isMobile, setIsMobile] =
+        useState(() => window.innerWidth <= 768);
+
+    const [mobilePanelOpen, setMobilePanelOpen] =
+        useState(false);
+
 
     
     
@@ -371,6 +377,13 @@ function App() {
 
     const MIN_ZOOM = 0.25;
     const MAX_ZOOM = 4;
+
+    const canvasWidth =
+        Math.max(
+            0,
+            stageSize.width -
+            (isMobile ? 0 : referenceWidth)
+        );
 
 
 
@@ -436,6 +449,10 @@ function App() {
                 width: window.innerWidth,
                 height: window.innerHeight - 90
             });
+
+            setIsMobile(
+                window.innerWidth <= 768
+            );
 
         };
 
@@ -1055,15 +1072,6 @@ function App() {
     };
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     const handleLayerDragStart =
         (e, layerId) => {
@@ -1278,6 +1286,490 @@ const handleLayerDragEnd = () => {
     };
 
 
+    const eraseAtPosition =
+        (pos, previousPos = null) => {
+
+            if (!pos) return;
+
+            const stage = stageRef.current;
+            if (!stage) return;
+
+            const stageTransform =
+                stage.getAbsoluteTransform().copy();
+
+            const currentAbsolute =
+                stageTransform.point(pos);
+
+            const previousAbsolute =
+                previousPos
+                    ? stageTransform.point(previousPos)
+                    : currentAbsolute;
+
+            const stageScale =
+                Math.max(
+                    0.0001,
+                    Math.abs(stage.scaleX() || 1)
+                );
+
+            const eraserRadius =
+                Math.max(
+                    8,
+                    brushSize * 0.85
+                ) * stageScale;
+
+            const pointToSegmentDistance =
+                (px, py, ax, ay, bx, by) => {
+
+                    const abX = bx - ax;
+                    const abY = by - ay;
+                    const apX = px - ax;
+                    const apY = py - ay;
+
+                    const lengthSquared =
+                        abX * abX +
+                        abY * abY;
+
+                    if (lengthSquared === 0) {
+                        return Math.hypot(
+                            px - ax,
+                            py - ay
+                        );
+                    }
+
+                    const t =
+                        Math.max(
+                            0,
+                            Math.min(
+                                1,
+                                (
+                                    apX * abX +
+                                    apY * abY
+                                ) / lengthSquared
+                            )
+                        );
+
+                    return Math.hypot(
+                        px -
+                            (ax + abX * t),
+                        py -
+                            (ay + abY * t)
+                    );
+                };
+
+            // Treat the eraser's movement between frames as one continuous
+            // capsule. This prevents gaps when the pointer moves quickly.
+            const distanceToEraserPath =
+                point => {
+
+                    return pointToSegmentDistance(
+                        point.x,
+                        point.y,
+                        previousAbsolute.x,
+                        previousAbsolute.y,
+                        currentAbsolute.x,
+                        currentAbsolute.y
+                    );
+                };
+
+            /*
+             * Returns the exact entry/exit positions along a straight
+             * vector segment that intersect the eraser capsule.
+             */
+            const getErasedInterval =
+                (a, b, radius) => {
+
+                    const distanceAt =
+                        t => {
+
+                            const point = {
+                                x:
+                                    a.x +
+                                    (b.x - a.x) * t,
+                                y:
+                                    a.y +
+                                    (b.y - a.y) * t
+                            };
+
+                            return distanceToEraserPath(
+                                point
+                            );
+                        };
+
+                    const threshold = radius;
+
+                    const startInside =
+                        distanceAt(0) <= threshold;
+
+                    const endInside =
+                        distanceAt(1) <= threshold;
+
+                    // Distance to a capsule along a straight segment is
+                    // convex. Find its minimum first.
+                    let low = 0;
+                    let high = 1;
+
+                    for (
+                        let i = 0;
+                        i < 18;
+                        i++
+                    ) {
+
+                        const left =
+                            low +
+                            (high - low) / 3;
+
+                        const right =
+                            high -
+                            (high - low) / 3;
+
+                        if (
+                            distanceAt(left) <
+                            distanceAt(right)
+                        ) {
+                            high = right;
+                        } else {
+                            low = left;
+                        }
+                    }
+
+                    const minimumT =
+                        (low + high) / 2;
+
+                    if (
+                        distanceAt(minimumT) >
+                        threshold
+                    ) {
+                        return null;
+                    }
+
+                    const findBoundary =
+                        (
+                            leftStart,
+                            rightStart,
+                            boundaryIsInside
+                        ) => {
+
+                            let left = leftStart;
+                            let right = rightStart;
+
+                            for (
+                                let i = 0;
+                                i < 24;
+                                i++
+                            ) {
+
+                                const middle =
+                                    (left + right) / 2;
+
+                                const inside =
+                                    distanceAt(
+                                        middle
+                                    ) <= threshold;
+
+                                if (
+                                    inside ===
+                                    boundaryIsInside
+                                ) {
+                                    right = middle;
+                                } else {
+                                    left = middle;
+                                }
+                            }
+
+                            return (
+                                left +
+                                right
+                            ) / 2;
+                        };
+
+                    let entry = 0;
+                    let exit = 1;
+
+                    if (!startInside) {
+                        entry =
+                            findBoundary(
+                                0,
+                                minimumT,
+                                true
+                            );
+                    }
+
+                    if (!endInside) {
+                        exit =
+                            findBoundary(
+                                minimumT,
+                                1,
+                                false
+                            );
+                    }
+
+                    return {
+                        entry:
+                            Math.max(
+                                0,
+                                Math.min(1, entry)
+                            ),
+                        exit:
+                            Math.max(
+                                0,
+                                Math.min(1, exit)
+                            )
+                    };
+                };
+
+            let anythingChanged = false;
+            const nextLines = [];
+
+            lines.forEach(
+                (line, index) => {
+
+                    if (
+                        getItemLayerId(line) !==
+                        activeLayerId
+                    ) {
+                        nextLines.push(line);
+                        return;
+                    }
+
+                    const layer =
+                        getLayerById(
+                            getItemLayerId(line)
+                        );
+
+                    if (
+                        !layer ||
+                        !layer.visible
+                    ) {
+                        nextLines.push(line);
+                        return;
+                    }
+
+                    const node =
+                        nodeRefs.current[
+                            makeKey(
+                                "line",
+                                index
+                            )
+                        ];
+
+                    if (
+                        !node ||
+                        line.points.length < 4
+                    ) {
+                        nextLines.push(line);
+                        return;
+                    }
+
+                    const points = line.points;
+                    const transform =
+                        node.getAbsoluteTransform();
+
+                    const lineScale =
+                        Math.max(
+                            Math.abs(
+                                node.scaleX() || 1
+                            ),
+                            Math.abs(
+                                node.scaleY() || 1
+                            )
+                        );
+
+                    const effectiveRadius =
+                        eraserRadius +
+                        Math.max(
+                            0,
+                            (
+                                line.strokeWidth ||
+                                1
+                            ) *
+                            lineScale /
+                            2
+                        ) +
+                        (2 * stageScale);
+
+                    const pieces = [];
+                    let currentPiece = [];
+                    let lineChanged = false;
+
+                    const addLocalPoint =
+                        (x, y) => {
+
+                            if (
+                                currentPiece.length === 0
+                            ) {
+                                currentPiece.push(
+                                    x,
+                                    y
+                                );
+                                return;
+                            }
+
+                            const previousX =
+                                currentPiece[
+                                    currentPiece.length - 2
+                                ];
+
+                            const previousY =
+                                currentPiece[
+                                    currentPiece.length - 1
+                                ];
+
+                            if (
+                                Math.hypot(
+                                    x - previousX,
+                                    y - previousY
+                                ) > 0.001
+                            ) {
+                                currentPiece.push(
+                                    x,
+                                    y
+                                );
+                            }
+                        };
+
+                    const finishPiece =
+                        () => {
+
+                            if (
+                                currentPiece.length >= 4
+                            ) {
+                                pieces.push(
+                                    currentPiece
+                                );
+                            }
+
+                            currentPiece = [];
+                        };
+
+                    for (
+                        let i = 0;
+                        i < points.length - 2;
+                        i += 2
+                    ) {
+
+                        const ax = points[i];
+                        const ay = points[i + 1];
+                        const bx = points[i + 2];
+                        const by = points[i + 3];
+
+                        const absoluteA =
+                            transform.point({
+                                x: ax,
+                                y: ay
+                            });
+
+                        const absoluteB =
+                            transform.point({
+                                x: bx,
+                                y: by
+                            });
+
+                        const erased =
+                            getErasedInterval(
+                                absoluteA,
+                                absoluteB,
+                                effectiveRadius
+                            );
+
+                        if (!erased) {
+
+                            addLocalPoint(
+                                ax,
+                                ay
+                            );
+
+                            addLocalPoint(
+                                bx,
+                                by
+                            );
+
+                            continue;
+                        }
+
+                        lineChanged = true;
+                        anythingChanged = true;
+
+                        // Keep the exact portion before the erased area.
+                        if (
+                            erased.entry > 0
+                        ) {
+
+                            addLocalPoint(
+                                ax,
+                                ay
+                            );
+
+                            addLocalPoint(
+                                ax +
+                                    (bx - ax) *
+                                    erased.entry,
+                                ay +
+                                    (by - ay) *
+                                    erased.entry
+                            );
+
+                            finishPiece();
+
+                        } else {
+                            finishPiece();
+                        }
+
+                        // Keep the exact portion after the erased area.
+                        if (
+                            erased.exit < 1
+                        ) {
+
+                            addLocalPoint(
+                                ax +
+                                    (bx - ax) *
+                                    erased.exit,
+                                ay +
+                                    (by - ay) *
+                                    erased.exit
+                            );
+
+                            addLocalPoint(
+                                bx,
+                                by
+                            );
+
+                        } else {
+                            finishPiece();
+                        }
+                    }
+
+                    finishPiece();
+
+                    if (!lineChanged) {
+                        nextLines.push(line);
+                        return;
+                    }
+
+                    pieces.forEach(
+                        piece => {
+
+                            if (
+                                piece.length >= 4
+                            ) {
+                                nextLines.push({
+                                    ...line,
+                                    points: piece
+                                });
+                            }
+                        }
+                    );
+                }
+            );
+
+            if (!anythingChanged) return;
+
+            setLines(nextLines);
+            setSelectedElements([]);
+            transformerRef.current?.nodes([]);
+            nodeRefs.current = {};
+        };
+
+
     const startFreehandDrawing =
         () => {
 
@@ -1287,7 +1779,6 @@ const handleLayerDragEnd = () => {
             ) {
                 return;
             }
-
 
             const activeLayer =
                 getLayerById(
@@ -1301,7 +1792,6 @@ const handleLayerDragEnd = () => {
                 return;
             }
 
-
             const pos =
                 getPointerPosition();
 
@@ -1310,9 +1800,19 @@ const handleLayerDragEnd = () => {
             }
 
             saveHistory();
-
             setIsDrawing(true);
 
+            if (tool === "eraser") {
+                eraserPreviousPositionRef.current =
+                    pos;
+
+                eraseAtPosition(
+                    pos,
+                    pos
+                );
+
+                return;
+            }
 
             const newLine = {
 
@@ -1321,27 +1821,28 @@ const handleLayerDragEnd = () => {
 
                 points: [
                     pos.x,
-                    pos.y
+                    pos.y,
+                    pos.x + 0.01,
+                    pos.y + 0.01
                 ],
 
                 stroke:
-                    tool === "eraser"
-                        ? "#000000"
-                        : color,
+                    color,
 
                 strokeWidth:
                     brushSize,
 
                 globalCompositeOperation:
-                    tool === "eraser"
-                        ? "destination-out"
-                        : "source-over",
+                    "source-over",
 
                 lineCap:
                     "round",
 
                 lineJoin:
                     "round",
+
+                tension:
+                    0.45,
 
                 x: 0,
                 y: 0,
@@ -1362,12 +1863,11 @@ const handleLayerDragEnd = () => {
         };
 
 
-    const draw = () => {
+    const draw = (pointer = null) => {
 
         if (!isDrawing) {
             return;
         }
-
 
         if (
             tool !== "pen" &&
@@ -1376,14 +1876,29 @@ const handleLayerDragEnd = () => {
             return;
         }
 
-
         const pos =
+            pointer ||
             getPointerPosition();
 
         if (!pos) {
             return;
         }
 
+        if (tool === "eraser") {
+            const previous =
+                eraserPreviousPositionRef.current ||
+                pos;
+
+            eraseAtPosition(
+                pos,
+                previous
+            );
+
+            eraserPreviousPositionRef.current =
+                pos;
+
+            return;
+        }
 
         setLines(prev => {
 
@@ -1393,26 +1908,50 @@ const handleLayerDragEnd = () => {
                 return prev;
             }
 
-
-            const updated = [
-                ...prev
-            ];
-
+            const lastIndex =
+                prev.length - 1;
 
             const last =
-                updated[
-                    updated.length - 1
-                ];
+                prev[lastIndex];
 
+            const points =
+                last.points;
 
-            last.points = [
-                ...last.points,
+            const lastX =
+                points[points.length - 2];
+
+            const lastY =
+                points[points.length - 1];
+
+            const dx =
+                pos.x - lastX;
+
+            const dy =
+                pos.y - lastY;
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+            if (distance < 1.2) {
+                return prev;
+            }
+
+            const newPoints = [
+                ...points,
                 pos.x,
                 pos.y
             ];
 
-
-            return updated;
+            return [
+                ...prev.slice(0, lastIndex),
+                {
+                    ...last,
+                    points: newPoints
+                }
+            ];
 
         });
 
@@ -1427,12 +1966,12 @@ const handleLayerDragEnd = () => {
 
         setIsDrawing(false);
 
+        eraserPreviousPositionRef.current =
+            null;
+
     };
 
 
-    
-    
-    
     const getScreenPosition = (x, y) => {
 
         const stage = stageRef.current;
@@ -1577,6 +2116,33 @@ const handleLayerDragEnd = () => {
         setActiveLayerId(layerId);
         setLayerContextMenu(null);
     };
+
+    const openMobileLayerMenu = () => {
+
+        if (
+            selectedElements.length ===
+            0
+        ) {
+            return;
+        }
+
+        setLayerContextMenu({
+            x:
+                Math.max(
+                    12,
+                    window.innerWidth / 2 - 110
+                ),
+            y:
+                Math.max(
+                    12,
+                    window.innerHeight / 2 - 130
+                ),
+            selection:
+                selectedElements
+        });
+
+    };
+
 
     const closeLayerContextMenu = () => {
         setLayerContextMenu(null);
@@ -1834,6 +2400,33 @@ const handleElementMouseDown =
         };
 
 
+    const drawFrameRef =
+        useRef(null);
+
+    const pendingPointerRef =
+        useRef(null);
+
+    const eraserPreviousPositionRef =
+        useRef(null);
+
+    const transformerDragRef =
+        useRef(null);
+
+
+    useEffect(() => {
+        return () => {
+            if (
+                drawFrameRef.current !==
+                null
+            ) {
+                cancelAnimationFrame(
+                    drawFrameRef.current
+                );
+            }
+        };
+    }, []);
+
+
     const handleStageMouseMove =
         e => {
 
@@ -1868,18 +2461,38 @@ const handleElementMouseDown =
                 tool === "eraser"
             ) {
 
-                draw();
+                pendingPointerRef.current =
+                    getPointerPosition();
+
+                if (
+                    drawFrameRef.current ===
+                    null
+                ) {
+
+                    drawFrameRef.current =
+                        requestAnimationFrame(
+                            () => {
+
+                                drawFrameRef.current =
+                                    null;
+
+                                const pointer =
+                                    pendingPointerRef.current;
+
+                                pendingPointerRef.current =
+                                    null;
+
+                                if (pointer) {
+                                    draw(pointer);
+                                }
+
+                            }
+                        );
+
+                }
 
                 return;
 
-            }
-
-
-            if (
-                tool !== "select" ||
-                !isSelecting.current
-            ) {
-                return;
             }
 
 
@@ -2001,6 +2614,13 @@ const handleElementMouseDown =
 
         lines.forEach(
             (line, index) => {
+
+                if (
+                    line.globalCompositeOperation ===
+                    "destination-out"
+                ) {
+                    return;
+                }
 
                 const layer =
                     getLayerById(
@@ -2519,6 +3139,211 @@ const handleElementMouseDown =
         lines,
         layers
     ]);
+
+
+    const handleTransformerDragStart =
+        e => {
+
+            if (
+                selectedElements.length <
+                2
+            ) {
+                return;
+            }
+
+            const transformer =
+                e.target;
+
+            const positions =
+                new Map();
+
+            selectedElements.forEach(
+                element => {
+
+                    const key =
+                        makeKey(
+                            element.type,
+                            element.index
+                        );
+
+                    const node =
+                        nodeRefs.current[key];
+
+                    if (!node) {
+                        return;
+                    }
+
+                    positions.set(
+                        key,
+                        {
+                            x: node.x(),
+                            y: node.y()
+                        }
+                    );
+
+                }
+            );
+
+            transformerDragRef.current = {
+                startX: transformer.x(),
+                startY: transformer.y(),
+                positions
+            };
+
+        };
+
+
+    const handleTransformerDragMove =
+        e => {
+
+            const drag =
+                transformerDragRef.current;
+
+            if (!drag) {
+                return;
+            }
+
+            const transformer =
+                e.target;
+
+            const dx =
+                transformer.x() -
+                drag.startX;
+
+            const dy =
+                transformer.y() -
+                drag.startY;
+
+            drag.positions.forEach(
+                (position, key) => {
+
+                    const node =
+                        nodeRefs.current[key];
+
+                    if (!node) {
+                        return;
+                    }
+
+                    node.position({
+                        x:
+                            position.x +
+                            dx,
+                        y:
+                            position.y +
+                            dy
+                    });
+
+                }
+            );
+
+            transformer
+                .getLayer()
+                ?.batchDraw();
+
+        };
+
+
+    const handleTransformerDragEnd =
+        e => {
+
+            const drag =
+                transformerDragRef.current;
+
+            if (!drag) {
+                return;
+            }
+
+            saveHistory();
+
+            setObjects(prev =>
+                prev.map(
+                    (object, index) => {
+
+                        if (
+                            !selectedElements.some(
+                                element =>
+                                    element.type ===
+                                        "object" &&
+                                    element.index ===
+                                        index
+                            )
+                        ) {
+                            return object;
+                        }
+
+                        const node =
+                            nodeRefs.current[
+                                makeKey(
+                                    "object",
+                                    index
+                                )
+                            ];
+
+                        if (!node) {
+                            return object;
+                        }
+
+                        return {
+                            ...object,
+                            x: node.x(),
+                            y: node.y()
+                        };
+
+                    }
+                )
+            );
+
+            setLines(prev =>
+                prev.map(
+                    (line, index) => {
+
+                        if (
+                            !selectedElements.some(
+                                element =>
+                                    element.type ===
+                                        "line" &&
+                                    element.index ===
+                                        index
+                            )
+                        ) {
+                            return line;
+                        }
+
+                        const node =
+                            nodeRefs.current[
+                                makeKey(
+                                    "line",
+                                    index
+                                )
+                            ];
+
+                        if (!node) {
+                            return line;
+                        }
+
+                        return {
+                            ...line,
+                            x: node.x(),
+                            y: node.y()
+                        };
+
+                    }
+                )
+            );
+
+            e.target.position({
+                x: drag.startX,
+                y: drag.startY
+            });
+
+            transformerDragRef.current =
+                null;
+
+            e.target
+                .getLayer()
+                ?.batchDraw();
+
+        };
 
 
     const handleTransformEnd =
@@ -4462,8 +5287,7 @@ const handleElementMouseDown =
 
     const renderLayerLines =
         layerId => {
-
-            return lines
+return lines
                 .map(
                     (line, index) => ({
                         line,
@@ -4527,6 +5351,17 @@ const handleElementMouseDown =
                                 lineCap="round"
 
                                 lineJoin="round"
+
+                                tension={
+                                    line.tension ??
+                                    0.45
+                                }
+
+                                listening={
+                                    tool === "select" &&
+                                    line.globalCompositeOperation !==
+                                        "destination-out"
+                                }
 
                                 globalCompositeOperation={
                                     line.globalCompositeOperation
@@ -4694,6 +5529,10 @@ const handleElementMouseDown =
                     cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNOCAyMmwxMC0xNCA5IDctMTAgMTR6IiBmaWxsPSIjYjljMGM4IiBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik04IDIybDkgNyIgc3Ryb2tlPSIjNzc3IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTggOGw5IDciIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+") 6 26, crosshair !important;
                 }
 
+                .drawing_lab.eraser_cursor .konvajs-content {
+                    cursor: crosshair !important;
+                }
+
                 .layer_context_menu {
                     min-width: 190px;
                     padding: 6px;
@@ -4819,6 +5658,130 @@ const handleElementMouseDown =
                     font-weight: bold;
                     font-family: Arial, sans-serif;
                 }
+
+                .mobile_panel_button,
+                .mobile_panel_close {
+                    display: none;
+                }
+
+                .mobile_reference_header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 10px;
+                }
+
+                @media (max-width: 768px) {
+                    .drawing_lab {
+                        width: 100vw !important;
+                        height: 100dvh !important;
+                        min-height: 100dvh !important;
+                        overflow: hidden !important;
+                        touch-action: auto !important;
+                    }
+
+                    .drawing_lab canvas {
+                        touch-action: none !important;
+                    }
+
+                    .drawing_title {
+                        height: 44px !important;
+                        min-height: 44px !important;
+                        padding: 8px 12px !important;
+                        font-size: 18px !important;
+                        line-height: 28px !important;
+                    }
+
+                    .reference_panel {
+                        position: fixed !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        bottom: 58px !important;
+                        top: auto !important;
+                        width: 100vw !important;
+                        max-width: 100vw !important;
+                        height: min(62dvh, 430px) !important;
+                        max-height: 62dvh !important;
+                        overflow-y: auto !important;
+                        z-index: 4000 !important;
+                        box-sizing: border-box !important;
+                        transition: transform 0.22s ease !important;
+                        -webkit-overflow-scrolling: touch !important;
+                    }
+
+                    .reference_panel.mobile_open {
+                        transform: translateY(0) !important;
+                    }
+
+                    .reference_panel.mobile_closed {
+                        transform: translateY(calc(100% - 48px)) !important;
+                    }
+
+                    .reference_resize {
+                        display: none !important;
+                    }
+
+                    .mobile_reference_header {
+                        position: sticky;
+                        top: 0;
+                        z-index: 2;
+                        padding-bottom: 8px;
+                        background: inherit;
+                    }
+
+                    .mobile_panel_close,
+                    .mobile_panel_button {
+                        display: inline-flex !important;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 36px;
+                        padding: 7px 11px;
+                        border: 2px solid #222;
+                        border-radius: 7px;
+                        background: #fff;
+                        color: #222;
+                        font-weight: bold;
+                        font-size: 12px;
+                        white-space: nowrap;
+                        touch-action: manipulation;
+                    }
+
+                    .bottom_toolbar {
+                        position: fixed !important;
+                        left: 0 !important;
+                        right: 0 !important;
+                        bottom: 0 !important;
+                        width: 100vw !important;
+                        max-width: 100vw !important;
+                        min-height: 58px !important;
+                        height: auto !important;
+                        padding: 7px !important;
+                        display: flex !important;
+                        flex-wrap: nowrap !important;
+                        align-items: center !important;
+                        gap: 7px !important;
+                        overflow-x: auto !important;
+                        overflow-y: hidden !important;
+                        z-index: 4500 !important;
+                        -webkit-overflow-scrolling: touch !important;
+                        touch-action: pan-x !important;
+                    }
+
+                    .bottom_toolbar > * {
+                        flex: 0 0 auto !important;
+                    }
+
+                    .bottom_toolbar button,
+                    .bottom_toolbar label {
+                        min-height: 40px !important;
+                        white-space: nowrap !important;
+                        touch-action: manipulation !important;
+                    }
+
+                    .layer_context_menu {
+                        max-width: calc(100vw - 24px) !important;
+                    }
+                }
             `}</style>
 
             <div className="drawing_title">
@@ -4832,11 +5795,7 @@ const handleElementMouseDown =
                 }
 
                 width={
-                    Math.max(
-                        0,
-                        stageSize.width -
-                        referenceWidth
-                    )
+                    canvasWidth
                 }
 
                 height={
@@ -4885,7 +5844,7 @@ const handleElementMouseDown =
                     <Rect
                         x={0}
                         y={0}
-                        width={Math.max(0, stageSize.width - referenceWidth)}
+                        width={canvasWidth}
                         height={stageSize.height}
                         fill="white"
                     />
@@ -4906,8 +5865,7 @@ const handleElementMouseDown =
                             }
 
                         >
-
-                            {renderLayerLines(
+{renderLayerLines(
                                 layer.id
                             )}
 
@@ -5004,6 +5962,23 @@ const handleElementMouseDown =
                             true
                         }
 
+                        draggable={
+                            selectedElements.length >
+                            1
+                        }
+
+                        onDragStart={
+                            handleTransformerDragStart
+                        }
+
+                        onDragMove={
+                            handleTransformerDragMove
+                        }
+
+                        onDragEnd={
+                            handleTransformerDragEnd
+                        }
+
                         boundBoxFunc={
                             (
                                 oldBox,
@@ -5030,6 +6005,23 @@ const handleElementMouseDown =
 
                         onTransformEnd={
                             handleTransformEnd
+                        }
+
+                        onMouseDown={
+                            e => {
+                                if (
+                                    e.evt?.button === 2
+                                ) {
+                                    e.evt.preventDefault();
+                                    e.cancelBubble = true;
+                                }
+                            }
+                        }
+
+                        onTouchStart={
+                            e => {
+                                e.cancelBubble = true;
+                            }
                         }
 
                         onContextMenu={
@@ -5345,7 +6337,13 @@ const handleElementMouseDown =
             <div
 
                 className={
-                    "reference_panel"
+                    isMobile
+                        ? (
+                            mobilePanelOpen
+                                ? "reference_panel mobile_open"
+                                : "reference_panel mobile_closed"
+                        )
+                        : "reference_panel"
                 }
 
                 style={{
@@ -5368,9 +6366,23 @@ const handleElementMouseDown =
                 />
 
 
-                <h2>
-                    Reference
-                </h2>
+                <div className="mobile_reference_header">
+                    <h2>
+                        Reference
+                    </h2>
+
+                    {isMobile && (
+                        <button
+                            type="button"
+                            className="mobile_panel_close"
+                            onClick={() =>
+                                setMobilePanelOpen(false)
+                            }
+                        >
+                            Close
+                        </button>
+                    )}
+                </div>
 
 
                 <label className="reference_upload">
@@ -5781,6 +6793,32 @@ const handleElementMouseDown =
             )}
 
             <div className="bottom_toolbar">
+
+                {isMobile && selectedElements.length > 0 && (
+                    <button
+                        type="button"
+                        className="mobile_panel_button"
+                        onClick={openMobileLayerMenu}
+                    >
+                        Move Layer
+                    </button>
+                )}
+
+                {isMobile && (
+                    <button
+                        type="button"
+                        className="mobile_panel_button"
+                        onClick={() =>
+                            setMobilePanelOpen(
+                                prev => !prev
+                            )
+                        }
+                    >
+                        {mobilePanelOpen
+                            ? "Close Panel"
+                            : "Layers / Ref"}
+                    </button>
+                )}
 
                 <button
                     type="button"
