@@ -4,117 +4,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>La Peace Lab</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div id="loadingScreen">
+    <!-- =========================
+         LOADING SCREEN
+    ========================== -->
 
-    <div id="loadingContent">
+    <div id="loadingScreen">
 
-        <div id="loadingTopText">
-            Welcome to La Peace Lab
-        </div>
+        <div id="loadingContent">
 
-<div id="loadingImageWrapper">
-    <img id="loadingImage" src="images/lemon.png" alt="La Peace Lab">
-</div>
+            <div id="loadingTopText">
+                Welcome to La Peace Lab
+            </div>
 
-        <div id="loadingBarContainer">
-            <div id="loadingBar"></div>
-        </div>
+            <img
+                id="loadingImage"
+                src="images/lemon.png"
+                alt="La Peace Lab"
+            >
 
-        <div id="loadingText">
-            tba
+            <div id="loadingBarContainer">
+                <div id="loadingBar"></div>
+            </div>
+
+            <div id="loadingText">
+                Preparing the laboratory...
+            </div>
+
         </div>
 
     </div>
 
-</div>
 
-    <div class="menu">
+    <!-- =========================
+         DASHBOARD
+    ========================== -->
 
-        <header class="header">
+    <div class="dashboard">
 
-            <h1 id="page_title">La Peace Lab</h1>
 
-            <div class="toggle_theme">
+        <!-- =====================
+             SIDEBAR
+        ====================== -->
 
-                <button id="light_mode_button"
+        <aside class="sidebar">
+
+            <div class="sidebar_brand">
+
+                <div class="brand_image">
+                    <img
+                        src="images/lemon.png"
+                        alt="La Peace Lab"
+                    >
+                </div>
+
+                <div class="brand_text">
+                    <strong>LA PEACE</strong>
+                    <span>LAB</span>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar_navigation">
+
+                <a
+                    href="index.html"
+                    class="sidebar_link active"
+                >
+                    <span class="sidebar_icon">⌂</span>
+                    <span id="home_link">Home</span>
+                </a>
+
+
+                <a
+                    href="music-maker/tutorial.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">♫</span>
+                    <span id="music_link">Music Maker</span>
+                </a>
+
+
+                <a
+                    href="gallery/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">▣</span>
+                    <span id="gallery_link">Gallery</span>
+                </a>
+
+
+                <a
+                    href="story/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">▤</span>
+                    <span id="story_link">Our Story</span>
+                </a>
+
+
+                <a
+                    href="mission/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">★</span>
+                    <span id="mission_link">Our Mission</span>
+                </a>
+
+
+                <a
+                    href="credits/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">ⓘ</span>
+                    <span id="credits_link">Credits</span>
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar_bottom">
+
+                <a
+                    href="story/index.html"
+                    class="sidebar_small_link"
+                >
+                    <span>?</span>
+                    <span>About</span>
+                </a>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =====================
+             MAIN AREA
+        ====================== -->
+
+        <main class="main_area">
+
+
+            <!-- TOP BAR -->
+
+            <header class="top_bar">
+
+                <button
+                    class="back_button"
+                    type="button"
+                    onclick="window.history.back()"
+                >
+                    ←
+                </button>
+
+
+                <div class="top_bar_spacer"></div>
+
+
+                <div class="top_controls">
+
+                    <select id="language_selector">
+                        <option value="en">English</option>
+                        <option value="id">Indonesian</option>
+                    </select>
+
+
+                    <button
+                        id="light_mode_button"
                         class="theme_button active"
-                        type="button">
-                    🌞
-                </button>
+                        type="button"
+                        title="Light mode"
+                    >
+                        ☀
+                    </button>
 
-                <button id="dark_mode_button"
+
+                    <button
+                        id="dark_mode_button"
                         class="theme_button"
-                        type="button">
-                    🌙
-                </button>
+                        type="button"
+                        title="Dark mode"
+                    >
+                        ☾
+                    </button>
 
-            </div>
+                </div>
 
-        </header>
-
-        <nav class="navigation">
-
-            <a href="credits/index.html" id="credits_link">Credits</a>
-            <a href="story/index.html" id="story_link">The Story</a>
-            <a href="gallery/index.html" id="gallery_link">Gallery</a>
-            <a href="mission/index.html" id="mission_link">Our Mission</a>
-            <a href="music-maker/tutorial.html" id="music_link">Music Maker</a>
-
-        </nav>
-
-        <select id="language_selector">
-            <option value="en">English</option>
-            <option value="id">Indonesian</option>
-        </select>
+            </header>
 
 
-        <main class="apps">
 
-            <div class="app-card music-maker">
+            <!-- CONTENT -->
 
-                <a href="music-maker/tutorial.html">
+            <div class="content">
 
-                    <h2>Music</h2>
-                    <p>Create your own music</p>
 
-                </a>
+                <section class="welcome_section">
 
-            </div>
+                    <h1 id="page_title">
+                        La Peace Lab
+                    </h1>
 
-            <div class="app-card app-two">
+                    <p id="welcome_text">
+					A Door&David Project
+                    </p>
 
-                <a href="drawing-hub/dist/index.html">
+                </section>
 
-                    <h2>Draw</h2>
-                    <p>Create your own drawings</p>
 
-                </a>
 
-            </div>
+                <!-- APPS -->
 
-            <div class="app-card app-three">
+                <section class="apps_section">
 
-                <h2>Coming Soon</h2>
-                <p>Future App</p>
+                    <div class="section_heading">
 
-            </div>
+                        <h2 id="apps_title">
+                            Creative tools
+                        </h2>
 
-            <div class="app-card app-four">
+                        <span>
+                            LEM.CO
+                        </span>
 
-                <h2>Coming Soon</h2>
-                <p>Future App</p>
+                    </div>
+
+
+                    <div class="apps">
+
+
+                        <!-- MUSIC -->
+
+                        <a
+                            href="music-maker/tutorial.html"
+                            class="app_card music-maker"
+                        >
+
+                            <div class="app_card_icon">
+                                ♫
+                            </div>
+
+                            <div class="app_card_content">
+
+                                <h2 id="music_title">
+                                    Music
+                                </h2>
+
+                                <p id="music_description">
+                                    Create your own music
+                                </p>
+
+                            </div>
+
+                            <div class="app_card_arrow">
+                                →
+                            </div>
+
+                        </a>
+
+
+
+                        <!-- DRAW -->
+
+                        <a
+                            href="drawing-hub/dist/index.html"
+                            class="app_card drawing"
+                        >
+
+                            <div class="app_card_icon">
+                                ✎
+                            </div>
+
+                            <div class="app_card_content">
+
+                                <h2 id="draw_title">
+                                    Draw
+                                </h2>
+
+                                <p id="draw_description">
+                                    Create your own drawings
+                                </p>
+
+                            </div>
+
+                            <div class="app_card_arrow">
+                                →
+                            </div>
+
+                        </a>
+
+
+
+                        <!-- COMING SOON -->
+
+                        <div class="app_card coming_one">
+
+                            <div class="app_card_icon">
+                                +
+                            </div>
+
+                            <div class="app_card_content">
+
+                                <h2 id="coming_one_title">
+                                    Coming Soon
+                                </h2>
+
+                                <p id="coming_one_description">
+                                    Another creative tool
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- COMING SOON -->
+
+                        <div class="app_card coming_two">
+
+                            <div class="app_card_icon">
+                                +
+                            </div>
+
+                            <div class="app_card_content">
+
+                                <h2 id="coming_two_title">
+                                    Coming Soon
+                                </h2>
+
+                                <p id="coming_two_description">
+                                    Something new is coming
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- LOWER INFORMATION PANEL -->
+
+                <section class="lab_info">
+
+                    <div class="info_panel">
+
+                        <span class="info_label">
+                            LA PEACE LAB
+                        </span>
+
+                        <h2 id="info_title">
+                            ART
+                        </h2>
+
+                        <p id="info_text">
+						I DONT KNOW WHAT TO DO ADD HERE
+                        </p>
+
+                    </div>
+
+
+                    <div class="info_stats">
+
+                        <div>
+                            <strong>02</strong>
+                            <span>APPS</span>
+                        </div>
+
+                        <div>
+                            <strong>∞</strong>
+                            <span>LEMONS</span>
+                        </div>
+
+                    </div>
+
+                </section>
 
             </div>
 
         </main>
 
     </div>
+
 
     <script src="script.js"></script>
 
