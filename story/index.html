@@ -4,40 +4,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Credits - La Peace Lab</title>
+
+    <title>The Story - La Peace Lab</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-        <select id = "language_selector">
-		<option value = "en">English</option>
-		<option value = "id">Indonesian</option>
-		</select>
+    <!-- =========================
+         DASHBOARD
+    ========================== -->
 
-    <header>
-        <a href="../index.html">La Peace Lab</a>
+    <div class="dashboard">
 
-        <nav>
-            <a href="../credits/index.html">Credits</a>
-            <a href="../mission/index.html">Our Mission</a>
-            <a href="../story/index.html">The Story</a>
-            <a href="../gallery/index.html">Gallery</a>
-		    <a href="../music-maker/tutorial.html">Music Maker</a>
-        </nav>
-    </header>
 
-    <main>
-        <h1 id="story_title">The Story</h1>
+        <!-- =====================
+             SIDEBAR
+        ====================== -->
 
-        <p id="story_paragraph_one">
+        <aside class="sidebar">
 
-        to be added
+            <div class="sidebar_brand">
 
-        </p>
-    </main>
+                <div class="brand_image">
+                    <img
+                        src="../images/lemon.png"
+                        alt="La Peace Lab"
+                    >
+                </div>
 
-<script src="script.js"></script>
+                <div class="brand_text">
+                    <strong>LA PEACE</strong>
+                    <span>LAB</span>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar_navigation">
+
+                <a
+                    href="../index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">⌂</span>
+                    <span id="home_link">Home</span>
+                </a>
+
+
+                <a
+                    href="../music-maker/tutorial.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">♫</span>
+                    <span id="music_link">Music Maker</span>
+                </a>
+
+
+                <a
+                    href="../gallery/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">▣</span>
+                    <span id="gallery_link">Gallery</span>
+                </a>
+
+
+                <a
+                    href="../story/index.html"
+                    class="sidebar_link active"
+                >
+                    <span class="sidebar_icon">▤</span>
+                    <span id="story_link">The Story</span>
+                </a>
+
+
+                <a
+                    href="../mission/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">★</span>
+                    <span id="mission_link">Our Mission</span>
+                </a>
+
+
+                <a
+                    href="../credits/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">ⓘ</span>
+                    <span id="credits_link">Credits</span>
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar_bottom">
+
+                <a
+                    href="../story/index.html"
+                    class="sidebar_small_link"
+                >
+                    <span>?</span>
+                    <span>About</span>
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =====================
+             MAIN AREA
+        ====================== -->
+
+        <main class="main_area">
+
+
+            <!-- TOP BAR -->
+
+            <header class="top_bar">
+
+                <button
+                    class="back_button"
+                    type="button"
+                    onclick="window.history.back()"
+                >
+                    ←
+                </button>
+
+
+                <div class="top_bar_spacer"></div>
+
+
+                <div class="top_controls">
+
+                    <select id="language_selector">
+
+                        <option value="en">
+                            English
+                        </option>
+
+                        <option value="id">
+                            Indonesian
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        id="light_mode_button"
+                        class="theme_button active"
+                        type="button"
+                        title="Light mode"
+                    >
+                        ☀
+                    </button>
+
+
+                    <button
+                        id="dark_mode_button"
+                        class="theme_button"
+                        type="button"
+                        title="Dark mode"
+                    >
+                        ☾
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- =====================
+                 PAGE CONTENT
+            ====================== -->
+
+            <div class="content">
+
+                <section class="page_content">
+
+
+                    <!-- PAGE HEADER -->
+
+                    <div class="page_header">
+
+                        <span class="page_label">
+                            LA PEACE
+                        </span>
+
+                        <h1>
+                            THE STORY
+                        </h1>
+
+                        <p class="page_subtitle">
+                            About La Peace Lab
+                        </p>
+
+                    </div>
+
+
+                    <!-- STORY CONTENT -->
+
+                    <div class="page_body">
+
+                        <div class="story_panel">
+
+                            <span class="story_label">
+                                LEM.CO
+                            </span>
+
+
+                            <p id="story_paragraph_one">
+                                to be added
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- MAIN WEBSITE SCRIPT -->
+
+    <script src="../script.js"></script>
 
 </body>
 

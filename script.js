@@ -6,6 +6,11 @@ const loadingContent = document.getElementById("loadingContent");
 const loadingImage = document.getElementById("loadingImage");
 const loadingBar = document.getElementById("loadingBar");
 
+
+/* =========================================================
+   THEME
+========================================================= */
+
 function setTheme(theme) {
 
     const dark = theme === "dark";
@@ -26,138 +31,459 @@ darkModeButton.addEventListener("click", () => {
     setTheme("dark");
 });
 
+
+/* =========================================================
+   TRANSLATIONS
+========================================================= */
+
 const translations = {
+
     en: {
+
         page_title: "La Peace Lab",
+
         credits_link: "Credits",
+
         mission_link: "Our Mission",
+
         story_link: "The Story",
+
         gallery_link: "Gallery",
+
         music_link: "Music Maker",
+
         music_title: "Music",
-        music_description: "Create your own music"
+
+        music_description:
+            "Create your own music"
+
     },
 
     id: {
+
         page_title: "Grinto",
+
         credits_link: "Grinto",
+
         mission_link: "Grinto",
+
         story_link: "Grinto",
+
         gallery_link: "Grinto",
+
         music_link: "Grinto",
+
         music_title: "Grinto",
+
         music_description: "Grinto"
-		
+
     }
+
 };
 
-const savedTheme = localStorage.getItem("theme") || "light";
+
+/* =========================================================
+   LOAD SAVED THEME
+========================================================= */
+
+const savedTheme =
+    localStorage.getItem("theme") || "light";
 
 setTheme(savedTheme);
 
 
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
 function changeLanguage(language) {
 
-    const selectedTranslations = translations[language];
+    const selectedTranslations =
+        translations[language];
 
     for (const id in selectedTranslations) {
 
-        const element = document.getElementById(id);
+        const element =
+            document.getElementById(id);
 
         if (element) {
-            element.textContent = selectedTranslations[id];
+
+            element.textContent =
+                selectedTranslations[id];
+
         }
 
     }
 
-    localStorage.setItem("language", language);
+    localStorage.setItem(
+        "language",
+        language
+    );
 }
 
-languageSelector.addEventListener("change", () => {
-    changeLanguage(languageSelector.value);
-});
+languageSelector.addEventListener(
+    "change",
+    () => {
 
-const savedLanguage = localStorage.getItem("language") || "en";
+        changeLanguage(
+            languageSelector.value
+        );
 
-languageSelector.value = savedLanguage;
+    }
+);
+
+
+const savedLanguage =
+    localStorage.getItem("language") || "en";
+
+languageSelector.value =
+    savedLanguage;
+
 changeLanguage(savedLanguage);
 
-document.addEventListener("DOMContentLoaded", () => {
 
-    const loadingScreen = document.getElementById("loadingScreen");
-    const loadingBar = document.getElementById("loadingBar");
-    const loadingText = document.getElementById("loadingText");
-    const loadingTopText = document.getElementById("loadingTopText");
+/* =========================================================
+   PAGE INITIALIZATION
+========================================================= */
 
-    if (!loadingScreen || !loadingBar) {
-        return;
-    }
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    const topMessages = [
-        "A Door&David Project"
-    ];
 
-    const loadingMessages = [
-        "the word grinto is very sophisticated",
-        "the music lab was our first app",
-        "𓀀 𓀁 𓀂 𓀃 𓀄 𓀅 𓀆 𓀇 𓀈 𓀉 𓀊 𓀋 𓀌 𓀍 𓀎 𓀏 𓀐 𓀑 𓀒 𓀓 𓀔 𓀕 𓀖 𓀗 𓀘 𓀙 𓀚 𓀛 𓀜 𓀝 𓀞 𓀟 𓀠 𓀡 𓀢 𓀣 𓀤 𓀥 𓀦 𓀧 𓀨 𓀩 𓀪 𓀫 𓀬 𓀭 𓀮 𓀯 𓀰 𓀱 𓀲 𓀳 𓀴 𓀵 𓀶 𓀷 𓀸 𓀹 𓀺 𓀻 𓀼 𓀽 𓀾 𓀿 𓁀 𓁁 𓁂 𓁃 𓁄𓁈𓂀𓋹𓆣𓁀𓀾",
-    ];
+        /* =================================================
+           LOADING SCREEN
+        ================================================= */
 
-    function randomItem(array) {
-        return array[Math.floor(Math.random() * array.length)];
-    }
+        const loadingScreen =
+            document.getElementById(
+                "loadingScreen"
+            );
 
-    loadingTopText.textContent = randomItem(topMessages);
-    loadingText.textContent = randomItem(loadingMessages);
+        const loadingBar =
+            document.getElementById(
+                "loadingBar"
+            );
 
-    const loadingDuration = 9000;
-    const expansionDelay = 1001;
-    const expansionDuration = 1400;
+        const loadingText =
+            document.getElementById(
+                "loadingText"
+            );
 
-    const startTime = performance.now();
+        const loadingTopText =
+            document.getElementById(
+                "loadingTopText"
+            );
 
-    const textInterval = setInterval(() => {
 
-        loadingText.textContent = randomItem(loadingMessages);
-
-    }, 900);
-
-    function updateLoading(currentTime) {
-
-        const elapsed = currentTime - startTime;
-
-        let progress = elapsed / loadingDuration;
-
-        if (progress >= 1) {
-
-            progress = 1;
-
-            loadingBar.style.width = "100%";
-
-            clearInterval(textInterval);
-
-            loadingText.textContent = "Lemco and Door&David wishes you a productive session";
-
-            setTimeout(() => {
-
-                loadingScreen.classList.add("finished");
-
-                setTimeout(() => {
-
-                    loadingScreen.classList.add("hidden");
-
-                }, expansionDuration);
-
-            }, expansionDelay);
-
+        if (!loadingScreen || !loadingBar) {
             return;
         }
 
-        loadingBar.style.width = `${progress * 100}%`;
 
-        requestAnimationFrame(updateLoading);
+        const topMessages = [
+
+            "A Door&David Project"
+
+        ];
+
+
+        const loadingMessages = [
+
+            "the word grinto is very sophisticated",
+
+            "the music lab was our first app",
+
+            "𓀀 𓀁 𓀂 𓀃 𓀄 𓀅 𓀆 𓀇 𓀈 𓀉 𓀊 𓀋 𓀌 𓀍 𓀎 𓀏 𓀐 𓀑 𓀒 𓀓 𓀔 𓀕 𓀖 𓀗 𓀘 𓀙 𓀚 𓀛 𓀜 𓀝 𓀞 𓀟 𓀠 𓀡 𓀢 𓀣 𓀤 𓀥 𓀦 𓀧 𓀨 𓀩 𓀪 𓀫 𓀬 𓀭 𓀮 𓀯 𓀰 𓀱 𓀲 𓀳 𓀴 𓀵 𓀶 𓀷 𓀸 𓀹 𓀺 𓀻 𓀼 𓀽 𓀾 𓀿 𓁀 𓁁 𓁂 𓁃 𓁄𓁈𓂀𓋹𓆣𓁀𓀾"
+
+        ];
+
+
+        function randomItem(array) {
+
+            return array[
+                Math.floor(
+                    Math.random() *
+                    array.length
+                )
+            ];
+
+        }
+
+
+        loadingTopText.textContent =
+            randomItem(topMessages);
+
+        loadingText.textContent =
+            randomItem(loadingMessages);
+
+
+        const loadingDuration = 9000;
+
+        const expansionDelay = 1001;
+
+        const expansionDuration = 1400;
+
+
+        const startTime =
+            performance.now();
+
+
+        const textInterval =
+            setInterval(
+                () => {
+
+                    loadingText.textContent =
+                        randomItem(
+                            loadingMessages
+                        );
+
+                },
+                900
+            );
+
+
+        function updateLoading(currentTime) {
+
+            const elapsed =
+                currentTime - startTime;
+
+
+            let progress =
+                elapsed / loadingDuration;
+
+
+            if (progress >= 1) {
+
+                progress = 1;
+
+                loadingBar.style.width =
+                    "100%";
+
+
+                clearInterval(
+                    textInterval
+                );
+
+
+                loadingText.textContent =
+                    "Lemco and Door&David wishes you a productive session";
+
+
+                setTimeout(
+                    () => {
+
+                        loadingScreen.classList.add(
+                            "finished"
+                        );
+
+
+                        setTimeout(
+                            () => {
+
+                                loadingScreen.classList.add(
+                                    "hidden"
+                                );
+
+                            },
+                            expansionDuration
+                        );
+
+                    },
+                    expansionDelay
+                );
+
+
+                return;
+            }
+
+
+            loadingBar.style.width =
+                `${progress * 100}%`;
+
+
+            requestAnimationFrame(
+                updateLoading
+            );
+        }
+
+
+        requestAnimationFrame(
+            updateLoading
+        );
+
+
+        /* =================================================
+           LEM.CO BROADCAST TICKER
+        ================================================= */
+
+        const ticker =
+            document.getElementById(
+                "ticker_content"
+            );
+
+        const tickerText =
+            document.getElementById(
+                "info_text"
+            );
+
+
+        if (!ticker || !tickerText) {
+            return;
+        }
+
+
+        const tickerMessages = [
+		"LEM.CO, Art for All",
+		"Message from our founder: you're doing great!",
+		"LEM.CO, Promoting Human Art",
+        ];
+
+
+        let lastTickerMessage = null;
+
+
+        function getRandomTickerMessage() {
+
+            let message;
+
+
+            do {
+
+                message =
+                    tickerMessages[
+                        Math.floor(
+                            Math.random() *
+                            tickerMessages.length
+                        )
+                    ];
+
+            }
+            while (
+                tickerMessages.length > 1 &&
+                message === lastTickerMessage
+            );
+
+
+            lastTickerMessage =
+                message;
+
+
+            return message;
+        }
+
+
+        function updateTickerDistance() {
+
+            const tickerWindow =
+                ticker.parentElement;
+
+
+            if (!tickerWindow) {
+                return;
+            }
+
+
+            const windowWidth =
+                tickerWindow.clientWidth;
+
+
+            const tickerWidth =
+                ticker.getBoundingClientRect().width;
+
+
+            ticker.style.setProperty(
+                "--ticker-start",
+                `${-tickerWidth - 20}px`
+            );
+
+
+            ticker.style.setProperty(
+                "--ticker-end",
+                `${windowWidth + 20}px`
+            );
+        }
+
+
+        function playTickerMessage(message) {
+
+            tickerText.textContent =
+                message;
+
+
+            /*
+                Recalculate the distance because
+                every message can have a different width.
+            */
+
+            ticker.classList.remove(
+                "ticker_running"
+            );
+
+
+            updateTickerDistance();
+
+
+            /*
+                Force the browser to reset
+                the animation.
+            */
+
+            void ticker.offsetWidth;
+
+
+            ticker.classList.add(
+                "ticker_running"
+            );
+        }
+
+
+        /*
+            When the current message reaches
+            the right side, start another one.
+        */
+
+        ticker.addEventListener(
+            "animationend",
+            () => {
+
+                playTickerMessage(
+                    getRandomTickerMessage()
+                );
+
+            }
+        );
+
+
+        /*
+            Recalculate the movement distance
+            if the browser is resized.
+        */
+
+        window.addEventListener(
+            "resize",
+            updateTickerDistance
+        );
+
+
+        /*
+            First message.
+        */
+
+        tickerText.textContent =
+            "LEM.CO, Art for all";
+
+
+        lastTickerMessage =
+            "LEM.CO, Art for all";
+
+
+        updateTickerDistance();
+
+
+        ticker.classList.add(
+            "ticker_running"
+        );
+
     }
-
-    requestAnimationFrame(updateLoading);
-
-});
+);

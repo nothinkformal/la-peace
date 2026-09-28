@@ -4,47 +4,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Credits - La Peace Lab</title>
+
+    <title>Our Mission - La Peace Lab</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <header>
-        <a href="../index.html">La Peace Lab</a>
+    <!-- =========================
+         DASHBOARD
+    ========================== -->
 
-        <nav>
-            <a href="../credits/index.html">Credits</a>
-            <a href="../mission/index.html">Our Mission</a>
-            <a href="../story/index.html">The Story</a>
-            <a href="../gallery/index.html">Gallery</a>
-		    <a href="../music-maker/tutorial.html">Music Maker</a>
-        </nav>
-    </header>
+    <div class="dashboard">
 
-        <select id = "language_selector">
-		<option value = "en">English</option>
-		<option value = "id">Indonesian</option>
-		</select>
 
- <main>
- 
-    <h1 id="mission_title">Our Mission</h1>
+        <!-- =====================
+             SIDEBAR
+        ====================== -->
 
-    <p id="mission_paragraph_1">
-        Our mission is to reduce or erase the involvement of AI in the creative industry, or the creative communities in general. AI can be useful for many things mainly involving information, but image, music, writing, animation and designing being assisted or entirely created by AI makes the result "sloppy" or low quality.
-    </p>
+        <aside class="sidebar">
 
-    <p id="mission_paragraph_2">
-        According to a lot of people and us included, art is created with hardwork and soul, not a prompt that took you 5 minutes to write. Because of that, our mission is to reduce the involvement of AI in the creation of art as a whole. Instead, using the tools or information provided from this website to make an introduction to any of the 4 art forms displayed on the website more accessible and easier.
-    </p>
+            <div class="sidebar_brand">
 
-    <p id="mission_signature">
-        -nalatheblox, DL
-    </p>
-</main>
+                <div class="brand_image">
+                    <img
+                        src="../images/lemon.png"
+                        alt="La Peace Lab"
+                    >
+                </div>
 
-<script src="script.js"></script>
+                <div class="brand_text">
+                    <strong>LA PEACE</strong>
+                    <span>LAB</span>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar_navigation">
+
+                <a
+                    href="../index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">⌂</span>
+                    <span id="home_link">Home</span>
+                </a>
+
+
+                <a
+                    href="../music-maker/tutorial.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">♫</span>
+                    <span id="music_link">Music Maker</span>
+                </a>
+
+
+                <a
+                    href="../gallery/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">▣</span>
+                    <span id="gallery_link">Gallery</span>
+                </a>
+
+
+                <a
+                    href="../story/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">▤</span>
+                    <span id="story_link">The Story</span>
+                </a>
+
+
+                <a
+                    href="../mission/index.html"
+                    class="sidebar_link active"
+                >
+                    <span class="sidebar_icon">★</span>
+                    <span id="mission_link">Our Mission</span>
+                </a>
+
+
+                <a
+                    href="../credits/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">ⓘ</span>
+                    <span id="credits_link">Credits</span>
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar_bottom">
+
+                <a
+                    href="../story/index.html"
+                    class="sidebar_small_link"
+                >
+                    <span>?</span>
+                    <span>About</span>
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =====================
+             MAIN AREA
+        ====================== -->
+
+        <main class="main_area">
+
+
+            <!-- TOP BAR -->
+
+            <header class="top_bar">
+
+                <button
+                    class="back_button"
+                    type="button"
+                    onclick="window.history.back()"
+                >
+                    ←
+                </button>
+
+
+                <div class="top_bar_spacer"></div>
+
+
+                <div class="top_controls">
+
+                    <select id="language_selector">
+
+                        <option value="en">
+                            English
+                        </option>
+
+                        <option value="id">
+                            Indonesian
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        id="light_mode_button"
+                        class="theme_button active"
+                        type="button"
+                        title="Light mode"
+                    >
+                        ☀
+                    </button>
+
+
+                    <button
+                        id="dark_mode_button"
+                        class="theme_button"
+                        type="button"
+                        title="Dark mode"
+                    >
+                        ☾
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- =====================
+                 PAGE CONTENT
+            ====================== -->
+
+            <div class="content">
+
+                <section class="page_content">
+
+
+                    <!-- PAGE HEADER -->
+
+                    <div class="page_header">
+
+                        <span class="page_label">
+                            LA PEACE
+                        </span>
+
+                        <h1>
+                            OUR MISSION
+                        </h1>
+
+                    </div>
+
+
+                    <!-- MISSION CONTENT -->
+
+                    <div class="page_body">
+
+                        <div class="mission_panel">
+
+                            <span class="mission_label">
+                                LEM.CO
+                            </span>
+
+
+                            <p id="mission_paragraph_1">
+                                Our mission is to reduce or erase the involvement of AI in the creative industry, or the creative communities in general. AI can be useful for many things mainly involving information, but image, music, writing, animation and designing being assisted or entirely created by AI makes the result "sloppy" or low quality.
+                            </p>
+
+
+                            <p id="mission_paragraph_2">
+                                According to a lot of people and us included, art is created with hardwork and soul, not a prompt that took you 5 minutes to write. Because of that, our mission is to reduce the involvement of AI in the creation of art as a whole. Instead, using the tools or information provided from this website to make an introduction to any of the 4 art forms displayed on the website more accessible and easier.
+                            </p>
+
+
+                            <p
+                                id="mission_signature"
+                                class="mission_signature"
+                            >
+                                -nalatheblox, DL
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- MAIN WEBSITE SCRIPT -->
+
+    <script src="../script.js"></script>
 
 </body>
 
