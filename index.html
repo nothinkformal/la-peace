@@ -2,26 +2,39 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>La Peace Lab</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/lemon.png">
+
+    <title>Lem.co Lab</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
+
 
 <body>
 
-    <!-- =========================
+
+    <!-- =====================================================
          LOADING SCREEN
-    ========================== -->
+    ====================================================== -->
 
     <div id="loadingScreen">
 
         <div id="loadingContent">
 
             <div id="loadingTopText">
-                Welcome to La Peace Lab
+                Welcome to Lem.co Lab
             </div>
 
             <img
@@ -31,11 +44,13 @@
             >
 
             <div id="loadingBarContainer">
+
                 <div id="loadingBar"></div>
+
             </div>
 
             <div id="loadingText">
-                Preparing the laboratory...
+                P
             </div>
 
         </div>
@@ -43,366 +58,705 @@
     </div>
 
 
-    <!-- =========================
-         DASHBOARD
-    ========================== -->
+
+    <!-- =====================================================
+         COMPLETE PAGE LAYOUT
+    ====================================================== -->
+
+    <div class="lab_layout" id="lab_layout">
+
+
+
+        
+        <aside class="feature_card">
+
+            <div class="feature_header">
+                LEM CO FEATURED ARTISTS
+            </div>
+
+            <div class="feature_artwork">
+                <img
+                    src="images/featured-artwork-1.png"
+                    alt="Featured artwork"
+                >
+            </div>
+
+            <div class="feature_creator">
+                Creator's Name
+            </div>
+
+            <div class="feature_socials">
+
+                <a href="#" aria-label="Instagram">
+                    IG
+                </a>
+
+                <a href="#" aria-label="X">
+                    X
+                </a>
+
+                <a href="#" aria-label="Social link">
+                    +
+                </a>
+
+            </div>
+
+            <div class="feature_description_title">
+                Art Description
+            </div>
+
+            <div class="feature_description">
+                <span>
+				DESCRIPTION
+                </span>
+            </div>
+
+            <div class="feature_footer">
+               Want to get featured? Contact us at the given email!
+            </div>
+
+        </aside>
+
+        <!-- =================================================
+             MAIN DASHBOARD
+        ================================================== -->
+
+        <audio
+        id="background_music"
+        src="audio/background-music.mp3"
+        loop
+        preload="auto"
+    ></audio>
 
     <div class="dashboard">
 
 
-        <!-- =====================
-             SIDEBAR
-        ====================== -->
+            <!-- =================================================
+                 SIDEBAR
+            ================================================== -->
 
-        <aside class="sidebar">
+            <aside class="sidebar">
 
-            <div class="sidebar_brand">
 
-                <div class="brand_image">
-                    <img
-                        src="images/lemon.png"
-                        alt="La Peace Lab"
+                <!-- BRAND -->
+
+                <div class="sidebar_brand">
+
+                    <div class="brand_image">
+
+                        <img
+                            src="images/lemon.png"
+                            alt="La Peace Lab"
+                        >
+
+                    </div>
+
+
+                    <div class="brand_text">
+
+                        <strong>
+                            LEM.CO
+                        </strong>
+
+                        <span>
+                            LAB
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- NAVIGATION -->
+
+                <nav class="sidebar_navigation">
+
+
+                    <a
+                        href="index.html"
+                        class="sidebar_link active"
                     >
+
+                        <span class="sidebar_icon">
+                            ⌂
+                        </span>
+
+                        <span id="home_link">
+                            Home
+                        </span>
+
+                    </a>
+
+
+
+                    <a
+                        href="music-maker/tutorial.html"
+                        class="sidebar_link"
+                    >
+
+                        <span class="sidebar_icon">
+                            ♫
+                        </span>
+
+                        <span id="music_link">
+                            Music Maker
+                        </span>
+
+                    </a>
+
+
+
+                    <a
+                        href="drawing-hub/dist/index.html"
+                        class="sidebar_link"
+                    >
+
+                        <span class="sidebar_icon">
+                            ✎
+                        </span>
+
+                        <span>
+                            Drawing Lab
+                        </span>
+
+                    </a>
+
+
+
+                    <a
+                        href="gallery/index.html"
+                        class="sidebar_link"
+                    >
+
+                        <span class="sidebar_icon">
+                            ▣
+                        </span>
+
+                        <span id="gallery_link">
+                            Gallery
+                        </span>
+
+                    </a>
+
+
+
+                    <a
+                        href="story/index.html"
+                        class="sidebar_link"
+                    >
+
+                        <span class="sidebar_icon">
+                            ▤
+                        </span>
+
+                        <span id="story_link">
+                            Our Story
+                        </span>
+
+                    </a>
+
+
+
+                    <a
+                        href="mission/index.html"
+                        class="sidebar_link"
+                    >
+
+                        <span class="sidebar_icon">
+                            ★
+                        </span>
+
+                        <span id="mission_link">
+                            Our Mission
+                        </span>
+
+                    </a>
+
+
+
+                    <a
+                        href="credits/index.html"
+                        class="sidebar_link"
+                    >
+
+                        <span class="sidebar_icon">
+                            ⓘ
+                        </span>
+
+                        <span id="credits_link">
+                            Credits
+                        </span>
+
+                    </a>
+
+
+                </nav>
+
+
+
+                <!-- ABOUT -->
+
+                <div class="sidebar_bottom">
+
+                    <a
+                        href="story/index.html"
+                        class="sidebar_small_link"
+                    >
+
+                        <span>
+                            ?
+                        </span>
+
+                        <span>
+                            About
+                        </span>
+
+                    </a>
+
                 </div>
 
-                <div class="brand_text">
-                    <strong>LA PEACE</strong>
-                    <span>LAB</span>
+
+            </aside>
+
+
+
+            <!-- =================================================
+                 MAIN AREA
+            ================================================== -->
+
+            <main class="main_area">
+
+
+                <!-- TOP BAR -->
+
+                <header class="top_bar">
+
+
+                    <button
+                        class="back_button"
+                        type="button"
+                        onclick="window.history.back()"
+                    >
+                        ←
+                    </button>
+
+
+                    <div class="top_bar_spacer"></div>
+
+
+                    <div class="top_controls">
+
+
+                        <select id="language_selector">
+
+                            <option value="en">
+                                English
+                            </option>
+
+                            <option value="id">
+                                Indonesian
+                            </option>
+
+                        </select>
+
+                        <div class="preferences_wrapper">
+
+                            <button
+                                id="preferences_button"
+                                class="preferences_button"
+                                type="button"
+                                aria-expanded="false"
+                                aria-controls="preferences_menu"
+                                title="Preferences"
+                            >
+                                ⚙
+                            </button>
+
+                            <div
+                                id="preferences_menu"
+                                class="preferences_menu"
+                                hidden
+                            >
+                                <div class="preferences_title">
+                                    Preferences
+                                </div>
+
+                                <label class="preference_option">
+                                    <input
+                                        type="checkbox"
+                                        id="ads_toggle"
+                                        checked
+                                    >
+                                    <span>Show ad bars</span>
+                                </label>
+
+                                <label class="preference_option">
+                                    <input
+                                        type="checkbox"
+                                        id="music_toggle"
+                                        checked
+                                    >
+                                    <span>Background music</span>
+                                </label>
+                            </div>
+
+                        </div>
+
+
+
+
+                        <button
+                            id="light_mode_button"
+                            class="theme_button active"
+                            type="button"
+                            title="Light mode"
+                        >
+                            ☀
+                        </button>
+
+
+
+                        <button
+                            id="dark_mode_button"
+                            class="theme_button"
+                            type="button"
+                            title="Dark mode"
+                        >
+                            ☾
+                        </button>
+
+
+                    </div>
+
+
+                </header>
+
+
+
+                <!-- =================================================
+                     MAIN CONTENT
+                ================================================== -->
+
+                <div class="content">
+
+
+                    <!-- WELCOME -->
+
+                    <section class="welcome_section">
+
+
+                        <h1 id="page_title">
+                            Lem.co Lab
+                        </h1>
+
+
+                        <p id="welcome_text">
+                            A Door&David Project
+                        </p>
+
+
+                    </section>
+
+
+
+                    <!-- CREATIVE TOOLS -->
+
+                    <section class="apps_section">
+
+
+                        <div class="section_heading">
+
+
+                            <h2 id="apps_title">
+                                Creative tools
+                            </h2>
+
+
+                            <span>
+                                LEM.CO
+                            </span>
+
+
+                        </div>
+
+
+
+                        <div class="apps">
+
+
+                            <!-- MUSIC -->
+
+                            <a
+                                href="music-maker/tutorial.html"
+                                class="app_card music-maker"
+                            >
+
+                                <div class="app_card_icon">
+                                    ♫
+                                </div>
+
+
+                                <div class="app_card_content">
+
+                                    <h2 id="music_title">
+                                        Music
+                                    </h2>
+
+
+                                    <p id="music_description">
+                                        Create your own music
+                                    </p>
+
+                                </div>
+
+
+                                <div class="app_card_arrow">
+                                    →
+                                </div>
+
+                            </a>
+
+
+
+                            <!-- DRAW -->
+
+                            <a
+                                href="drawing-hub/dist/index.html"
+                                class="app_card drawing"
+                            >
+
+                                <div class="app_card_icon">
+                                    ✎
+                                </div>
+
+
+                                <div class="app_card_content">
+
+                                    <h2 id="draw_title">
+                                        Draw
+                                    </h2>
+
+
+                                    <p id="draw_description">
+                                        Create your own drawings
+                                    </p>
+
+                                </div>
+
+
+                                <div class="app_card_arrow">
+                                    →
+                                </div>
+
+                            </a>
+
+
+
+                            <!-- COMING SOON -->
+
+                            <div class="app_card coming_one">
+
+                                <div class="app_card_icon">
+                                    +
+                                </div>
+
+
+                                <div class="app_card_content">
+
+                                    <h2 id="coming_one_title">
+                                        Coming Soon
+                                    </h2>
+
+
+                                    <p id="coming_one_description">
+                                        Another creative tool
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- COMING SOON -->
+
+                            <div class="app_card coming_two">
+
+                                <div class="app_card_icon">
+                                    +
+                                </div>
+
+
+                                <div class="app_card_content">
+
+                                    <h2 id="coming_two_title">
+                                        Coming Soon
+                                    </h2>
+
+
+                                    <p id="coming_two_description">
+                                        Something new is coming
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </section>
+
+
+
+                    <!-- =================================================
+                         LEM.CO INFORMATION PANEL
+                    ================================================== -->
+
+                    <section class="lab_info">
+
+
+                        <div class="info_panel">
+
+
+                            <span class="info_label">
+                                LEM.CO
+                            </span>
+
+
+                            <h2 id="info_title">
+                                Send us your work or feedback at the given email!
+                            </h2>
+
+
+                            <div class="email_message">
+
+
+                                <span id="info_text">
+                                    dooranddavid@gmail.com
+                                </span>
+
+
+                                <img
+                                    src="images/lemon.png"
+                                    alt="Lemon"
+                                    class="static_lemon"
+                                >
+
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <div class="info_stats">
+
+
+                            <div>
+
+                                <strong>
+                                    02
+                                </strong>
+
+                                <span>
+                                    APPS
+                                </span>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    ∞
+                                </strong>
+
+                                <span>
+                                    LEMONS
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </section>
+
+
                 </div>
+
+
+            </main>
+
+
+        </div>
+
+
+
+     
+
+      
+        
+        <aside class="feature_card">
+
+            <div class="feature_header">
+                LEM CO FEATURED ARTISTS
+            </div>
+
+            <div class="feature_artwork">
+                <img
+                    src="images/featured-artwork-2.png"
+                    alt="Featured artwork"
+                >
+            </div>
+
+            <div class="feature_creator">
+                Creator's Name
+            </div>
+
+            <div class="feature_socials">
+
+                <a href="#" aria-label="Instagram">
+                    IG
+                </a>
+
+                <a href="#" aria-label="X">
+                    X
+                </a>
+
+                <a href="#" aria-label="Social link">
+                    +
+                </a>
 
             </div>
 
+            <div class="feature_description_title">
+                Art Description
+            </div>
 
-            <nav class="sidebar_navigation">
+            <div class="feature_description">
+                <span>
+				DESCRIPTION
+                </span>
+            </div>
 
-                <a
-                    href="index.html"
-                    class="sidebar_link active"
-                >
-                    <span class="sidebar_icon">⌂</span>
-                    <span id="home_link">Home</span>
-                </a>
-
-                <a
-                    href="music-maker/tutorial.html"
-                    class="sidebar_link"
-                >
-                    <span class="sidebar_icon">♫</span>
-                    <span id="music_link">Music Maker</span>
-                </a>
-
-                <a
-                    href="gallery/index.html"
-                    class="sidebar_link"
-                >
-                    <span class="sidebar_icon">▣</span>
-                    <span id="gallery_link">Gallery</span>
-                </a>
-
-                <a
-                    href="story/index.html"
-                    class="sidebar_link"
-                >
-                    <span class="sidebar_icon">▤</span>
-                    <span id="story_link">Our Story</span>
-                </a>
-
-                <a
-                    href="mission/index.html"
-                    class="sidebar_link"
-                >
-                    <span class="sidebar_icon">★</span>
-                    <span id="mission_link">Our Mission</span>
-                </a>
-
-                <a
-                    href="credits/index.html"
-                    class="sidebar_link"
-                >
-                    <span class="sidebar_icon">ⓘ</span>
-                    <span id="credits_link">Credits</span>
-                </a>
-
-            </nav>
-
-
-            <div class="sidebar_bottom">
-
-                <a
-                    href="story/index.html"
-                    class="sidebar_small_link"
-                >
-                    <span>?</span>
-                    <span>About</span>
-                </a>
-
+            <div class="feature_footer">
+                Want to get featured? Contact us at the given email!
             </div>
 
         </aside>
 
 
-        <!-- =====================
-             MAIN AREA
-        ====================== -->
-
-        <main class="main_area">
-
-
-            <!-- TOP BAR -->
-
-            <header class="top_bar">
-
-                <button
-                    class="back_button"
-                    type="button"
-                    onclick="window.history.back()"
-                >
-                    ←
-                </button>
-
-                <div class="top_bar_spacer"></div>
-
-                <div class="top_controls">
-
-                    <select id="language_selector">
-                        <option value="en">English</option>
-                        <option value="id">Indonesian</option>
-                    </select>
-
-                    <button
-                        id="light_mode_button"
-                        class="theme_button active"
-                        type="button"
-                        title="Light mode"
-                    >
-                        ☀
-                    </button>
-
-                    <button
-                        id="dark_mode_button"
-                        class="theme_button"
-                        type="button"
-                        title="Dark mode"
-                    >
-                        ☾
-                    </button>
-
-                </div>
-
-            </header>
-
-
-            <!-- CONTENT -->
-
-            <div class="content">
-
-
-                <section class="welcome_section">
-
-                    <h1 id="page_title">
-                        La Peace Lab
-                    </h1>
-
-                    <p id="welcome_text">
-                        A Door&David Project
-                    </p>
-
-                </section>
-
-
-                <!-- APPS -->
-
-                <section class="apps_section">
-
-                    <div class="section_heading">
-
-                        <h2 id="apps_title">
-                            Creative tools
-                        </h2>
-
-                        <span>
-                            LEM.CO
-                        </span>
-
-                    </div>
-
-
-                    <div class="apps">
-
-
-                        <!-- MUSIC -->
-
-                        <a
-                            href="music-maker/tutorial.html"
-                            class="app_card music-maker"
-                        >
-
-                            <div class="app_card_icon">
-                                ♫
-                            </div>
-
-                            <div class="app_card_content">
-
-                                <h2 id="music_title">
-                                    Music
-                                </h2>
-
-                                <p id="music_description">
-                                    Create your own music
-                                </p>
-
-                            </div>
-
-                            <div class="app_card_arrow">
-                                →
-                            </div>
-
-                        </a>
-
-
-                        <!-- DRAW -->
-
-                        <a
-                            href="drawing-hub/dist/index.html"
-                            class="app_card drawing"
-                        >
-
-                            <div class="app_card_icon">
-                                ✎
-                            </div>
-
-                            <div class="app_card_content">
-
-                                <h2 id="draw_title">
-                                    Draw
-                                </h2>
-
-                                <p id="draw_description">
-                                    Create your own drawings
-                                </p>
-
-                            </div>
-
-                            <div class="app_card_arrow">
-                                →
-                            </div>
-
-                        </a>
-
-
-                        <!-- COMING SOON -->
-
-                        <div class="app_card coming_one">
-
-                            <div class="app_card_icon">
-                                +
-                            </div>
-
-                            <div class="app_card_content">
-
-                                <h2 id="coming_one_title">
-                                    Coming Soon
-                                </h2>
-
-                                <p id="coming_one_description">
-                                    Another creative tool
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- COMING SOON -->
-
-                        <div class="app_card coming_two">
-
-                            <div class="app_card_icon">
-                                +
-                            </div>
-
-                            <div class="app_card_content">
-
-                                <h2 id="coming_two_title">
-                                    Coming Soon
-                                </h2>
-
-                                <p id="coming_two_description">
-                                    Something new is coming
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- =========================
-                     LEM.CO BROADCAST BAR
-                ========================== -->
-
-                <section class="lab_info">
-
-                    <div class="info_panel">
-
-                        <span class="info_label">
-                            LEM.CO
-                        </span>
-
-                        <h2 id="info_title">
-                            LEM.CO BRODCASTING
-                        </h2>
-
-                        <div class="ticker_window">
-
-                            <div
-                                class="ticker_content"
-                                id="ticker_content"
-                            >
-
-                                <span id="info_text">
-                                    LEM.CO, Art for all
-                                </span>
-
-                                <img
-                                    src="images/lemon.png"
-                                    alt="Lemon"
-                                    class="ticker_lemon"
-                                >
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="info_stats">
-
-                        <div>
-                            <strong>02</strong>
-                            <span>APPS</span>
-                        </div>
-
-                        <div>
-                            <strong>∞</strong>
-                            <span>LEMONS</span>
-                        </div>
-
-                    </div>
-
-                </section>
-
-            </div>
-
-        </main>
-
-    </div>
+    <!-- MAIN WEBSITE SCRIPT -->
 
     <script src="script.js"></script>
+
+
 </body>
 
 </html>

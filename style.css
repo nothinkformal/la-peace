@@ -1,13 +1,3 @@
-/* =========================================================
-   LA PEACE LAB
-   Dashboard Homepage
-========================================================= */
-
-
-/* =========================================================
-   GLOBAL
-========================================================= */
-
 * {
     box-sizing: border-box;
 }
@@ -43,17 +33,26 @@ body {
         );
 }
 
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
+.lab_layout {
+    width: 100%;
+    max-width: 1940px;
+    display: grid;
+    grid-template-columns: 275px minmax(0, 1200px) 275px;
+    gap: 18px;
+    align-items: stretch;
+    justify-content: center;
+}
 
 .dashboard {
-    width: min(1400px, 96vw);
-    height: min(850px, 92vh);
+    width: 100%;
+
+    height: min(900px, 92vh);
 
     display: grid;
-    grid-template-columns: 210px 1fr;
+
+    grid-template-columns:
+        210px
+        minmax(0, 1fr);
 
     background: #f8efd9;
 
@@ -64,11 +63,6 @@ body {
     overflow: hidden;
 }
 
-
-/* =========================================================
-   SIDEBAR
-========================================================= */
-
 .sidebar {
     background: #a9d9bd;
 
@@ -77,18 +71,15 @@ body {
     padding: 18px 14px;
 
     display: flex;
+
     flex-direction: column;
 
     min-width: 0;
 }
 
-
-/* =========================================================
-   SIDEBAR BRAND
-========================================================= */
-
 .sidebar_brand {
     display: flex;
+
     align-items: center;
 
     gap: 10px;
@@ -109,6 +100,7 @@ body {
     background: #f8efd9;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -124,6 +116,7 @@ body {
 
 .brand_text {
     display: flex;
+
     flex-direction: column;
 
     font-size: 16px;
@@ -141,13 +134,9 @@ body {
     font-size: 14px;
 }
 
-
-/* =========================================================
-   SIDEBAR NAVIGATION
-========================================================= */
-
 .sidebar_navigation {
     display: flex;
+
     flex-direction: column;
 
     gap: 6px;
@@ -159,6 +148,7 @@ body {
     min-height: 38px;
 
     display: flex;
+
     align-items: center;
 
     gap: 10px;
@@ -170,6 +160,7 @@ body {
     text-decoration: none;
 
     font-size: 13px;
+
     font-weight: bold;
 
     border: 2px solid transparent;
@@ -201,11 +192,6 @@ body {
     font-size: 14px;
 }
 
-
-/* =========================================================
-   SIDEBAR BOTTOM
-========================================================= */
-
 .sidebar_bottom {
     margin-top: auto;
 
@@ -216,6 +202,7 @@ body {
 
 .sidebar_small_link {
     display: flex;
+
     align-items: center;
 
     gap: 10px;
@@ -227,6 +214,7 @@ body {
     text-decoration: none;
 
     font-size: 12px;
+
     font-weight: bold;
 }
 
@@ -234,25 +222,17 @@ body {
     text-decoration: underline;
 }
 
-
-/* =========================================================
-   MAIN AREA
-========================================================= */
-
 .main_area {
     min-width: 0;
+
     min-height: 0;
 
     background: #fff8e7;
 
     display: flex;
+
     flex-direction: column;
 }
-
-
-/* =========================================================
-   TOP BAR
-========================================================= */
 
 .top_bar {
     height: 68px;
@@ -262,6 +242,7 @@ body {
     border-bottom: 2px solid #111;
 
     display: flex;
+
     align-items: center;
 
     padding: 11px 18px;
@@ -282,6 +263,7 @@ body {
     cursor: pointer;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 }
@@ -298,15 +280,11 @@ body {
 
 .top_controls {
     display: flex;
+
     align-items: center;
 
     gap: 8px;
 }
-
-
-/* =========================================================
-   LANGUAGE SELECTOR
-========================================================= */
 
 #language_selector {
     height: 36px;
@@ -324,6 +302,7 @@ body {
     padding: 0 9px;
 
     font-size: 12px;
+
     font-weight: bold;
 
     cursor: pointer;
@@ -334,11 +313,6 @@ body {
 #language_selector:hover {
     background: #f3ead7;
 }
-
-
-/* =========================================================
-   THEME BUTTONS
-========================================================= */
 
 .theme_button {
     width: 36px;
@@ -357,6 +331,7 @@ body {
     font-size: 18px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 }
@@ -373,11 +348,6 @@ body {
     color: white;
 }
 
-
-/* =========================================================
-   MAIN CONTENT
-========================================================= */
-
 .content {
     flex: 1;
 
@@ -387,11 +357,6 @@ body {
 
     padding: 30px;
 }
-
-
-/* =========================================================
-   WELCOME
-========================================================= */
 
 .welcome_section {
     margin-bottom: 34px;
@@ -419,14 +384,11 @@ body {
     line-height: 1.5;
 }
 
-
-/* =========================================================
-   SECTION HEADING
-========================================================= */
-
 .section_heading {
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     margin-bottom: 14px;
@@ -450,11 +412,6 @@ body {
     font-weight: bold;
 }
 
-
-/* =========================================================
-   APP GRID
-========================================================= */
-
 .apps {
     display: grid;
 
@@ -463,11 +420,6 @@ body {
 
     gap: 17px;
 }
-
-
-/* =========================================================
-   APP CARDS
-========================================================= */
 
 .app_card {
     min-height: 175px;
@@ -483,7 +435,9 @@ body {
     text-decoration: none;
 
     display: flex;
+
     flex-direction: column;
+
     justify-content: space-between;
 
     cursor: pointer;
@@ -498,11 +452,6 @@ body {
 
     box-shadow: 4px 4px 0 #111;
 }
-
-
-/* =========================================================
-   APP CARD COLORS
-========================================================= */
 
 .music-maker {
     background: #4169e1;
@@ -528,11 +477,6 @@ body {
     color: #111;
 }
 
-
-/* =========================================================
-   APP CARD ICON
-========================================================= */
-
 .app_card_icon {
     width: 40px;
     height: 40px;
@@ -540,6 +484,7 @@ body {
     border: 2px solid currentColor;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -547,11 +492,6 @@ body {
 
     font-weight: bold;
 }
-
-
-/* =========================================================
-   APP CARD TEXT
-========================================================= */
 
 .app_card_content h2 {
     margin: 17px 0 6px;
@@ -571,11 +511,6 @@ body {
     line-height: 1.4;
 }
 
-
-/* =========================================================
-   APP CARD ARROW
-========================================================= */
-
 .app_card_arrow {
     position: absolute;
 
@@ -587,11 +522,6 @@ body {
     line-height: 1;
 }
 
-
-/* =========================================================
-   LOWER INFORMATION / LEM.CO BROADCAST
-========================================================= */
-
 .lab_info {
     margin-top: 28px;
 
@@ -599,11 +529,15 @@ body {
 
     display: grid;
 
-    grid-template-columns: 1fr 180px;
+    grid-template-columns:
+        1fr
+        180px;
 
     background: #f4c8ed;
 
     min-height: 120px;
+
+    color: #111;
 }
 
 .info_panel {
@@ -628,43 +562,31 @@ body {
     font-size: 23px;
 }
 
-
-/* =========================================================
-   LEM.CO TICKER
-========================================================= */
-
-.ticker_window {
-    width: 100%;
-    height: 34px;
-
-    position: relative;
-
-    overflow: hidden;
-
+.email_message {
     display: flex;
-    align-items: center;
-}
 
-.ticker_content {
-    position: absolute;
-
-    left: 0;
-
-    display: flex;
     align-items: center;
 
     gap: 10px;
 
-    white-space: nowrap;
+    min-height: 32px;
 
-    will-change: transform, opacity;
-
-    opacity: 0;
+    overflow: hidden;
 }
 
-.ticker_content.ticker_running {
-    animation:
-        tickerMove 11s linear forwards;
+.email_message span {
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+.static_lemon {
+    width: 28px;
+    height: 28px;
+
+    object-fit: contain;
+
+    flex-shrink: 0;
 }
 
 #info_text {
@@ -677,60 +599,19 @@ body {
     white-space: nowrap;
 }
 
-.ticker_lemon {
-    width: 30px;
-    height: 30px;
-
-    flex-shrink: 0;
-
-    object-fit: contain;
-}
-
-
-@keyframes tickerMove {
-
-    0% {
-        transform:
-            translateX(var(--ticker-start));
-
-        opacity: 0;
-    }
-
-    8% {
-        opacity: 1;
-    }
-
-    72% {
-        opacity: 1;
-    }
-
-    92% {
-        opacity: 0;
-    }
-
-    100% {
-        transform:
-            translateX(var(--ticker-end));
-
-        opacity: 0;
-    }
-}
-
-
-/* =========================================================
-   INFO STATISTICS
-========================================================= */
-
 .info_stats {
     border-left: 3px solid #111;
 
     display: grid;
 
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:
+        1fr
+        1fr;
 }
 
 .info_stats div {
     display: flex;
+
     flex-direction: column;
 
     align-items: center;
@@ -755,10 +636,263 @@ body {
     font-weight: bold;
 }
 
+/* featured artist side bars */
 
-/* =========================================================
-   LOADING SCREEN
-========================================================= */
+.feature_card {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    border: 3px solid #111;
+    background: #fff8e7;
+    box-shadow: 5px 5px 0 #111;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #111;
+}
+
+.feature_header {
+    flex-shrink: 0;
+    height: 42px;
+    border-bottom: 2px solid #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 8px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: #e89b18;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.feature_artwork {
+    flex: 0 1 auto;
+    width: auto;
+    min-height: 0;
+    margin: 18px 18px 0;
+    border: 2px solid #111;
+    background: #fff;
+    display: block;
+    overflow: hidden;
+}
+
+.feature_artwork img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.feature_artwork_placeholder {
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #999;
+    text-align: center;
+}
+
+.feature_creator {
+    flex-shrink: 0;
+    padding: 12px 10px 5px;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.feature_socials {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 10px 10px;
+}
+
+.feature_socials a {
+    width: 28px;
+    height: 28px;
+    border: 2px solid #111;
+    background: #6874e8;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.feature_socials a:hover {
+    background: #111;
+    color: white;
+}
+
+.feature_description_title {
+    flex-shrink: 0;
+    padding: 4px 10px 5px;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.feature_description {
+    flex-shrink: 0;
+    min-height: 105px;
+    margin: 0 22px 14px;
+    border: 2px solid #111;
+    background: #ffc247;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.feature_description span {
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.feature_footer {
+    flex-shrink: 0;
+    min-height: 48px;
+    border-top: 2px solid #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 10px;
+    font-size: 16px;
+    font-weight: 800;
+    text-align: center;
+    background: #fff8e7;
+}
+
+
+.preferences_wrapper {
+    position: relative;
+}
+
+.preferences_button {
+    width: 36px;
+    height: 36px;
+    border: 2px solid #111;
+    border-radius: 0;
+    background: #fff8e7;
+    color: #111;
+    cursor: pointer;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preferences_button:hover,
+.preferences_button[aria-expanded="true"] {
+    background: #111;
+    color: white;
+}
+
+.preferences_menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 500;
+    width: 210px;
+    padding: 12px;
+    border: 2px solid #111;
+    background: #fff8e7;
+    box-shadow: 4px 4px 0 #111;
+}
+
+.preferences_menu[hidden] {
+    display: none;
+}
+
+.preferences_title {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #111;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.preference_option {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 2px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.preference_option input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #111;
+    cursor: pointer;
+}
+
+body.hide_ad_bars .feature_card {
+    display: none;
+}
+
+body.hide_ad_bars .lab_layout {
+    max-width: 1600px;
+    grid-template-columns: minmax(0, 1600px);
+}
+
+@media (max-width: 900px) {
+    body.hide_ad_bars .lab_layout {
+        width: 96vw;
+        max-width: none;
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .preferences_menu {
+        width: 195px;
+    }
+}
+
+@media (max-width: 700px) {
+    .preferences_button {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+
+    .preferences_menu {
+        width: 190px;
+    }
+}
+
+body.dark_mode .preferences_button,
+body.dark_mode .preferences_menu {
+    background: #303030;
+    color: #eee;
+    border-color: #eee;
+}
+
+body.dark_mode .preferences_button:hover,
+body.dark_mode .preferences_button[aria-expanded="true"] {
+    background: #eee;
+    color: #111;
+}
+
+body.dark_mode .preferences_menu {
+    box-shadow: 4px 4px 0 #eee;
+}
+
+body.dark_mode .preferences_title {
+    border-color: #eee;
+}
 
 #loadingScreen {
     position: fixed;
@@ -768,7 +902,9 @@ body {
     z-index: 99999;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     background: #f5f5f5;
@@ -784,6 +920,7 @@ body {
     width: 320px;
 
     display: flex;
+
     flex-direction: column;
 
     align-items: center;
@@ -807,6 +944,7 @@ body {
 
 #loadingImage {
     width: 180px;
+
     height: 180px;
 
     object-fit: contain;
@@ -828,10 +966,12 @@ body {
     100% {
         transform: rotate(360deg);
     }
+
 }
 
 #loadingBarContainer {
     width: 320px;
+
     height: 14px;
 
     border: 2px solid #222;
@@ -843,6 +983,7 @@ body {
 
 #loadingBar {
     width: 0%;
+
     height: 100%;
 
     background: #4169e1;
@@ -873,11 +1014,6 @@ body {
     transition:
         opacity 0.5s ease;
 }
-
-
-/* =========================================================
-   DARK MODE
-========================================================= */
 
 body.dark_mode {
     color: #eee;
@@ -982,6 +1118,8 @@ body.dark_mode .app_card:hover {
 
 body.dark_mode .lab_info {
     border-color: #eee;
+
+    color: #111;
 }
 
 body.dark_mode .info_stats {
@@ -990,6 +1128,42 @@ body.dark_mode .info_stats {
 
 body.dark_mode .info_stats div {
     border-color: #eee;
+}
+
+body.dark_mode .feature_card {
+    background: #292929;
+    border-color: #eee;
+    box-shadow: 5px 5px 0 #eee;
+    color: #eee;
+}
+
+body.dark_mode .feature_header,
+body.dark_mode .feature_footer {
+    border-color: #eee;
+    background: #292929;
+    color: #eee;
+}
+
+body.dark_mode .feature_artwork {
+    border-color: #eee;
+    background: #303030;
+}
+
+body.dark_mode .feature_socials a {
+    border-color: #eee;
+    background: #4d55a8;
+    color: #eee;
+}
+
+body.dark_mode .feature_socials a:hover {
+    background: #eee;
+    color: #111;
+}
+
+body.dark_mode .feature_description {
+    border-color: #eee;
+    background: #9a7427;
+    color: #eee;
 }
 
 body.dark_mode #loadingScreen {
@@ -1004,10 +1178,117 @@ body.dark_mode #loadingBarContainer {
     background: #303030;
 }
 
+body.dark_mode #loadingBar {
+    background: #eee;
+}
 
-/* =========================================================
-   TABLET
-========================================================= */
+@media (max-width: 1650px) {
+    body {
+        padding: 18px;
+    }
+
+    .lab_layout {
+        grid-template-columns: 245px minmax(0, 1fr) 245px;
+        gap: 16px;
+    }
+
+    .feature_header {
+        font-size: 12px;
+    }
+
+    .feature_artwork {
+        margin: 16px 16px 0;
+    }
+
+    .feature_description {
+        margin-left: 18px;
+        margin-right: 18px;
+    }
+}
+
+@media (max-width: 1350px) {
+    body {
+        padding: 14px;
+    }
+
+    .lab_layout {
+        grid-template-columns: 205px minmax(0, 1fr) 205px;
+        gap: 12px;
+    }
+
+    .feature_header {
+        font-size: 11px;
+    }
+
+    .feature_artwork {
+        margin: 14px 12px 0;
+    }
+
+    .feature_creator {
+        font-size: 13px;
+    }
+
+    .feature_description {
+        min-height: 90px;
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+
+    .feature_footer {
+        min-height: 44px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 1100px) {
+    body {
+        padding: 10px;
+    }
+
+    .lab_layout {
+        grid-template-columns: 150px minmax(0, 1fr) 150px;
+        gap: 8px;
+    }
+
+    .feature_header {
+        height: 38px;
+        font-size: 9px;
+    }
+
+    .feature_artwork {
+        margin: 10px 8px 0;
+    }
+
+    .feature_creator {
+        font-size: 11px;
+    }
+
+    .feature_socials a {
+        width: 24px;
+        height: 24px;
+        font-size: 8px;
+    }
+
+    .feature_description_title {
+        font-size: 11px;
+    }
+
+    .feature_description {
+        min-height: 75px;
+        margin-left: 9px;
+        margin-right: 9px;
+        padding: 6px;
+    }
+
+    .feature_description span {
+        font-size: 9px;
+    }
+
+    .feature_footer {
+        min-height: 40px;
+        font-size: 11px;
+    }
+}
 
 @media (max-width: 900px) {
 
@@ -1015,12 +1296,20 @@ body.dark_mode #loadingBarContainer {
         padding: 25px;
     }
 
-    .dashboard {
+    .lab_layout {
+        display: block;
+
         width: 96vw;
+    }
+
+    .feature_card {
+        display: none;
+    }
+
+    .dashboard {
+        width: 100%;
 
         height: min(850px, 92vh);
-
-        grid-template-columns: 165px 1fr;
     }
 
     .sidebar {
@@ -1044,14 +1333,12 @@ body.dark_mode #loadingBarContainer {
     }
 
     .lab_info {
-        grid-template-columns: 1fr 140px;
+        grid-template-columns:
+            1fr
+            140px;
     }
+
 }
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
 
 @media (max-width: 700px) {
 
@@ -1074,19 +1361,19 @@ body.dark_mode #loadingBarContainer {
 
     .dashboard {
         width: 100%;
+
         height: auto;
 
         min-height:
             calc(100vh - 30px);
 
         display: flex;
+
         flex-direction: column;
 
-        box-shadow: 4px 4px 0 #111;
+        box-shadow:
+            4px 4px 0 #111;
     }
-
-
-    /* MOBILE SIDEBAR */
 
     .sidebar {
         width: 100%;
@@ -1106,6 +1393,7 @@ body.dark_mode #loadingBarContainer {
 
     .brand_image {
         width: 36px;
+
         height: 36px;
     }
 
@@ -1149,9 +1437,6 @@ body.dark_mode #loadingBarContainer {
         display: none;
     }
 
-
-    /* MOBILE TOP BAR */
-
     .top_bar {
         height: 55px;
 
@@ -1160,6 +1445,7 @@ body.dark_mode #loadingBarContainer {
 
     .back_button {
         width: 30px;
+
         height: 30px;
 
         font-size: 15px;
@@ -1181,13 +1467,11 @@ body.dark_mode #loadingBarContainer {
 
     .theme_button {
         width: 30px;
+
         height: 30px;
 
         font-size: 15px;
     }
-
-
-    /* MOBILE CONTENT */
 
     .content {
         padding: 18px;
@@ -1208,9 +1492,6 @@ body.dark_mode #loadingBarContainer {
     .welcome_section p {
         font-size: 12px;
     }
-
-
-    /* MOBILE APPS */
 
     .apps {
         grid-template-columns: 1fr;
@@ -1240,9 +1521,6 @@ body.dark_mode #loadingBarContainer {
         font-size: 11px;
     }
 
-
-    /* MOBILE INFO */
-
     .lab_info {
         grid-template-columns: 1fr;
 
@@ -1257,17 +1535,8 @@ body.dark_mode #loadingBarContainer {
         font-size: 19px;
     }
 
-    .ticker_window {
-        height: 32px;
-    }
-
     #info_text {
         font-size: 11px;
-    }
-
-    .ticker_lemon {
-        width: 26px;
-        height: 26px;
     }
 
     .info_stats {
@@ -1277,9 +1546,6 @@ body.dark_mode #loadingBarContainer {
 
         border-top: 3px solid #111;
     }
-
-
-    /* MOBILE LOADING */
 
     #loadingContent {
         width:
@@ -1300,6 +1566,7 @@ body.dark_mode #loadingBarContainer {
 
     #loadingImage {
         width: 140px;
+
         height: 140px;
     }
 
@@ -1314,12 +1581,8 @@ body.dark_mode #loadingBarContainer {
     #loadingScreen.finished #loadingContent {
         transform: scale(6);
     }
+
 }
-
-
-/* =========================================================
-   SMALL PHONES
-========================================================= */
 
 @media (max-width: 400px) {
 
@@ -1347,6 +1610,7 @@ body.dark_mode #loadingBarContainer {
 
     .brand_image {
         width: 32px;
+
         height: 32px;
     }
 
@@ -1392,6 +1656,7 @@ body.dark_mode #loadingBarContainer {
 
     .app_card_icon {
         width: 30px;
+
         height: 30px;
 
         font-size: 17px;
@@ -1407,6 +1672,7 @@ body.dark_mode #loadingBarContainer {
 
     #loadingImage {
         width: 120px;
+
         height: 120px;
     }
 
@@ -1414,4 +1680,5 @@ body.dark_mode #loadingBarContainer {
         width:
             calc(100vw - 30px);
     }
+
 }

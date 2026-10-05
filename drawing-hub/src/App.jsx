@@ -84,6 +84,126 @@ function App() {
     const [color, setColor] =
         useState("#222222");
 
+    const [frequentColors, setFrequentColors] =
+        useState(() => {
+            try {
+                const saved = JSON.parse(
+                    localStorage.getItem(
+                        "laPeaceDrawingFrequentColors"
+                    ) || "[]"
+                );
+
+                return Array.isArray(saved)
+                    ? saved
+                        .filter(
+                            value =>
+                                typeof value === "string"
+                        )
+                        .slice(0, 12)
+                    : [];
+            } catch {
+                return [];
+            }
+        });
+
+    const [frequentColorsOpen, setFrequentColorsOpen] =
+        useState(false);
+
+    const [draftColor, setDraftColor] =
+        useState(color);
+
+    const customColorInputRef =
+        useRef(null);
+
+    const openFrequentColors = () => {
+        setDraftColor(color);
+        setFrequentColorsOpen(true);
+    };
+
+    const selectDraftColor = nextColor => {
+        setDraftColor(String(nextColor).toLowerCase());
+    };
+
+    const selectBrushColor = nextColor => {
+        const normalized =
+            String(nextColor).toLowerCase();
+
+        setColor(normalized);
+
+        setFrequentColors(prev => {
+            const next = [
+                normalized,
+                ...prev.filter(
+                    value =>
+                        value.toLowerCase() !==
+                        normalized
+                )
+            ].slice(0, 12);
+
+            localStorage.setItem(
+                "laPeaceDrawingFrequentColors",
+                JSON.stringify(next)
+            );
+
+            return next;
+        });
+
+        setFrequentColorsOpen(false);
+    };
+
+    const finishFrequentColorSelection = () => {
+        selectBrushColor(draftColor);
+    };
+
+    const cancelFrequentColorSelection = () => {
+        setDraftColor(color);
+        setFrequentColorsOpen(false);
+    };
+
+    useEffect(() => {
+        const handleColorPopupClose = event => {
+            const control = document.querySelector(
+                ".toolbar_color_control"
+            );
+
+            if (
+                frequentColorsOpen &&
+                control &&
+                !control.contains(event.target)
+            ) {
+                cancelFrequentColorSelection();
+            }
+        };
+
+        const handleColorPopupEscape = event => {
+            if (event.key === "Escape") {
+                cancelFrequentColorSelection();
+            }
+        };
+
+        document.addEventListener(
+            "mousedown",
+            handleColorPopupClose
+        );
+
+        document.addEventListener(
+            "keydown",
+            handleColorPopupEscape
+        );
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleColorPopupClose
+            );
+
+            document.removeEventListener(
+                "keydown",
+                handleColorPopupEscape
+            );
+        };
+    }, [frequentColorsOpen]);
+
     const [brushSize, setBrushSize] =
         useState(5);
 
@@ -272,6 +392,11 @@ function App() {
     const [isResizing, setIsResizing] =
         useState(false);
 
+    const [showGrid, setShowGrid] =
+        useState(() =>
+            localStorage.getItem("laPeaceDrawingGrid") === "enabled"
+        );
+
 
     
     
@@ -289,10 +414,45 @@ function App() {
     const textInputRef =
         useRef(null);
 
+    // Konva's dblclick event can be unreliable on draggable nodes.
+    // Keep our own short click history so Text/Note editing works
+    // consistently with mouse and touch input.
+    const textNoteClickRef =
+        useRef({
+            key: null,
+            time: 0
+        });
 
-    
-    
-    
+    useEffect(() => {
+        localStorage.setItem(
+            "laPeaceDrawingGrid",
+            showGrid ? "enabled" : "disabled"
+        );
+    }, [showGrid]);
+
+    // Focus the HTML editor after React has mounted it. Relying on
+    // autoFocus alone is fragile because the second click that opens the
+    // editor originated on the Konva canvas.
+    useEffect(() => {
+        if (editingText !== null && textInputRef.current) {
+            const input = textInputRef.current;
+            requestAnimationFrame(() => {
+                input.focus();
+                input.select();
+            });
+        }
+    }, [editingText]);
+
+    useEffect(() => {
+        if (editingNote !== null && noteInputRef.current) {
+            const input = noteInputRef.current;
+            requestAnimationFrame(() => {
+                input.focus();
+                const length = input.value.length;
+                input.setSelectionRange(length, length);
+            });
+        }
+    }, [editingNote]);
 
     const [selectedElements, setSelectedElements] =
         useState([]);
@@ -300,6 +460,21 @@ function App() {
     
     const [layerContextMenu, setLayerContextMenu] =
         useState(null);
+
+    const [recolorPickerOpen, setRecolorPickerOpen] =
+        useState(false);
+
+    const [recolorDraftColor, setRecolorDraftColor] =
+        useState("#222222");
+
+    // Transparency is stored as 0 = fully visible, 1 = fully invisible.
+    // Keep it as a draft while the context-menu slider is being dragged;
+    // the actual elements are only changed when Done is pressed.
+    const [transparencyDraft, setTransparencyDraft] =
+        useState(0);
+
+    const [brushSizeOpen, setBrushSizeOpen] =
+        useState(false);
 
     
     const [layerDeleteConfirm, setLayerDeleteConfirm] =
@@ -1356,8 +1531,6 @@ const handleLayerDragEnd = () => {
                     );
                 };
 
-            // Treat the eraser's movement between frames as one continuous
-            // capsule. This prevents gaps when the pointer moves quickly.
             const distanceToEraserPath =
                 point => {
 
@@ -1370,11 +1543,6 @@ const handleLayerDragEnd = () => {
                         currentAbsolute.y
                     );
                 };
-
-            /*
-             * Returns the exact entry/exit positions along a straight
-             * vector segment that intersect the eraser capsule.
-             */
             const getErasedInterval =
                 (a, b, radius) => {
 
@@ -1403,8 +1571,6 @@ const handleLayerDragEnd = () => {
                     const endInside =
                         distanceAt(1) <= threshold;
 
-                    // Distance to a capsule along a straight segment is
-                    // convex. Find its minimum first.
                     let low = 0;
                     let high = 1;
 
@@ -1688,8 +1854,7 @@ const handleLayerDragEnd = () => {
 
                         lineChanged = true;
                         anythingChanged = true;
-
-                        // Keep the exact portion before the erased area.
+						
                         if (
                             erased.entry > 0
                         ) {
@@ -1713,8 +1878,7 @@ const handleLayerDragEnd = () => {
                         } else {
                             finishPiece();
                         }
-
-                        // Keep the exact portion after the erased area.
+						
                         if (
                             erased.exit < 1
                         ) {
@@ -1994,6 +2158,31 @@ const handleLayerDragEnd = () => {
     
     
     
+    const getSelectionTransparency = selection => {
+
+        if (!selection?.length) {
+            return 0;
+        }
+
+        const first = selection[0];
+        let opacity = 1;
+
+        if (first.type === "line") {
+            opacity = lines[first.index]?.opacity ?? 1;
+        } else if (first.type === "object") {
+            opacity = objects[first.index]?.opacity ?? 1;
+        }
+
+        return Math.max(0, Math.min(1, 1 - opacity));
+    };
+
+
+    const openContextMenuForSelection = (x, y, selection) => {
+        setTransparencyDraft(getSelectionTransparency(selection));
+        setLayerContextMenu({ x, y, selection });
+    };
+
+
     const handleEditingContextMenu = (type, index, e) => {
 
         e.preventDefault();
@@ -2006,11 +2195,11 @@ const handleLayerDragEnd = () => {
 
         setSelectedElements(selection);
 
-        setLayerContextMenu({
-            x: e.clientX,
-            y: e.clientY,
+        openContextMenuForSelection(
+            e.clientX,
+            e.clientY,
             selection
-        });
+        );
 
     };
 
@@ -2034,11 +2223,11 @@ const handleLayerDragEnd = () => {
             setSelectedElements(selection);
         }
 
-        setLayerContextMenu({
-            x: e.evt.clientX,
-            y: e.evt.clientY,
+        openContextMenuForSelection(
+            e.evt.clientX,
+            e.evt.clientY,
             selection
-        });
+        );
     };
 
     const handleStageContextMenu = e => {
@@ -2051,11 +2240,11 @@ const handleLayerDragEnd = () => {
             return;
         }
 
-        setLayerContextMenu({
-            x: e.evt.clientX,
-            y: e.evt.clientY,
-            selection: selectedElements
-        });
+        openContextMenuForSelection(
+            e.evt.clientX,
+            e.evt.clientY,
+            selectedElements
+        );
     };
 
 
@@ -2071,11 +2260,11 @@ const handleLayerDragEnd = () => {
             return;
         }
 
-        setLayerContextMenu({
-            x: e.evt.clientX,
-            y: e.evt.clientY,
-            selection: selectedElements
-        });
+        openContextMenuForSelection(
+            e.evt.clientX,
+            e.evt.clientY,
+            selectedElements
+        );
 
     };
 
@@ -2114,6 +2303,7 @@ const handleLayerDragEnd = () => {
         );
 
         setActiveLayerId(layerId);
+        setRecolorPickerOpen(false);
         setLayerContextMenu(null);
     };
 
@@ -2126,25 +2316,113 @@ const handleLayerDragEnd = () => {
             return;
         }
 
-        setLayerContextMenu({
-            x:
-                Math.max(
-                    12,
-                    window.innerWidth / 2 - 110
-                ),
-            y:
-                Math.max(
-                    12,
-                    window.innerHeight / 2 - 130
-                ),
-            selection:
-                selectedElements
-        });
+        openContextMenuForSelection(
+            Math.max(
+                12,
+                window.innerWidth / 2 - 110
+            ),
+            Math.max(
+                12,
+                window.innerHeight / 2 - 130
+            ),
+            selectedElements
+        );
 
     };
 
 
     const closeLayerContextMenu = () => {
+        setLayerContextMenu(null);
+        setRecolorPickerOpen(false);
+    };
+
+
+    const recolorSelectedElements = newColor => {
+
+        if (!newColor || !selectedElements.length) {
+            return;
+        }
+
+        saveHistory();
+
+        setLines(prev =>
+            prev.map((line, index) =>
+                selectedElements.some(
+                    element =>
+                        element.type === "line" &&
+                        element.index === index
+                )
+                    ? { ...line, stroke: newColor }
+                    : line
+            )
+        );
+
+        setObjects(prev =>
+            prev.map((object, index) =>
+                selectedElements.some(
+                    element =>
+                        element.type === "object" &&
+                        element.index === index &&
+                        object.type === "text"
+                )
+                    ? { ...object, fill: newColor }
+                    : object
+            )
+        );
+    };
+
+
+    const openRecolorPicker = () => {
+        setRecolorDraftColor(color);
+        setRecolorPickerOpen(true);
+    };
+
+
+    const finishRecolor = () => {
+        if (!recolorDraftColor || !selectedElements.length) {
+            return;
+        }
+
+        recolorSelectedElements(recolorDraftColor);
+        setRecolorPickerOpen(false);
+        setLayerContextMenu(null);
+    };
+
+
+    const finishTransparency = () => {
+        if (!selectedElements.length) {
+            return;
+        }
+
+        const nextOpacity =
+            Math.max(0, Math.min(1, 1 - transparencyDraft));
+
+        saveHistory();
+
+        setLines(prev =>
+            prev.map((line, index) =>
+                selectedElements.some(
+                    element =>
+                        element.type === "line" &&
+                        element.index === index
+                )
+                    ? { ...line, opacity: nextOpacity }
+                    : line
+            )
+        );
+
+        setObjects(prev =>
+            prev.map((object, index) =>
+                selectedElements.some(
+                    element =>
+                        element.type === "object" &&
+                        element.index === index
+                )
+                    ? { ...object, opacity: nextOpacity }
+                    : object
+            )
+        );
+
         setLayerContextMenu(null);
     };
 
@@ -2212,6 +2490,58 @@ const handleElementMouseDown =
 
 
         e.cancelBubble = true;
+
+        // Text and Note use a manual double-click detector. This runs on
+        // pointer-down, before Konva's draggable/click machinery can consume
+        // the second click.
+        if (type === "object") {
+            const sourceObject = objects[index];
+            const editable =
+                sourceObject?.type === "text" ||
+                sourceObject?.type === "note";
+
+            if (editable) {
+                const now = Date.now();
+                const key = `${sourceObject.type}:${index}`;
+                const previous = textNoteClickRef.current;
+
+                if (
+                    previous.key === key &&
+                    now - previous.time <= 500
+                ) {
+                    textNoteClickRef.current = {
+                        key: null,
+                        time: 0
+                    };
+
+                    if (sourceObject.type === "text") {
+                        setEditingNote(null);
+                        setEditingText(index);
+                    } else {
+                        setEditingText(null);
+                        setEditingNote(index);
+                    }
+
+                    // Do not start a drag from the second click.
+                    return;
+                }
+
+                textNoteClickRef.current = {
+                    key,
+                    time: now
+                };
+            } else {
+                textNoteClickRef.current = {
+                    key: null,
+                    time: 0
+                };
+            }
+        } else {
+            textNoteClickRef.current = {
+                key: null,
+                time: 0
+            };
+        }
 
 
         const item = {
@@ -2302,6 +2632,202 @@ const handleElementMouseDown =
     
     
 
+    const getSelectedBounds = () => {
+
+        const stage = stageRef.current;
+
+        if (!stage || selectedElements.length < 2) {
+            return null;
+        }
+
+        let bounds = null;
+
+        selectedElements.forEach(element => {
+
+            const node =
+                nodeRefs.current[
+                    makeKey(element.type, element.index)
+                ];
+
+            if (!node) {
+                return;
+            }
+
+            const rect = node.getClientRect({
+                relativeTo: stage
+            });
+
+            if (!bounds) {
+                bounds = { ...rect };
+                return;
+            }
+
+            const right = Math.max(
+                bounds.x + bounds.width,
+                rect.x + rect.width
+            );
+
+            const bottom = Math.max(
+                bounds.y + bounds.height,
+                rect.y + rect.height
+            );
+
+            const left = Math.min(bounds.x, rect.x);
+            const top = Math.min(bounds.y, rect.y);
+
+            bounds = {
+                x: left,
+                y: top,
+                width: right - left,
+                height: bottom - top
+            };
+
+        });
+
+        return bounds;
+    };
+
+
+    const startSelectedGroupDrag = pos => {
+
+        const positions = new Map();
+
+        selectedElements.forEach(element => {
+
+            const key = makeKey(
+                element.type,
+                element.index
+            );
+
+            const node = nodeRefs.current[key];
+
+            if (!node) {
+                return;
+            }
+
+            positions.set(key, {
+                x: node.x(),
+                y: node.y()
+            });
+
+        });
+
+        if (!positions.size) {
+            return false;
+        }
+
+        groupDragRef.current = {
+            startX: pos.x,
+            startY: pos.y,
+            positions
+        };
+
+        return true;
+    };
+
+
+    const moveSelectedGroup = pos => {
+
+        const drag = groupDragRef.current;
+
+        if (!drag) {
+            return;
+        }
+
+        const dx = pos.x - drag.startX;
+        const dy = pos.y - drag.startY;
+
+        drag.positions.forEach((position, key) => {
+
+            const node = nodeRefs.current[key];
+
+            if (!node) {
+                return;
+            }
+
+            node.position({
+                x: position.x + dx,
+                y: position.y + dy
+            });
+
+        });
+
+        transformerRef.current
+            ?.getLayer()
+            ?.batchDraw();
+    };
+
+
+    const finishSelectedGroupDrag = () => {
+
+        const drag = groupDragRef.current;
+
+        if (!drag) {
+            return;
+        }
+
+        saveHistory();
+
+        setObjects(prev =>
+            prev.map((object, index) => {
+
+                if (!selectedElements.some(
+                    element =>
+                        element.type === "object" &&
+                        element.index === index
+                )) {
+                    return object;
+                }
+
+                const node =
+                    nodeRefs.current[
+                        makeKey("object", index)
+                    ];
+
+                if (!node) {
+                    return object;
+                }
+
+                return {
+                    ...object,
+                    x: node.x(),
+                    y: node.y()
+                };
+            })
+        );
+
+        setLines(prev =>
+            prev.map((line, index) => {
+
+                if (!selectedElements.some(
+                    element =>
+                        element.type === "line" &&
+                        element.index === index
+                )) {
+                    return line;
+                }
+
+                const node =
+                    nodeRefs.current[
+                        makeKey("line", index)
+                    ];
+
+                if (!node) {
+                    return line;
+                }
+
+                return {
+                    ...line,
+                    x: node.x(),
+                    y: node.y()
+                };
+            })
+        );
+
+        groupDragRef.current = null;
+    };
+
+
     const handleStageMouseDown =
         e => {
 
@@ -2373,6 +2899,27 @@ const handleElementMouseDown =
             
             
             if (
+                selectedElements.length > 1 &&
+                e.target === stage
+            ) {
+
+                const bounds = getSelectedBounds();
+
+                if (
+                    bounds &&
+                    pos.x >= bounds.x &&
+                    pos.x <= bounds.x + bounds.width &&
+                    pos.y >= bounds.y &&
+                    pos.y <= bounds.y + bounds.height
+                ) {
+                    if (startSelectedGroupDrag(pos)) {
+                        return;
+                    }
+                }
+            }
+
+
+            if (
                 e.target !==
                 stage
             ) {
@@ -2410,6 +2957,9 @@ const handleElementMouseDown =
         useRef(null);
 
     const transformerDragRef =
+        useRef(null);
+
+    const groupDragRef =
         useRef(null);
 
 
@@ -2500,6 +3050,17 @@ const handleElementMouseDown =
                 stageRef.current;
 
             if (!stage) {
+                return;
+            }
+
+
+            if (groupDragRef.current) {
+                const pos = getPointerPosition();
+
+                if (pos) {
+                    moveSelectedGroup(pos);
+                }
+
                 return;
             }
 
@@ -2754,6 +3315,11 @@ const handleElementMouseDown =
 
     const handleStageMouseUp =
         e => {
+
+            if (groupDragRef.current) {
+                finishSelectedGroupDrag();
+                return;
+            }
 
             if (isRightPanning.current) {
                 isRightPanning.current = false;
@@ -3137,22 +3703,31 @@ const handleElementMouseDown =
         selectedElements,
         objects,
         lines,
-        layers
+        layers,
+        editingText,
+        editingNote
     ]);
 
 
     const handleTransformerDragStart =
         e => {
 
-            if (
-                selectedElements.length <
-                2
-            ) {
+            if (selectedElements.length === 0) {
                 return;
             }
 
             const transformer =
                 e.target;
+
+            const stage =
+                transformer.getStage();
+
+            const pointer =
+                stage?.getPointerPosition();
+
+            if (!pointer) {
+                return;
+            }
 
             const positions =
                 new Map();
@@ -3185,8 +3760,10 @@ const handleElementMouseDown =
             );
 
             transformerDragRef.current = {
-                startX: transformer.x(),
-                startY: transformer.y(),
+                pointerStartX: pointer.x,
+                pointerStartY: pointer.y,
+                transformerStartX: transformer.x(),
+                transformerStartY: transformer.y(),
                 positions
             };
 
@@ -3206,13 +3783,33 @@ const handleElementMouseDown =
             const transformer =
                 e.target;
 
+            const stage =
+                transformer.getStage();
+
+            const pointer =
+                stage?.getPointerPosition();
+
+            if (!pointer) {
+                return;
+            }
+
+            // Use the actual pointer delta rather than the Transformer's
+            // internal x/y. This keeps the selection movement locked to
+            // the cursor and avoids the small jump/lag caused by the
+            // Transformer's own drag position.
+            const stageScaleX =
+                stage?.scaleX() || 1;
+
+            const stageScaleY =
+                stage?.scaleY() || 1;
+
             const dx =
-                transformer.x() -
-                drag.startX;
+                (pointer.x - drag.pointerStartX) /
+                stageScaleX;
 
             const dy =
-                transformer.y() -
-                drag.startY;
+                (pointer.y - drag.pointerStartY) /
+                stageScaleY;
 
             drag.positions.forEach(
                 (position, key) => {
@@ -3225,16 +3822,20 @@ const handleElementMouseDown =
                     }
 
                     node.position({
-                        x:
-                            position.x +
-                            dx,
-                        y:
-                            position.y +
-                            dy
+                        x: position.x + dx,
+                        y: position.y + dy
                     });
 
                 }
             );
+
+            // Keep the Transformer itself at its original position.
+            // The selected nodes move; the Transformer then redraws
+            // around them, keeping the blue box synchronized.
+            transformer.position({
+                x: drag.transformerStartX,
+                y: drag.transformerStartY
+            });
 
             transformer
                 .getLayer()
@@ -3332,8 +3933,8 @@ const handleElementMouseDown =
             );
 
             e.target.position({
-                x: drag.startX,
-                y: drag.startY
+                x: drag.transformerStartX,
+                y: drag.transformerStartY
             });
 
             transformerDragRef.current =
@@ -4246,6 +4847,10 @@ const handleElementMouseDown =
                     object.rotation ||
                     0,
 
+                opacity:
+                    object.opacity ??
+                    1,
+
                 draggable:
                     tool ===
                     "select",
@@ -5100,27 +5705,17 @@ const handleElementMouseDown =
                             color
                         }
 
-                        
-                        
                         opacity={
                             editingText === index
                                 ? 0
                                 : 1
                         }
 
-                        onClick={() => {
-
-                            if (
-                                tool ===
-                                "select"
-                            ) {
-
-                                setEditingText(
-                                    index
-                                );
-
-                            }
-
+                        onClick={e => {
+                            // A single click selects the text.
+                            // Editing is handled by the Transformer because the
+                            // Transformer sits above selected objects.
+                            e.cancelBubble = true;
                         }}
 
                     />
@@ -5129,10 +5724,6 @@ const handleElementMouseDown =
 
             }
 
-
-            
-            
-            
 
             if (
                 object.type ===
@@ -5145,92 +5736,39 @@ const handleElementMouseDown =
                         key={key}
                         {...commonProps}
 
-                        onClick={() => {
-
-                            if (
-                                tool ===
-                                "select"
-                            ) {
-
-                                setEditingNote(
-                                    index
-                                );
-
-                            }
-
+                        onClick={e => {
+                            // A single click selects the note.
+                            // Editing is handled by the Transformer because the
+                            // Transformer sits above selected objects.
+                            e.cancelBubble = true;
                         }}
 
                     >
 
                         <Rect
-
-                            width={
-                                196
-                            }
-
-                            height={
-                                126
-                            }
-
+                            width={196}
+                            height={126}
                             fill="#fff59d"
-
                             shadowColor="black"
-
-                            shadowBlur={
-                                5
-                            }
-
-                            shadowOpacity={
-                                0.15
-                            }
-
-                            shadowOffset={{
-                                x: 2,
-                                y: 3
-                            }}
-
+                            shadowBlur={5}
+                            shadowOpacity={0.15}
+                            shadowOffset={{ x: 2, y: 3 }}
                         />
 
-
                         <Text
-
-                            x={
-                                10
-                            }
-
-                            y={
-                                10
-                            }
-
-                            width={
-                                176
-                            }
-
-                            height={
-                                106
-                            }
-
-                            text={
-                                object.text ||
-                                ""
-                            }
-
-                            fontSize={
-                                18
-                            }
-
+                            x={10}
+                            y={10}
+                            width={176}
+                            height={106}
+                            text={object.text || ""}
+                            fontSize={18}
                             fill="#222"
-
                             wrap="word"
-
-                            
-                            
                             opacity={
                                 editingNote === index
                                     ? 0
                                     : 1
                             }
-
                         />
 
                     </Group>
@@ -5239,10 +5777,6 @@ const handleElementMouseDown =
 
             }
 
-
-            
-            
-            
 
             if (
                 object.type ===
@@ -5392,6 +5926,11 @@ return lines
                                     0
                                 }
 
+                                opacity={
+                                    line.opacity ??
+                                    1
+                                }
+
                                 draggable={
                                     tool ===
                                     "select"
@@ -5514,6 +6053,14 @@ return lines
             onMouseDown={e => {
                 if (layerContextMenu && !e.target.closest?.(".layer_context_menu")) {
                     closeLayerContextMenu();
+                    setRecolorPickerOpen(false);
+                }
+
+                if (
+                    brushSizeOpen &&
+                    !e.target.closest?.(".toolbar_size")
+                ) {
+                    setBrushSizeOpen(false);
                 }
             }}
         >
@@ -5851,6 +6398,59 @@ return lines
                 </Layer>
 
 
+                {showGrid && (
+                    <Layer listening={false}>
+                        <Shape
+                            listening={false}
+                            perfectDrawEnabled={false}
+                            sceneFunc={(context, shape) => {
+                                const stage = stageRef.current;
+                                const scale = Math.max(0.0001, Math.abs(stage?.scaleX?.() || 1));
+                                const stageX = stage?.x?.() || 0;
+                                const stageY = stage?.y?.() || 0;
+                                const viewWidth = stage?.width?.() || stageSize.width;
+                                const viewHeight = stage?.height?.() || stageSize.height;
+
+                                const left = (-stageX) / scale - 50;
+                                const top = (-stageY) / scale - 50;
+                                const right = (viewWidth - stageX) / scale + 50;
+                                const bottom = (viewHeight - stageY) / scale + 50;
+                                const spacing = 25;
+                                const firstX = Math.floor(left / spacing) * spacing;
+                                const firstY = Math.floor(top / spacing) * spacing;
+
+                                context.beginPath();
+                                context.lineWidth = 1 / scale;
+
+                                for (let x = firstX; x <= right; x += spacing) {
+                                    const major = Math.round(x / spacing) % 5 === 0;
+                                    context.strokeStyle = major
+                                        ? "rgba(80, 80, 80, 0.28)"
+                                        : "rgba(80, 80, 80, 0.13)";
+                                    context.beginPath();
+                                    context.moveTo(x, top);
+                                    context.lineTo(x, bottom);
+                                    context.stroke();
+                                }
+
+                                for (let y = firstY; y <= bottom; y += spacing) {
+                                    const major = Math.round(y / spacing) % 5 === 0;
+                                    context.strokeStyle = major
+                                        ? "rgba(80, 80, 80, 0.28)"
+                                        : "rgba(80, 80, 80, 0.13)";
+                                    context.beginPath();
+                                    context.moveTo(left, y);
+                                    context.lineTo(right, y);
+                                    context.stroke();
+                                }
+
+                                context.fillStrokeShape(shape);
+                            }}
+                        />
+                    </Layer>
+                )}
+
+
                 {layers.map(
                     layer => (
 
@@ -5959,12 +6559,47 @@ return lines
                         }
 
                         keepRatio={
+                            false
+                        }
+
+                        enabledAnchors={[
+                            "top-left",
+                            "top-center",
+                            "top-right",
+                            "middle-left",
+                            "middle-right",
+                            "bottom-left",
+                            "bottom-center",
+                            "bottom-right"
+                        ]}
+
+                        anchorSize={
+                            9
+                        }
+
+                        rotateAnchorOffset={
+                            24
+                        }
+
+                        padding={
+                            5
+                        }
+
+                        // The Transformer itself is draggable for both
+                        // single-element and multi-element selections.
+                        // Combined with shouldOverdrawWholeArea, this makes
+                        // the entire blue selection box a drag target.
+                        draggable={
+                            selectedElements.length >
+                            0
+                        }
+
+                        shouldOverdrawWholeArea={
                             true
                         }
 
-                        draggable={
-                            selectedElements.length >
-                            1
+                        dragOnTop={
+                            true
                         }
 
                         onDragStart={
@@ -6007,14 +6642,100 @@ return lines
                             handleTransformEnd
                         }
 
+                        // The Transformer is rendered above the drawing objects.
+                        // Once a Text/Note is selected it can therefore receive
+                        // the second click instead of the underlying Konva node.
+                        // Handle double-click here so editing still works.
+                        onDblClick={e => {
+                            e.cancelBubble = true;
+
+                            if (tool !== "select") return;
+
+                            if (selectedElements.length !== 1) return;
+
+                            const selected = selectedElements[0];
+
+                            if (selected.type !== "object") return;
+
+                            const object = objects[selected.index];
+
+                            if (!object) return;
+
+                            if (object.type === "text") {
+                                setEditingNote(null);
+                                setEditingText(selected.index);
+                            } else if (object.type === "note") {
+                                setEditingText(null);
+                                setEditingNote(selected.index);
+                            }
+                        }}
+
+                        onDblTap={e => {
+                            e.cancelBubble = true;
+
+                            if (tool !== "select") return;
+
+                            if (selectedElements.length !== 1) return;
+
+                            const selected = selectedElements[0];
+
+                            if (selected.type !== "object") return;
+
+                            const object = objects[selected.index];
+
+                            if (!object) return;
+
+                            if (object.type === "text") {
+                                setEditingNote(null);
+                                setEditingText(selected.index);
+                            } else if (object.type === "note") {
+                                setEditingText(null);
+                                setEditingNote(selected.index);
+                            }
+                        }}
+
                         onMouseDown={
                             e => {
-                                if (
-                                    e.evt?.button === 2
-                                ) {
+                                e.cancelBubble = true;
+
+                                if (e.evt?.button === 2) {
                                     e.evt.preventDefault();
-                                    e.cancelBubble = true;
+                                    return;
                                 }
+
+                                if (e.evt?.button !== 0) return;
+                                if (tool !== "select") return;
+                                if (selectedElements.length !== 1) return;
+
+                                const selected = selectedElements[0];
+                                if (selected.type !== "object") return;
+
+                                const object = objects[selected.index];
+                                if (!object || (object.type !== "text" && object.type !== "note")) {
+                                    return;
+                                }
+
+                                const now = Date.now();
+                                const previous = textNoteClickRef.current;
+                                const key = `${object.type}:${selected.index}`;
+
+                                if (previous.key === key && now - previous.time <= 500) {
+                                    textNoteClickRef.current = { key: null, time: 0 };
+
+                                    if (object.type === "text") {
+                                        setEditingNote(null);
+                                        setEditingText(selected.index);
+                                    } else {
+                                        setEditingText(null);
+                                        setEditingNote(selected.index);
+                                    }
+
+                                    // Prevent this second click from initiating a transform.
+                                    e.evt.preventDefault();
+                                    return;
+                                }
+
+                                textNoteClickRef.current = { key, time: now };
                             }
                         }
 
@@ -6085,6 +6806,12 @@ return lines
                         }
 
                         autoFocus
+
+                        onMouseDown={e => e.stopPropagation()}
+
+                        onClick={e => e.stopPropagation()}
+
+                        onTouchStart={e => e.stopPropagation()}
 
                         onFocus={e => e.target.select()}
 
@@ -6168,13 +6895,19 @@ return lines
                                 "border-box",
 
                             userSelect:
-                                "none",
+                                "text",
 
                             WebkitUserSelect:
-                                "none",
+                                "text",
+
+                            pointerEvents:
+                                "auto",
+
+                            touchAction:
+                                "text",
 
                             zIndex:
-                                1000
+                                100000
 
                         }}
 
@@ -6318,13 +7051,19 @@ return lines
                                 "#222",
 
                             userSelect:
-                                "none",
+                                "text",
 
                             WebkitUserSelect:
-                                "none",
+                                "text",
+
+                            pointerEvents:
+                                "auto",
+
+                            touchAction:
+                                "text",
 
                             zIndex:
-                                1000
+                                100000
 
                         }}
 
@@ -6402,6 +7141,24 @@ return lines
                     />
 
                 </label>
+
+
+                <div className="reference_grid_controls">
+                    <label className="reference_grid_toggle">
+                        <input
+                            type="checkbox"
+                            checked={showGrid}
+                            onChange={e =>
+                                setShowGrid(e.target.checked)
+                            }
+                        />
+                        <span>Show drawing grid</span>
+                    </label>
+
+                    <div className="reference_grid_hint">
+                        25 pixel spacing
+                    </div>
+                </div>
 
 
                 {referenceImage && (
@@ -6767,14 +7524,90 @@ return lines
                     className="layer_context_menu"
                     style={{
                         position: "fixed",
-                        left: Math.min(layerContextMenu.x, window.innerWidth - 220),
-                        top: Math.min(layerContextMenu.y, window.innerHeight - 260),
+                        left: Math.max(8, Math.min(layerContextMenu.x, window.innerWidth - 230)),
+                        top: Math.max(8, Math.min(layerContextMenu.y, window.innerHeight - 410)),
                         zIndex: 5000
                     }}
                     onMouseDown={e => e.stopPropagation()}
                     onContextMenu={e => e.preventDefault()}
                 >
-                    <div className="layer_context_title">Move to Layer</div>
+                    <div className="layer_context_title">Selected Elements</div>
+
+                    <button
+                        type="button"
+                        className="layer_context_item"
+                        onClick={openRecolorPicker}
+                    >
+                        <span>●</span>
+                        <span>Recolor</span>
+                    </button>
+
+                    {recolorPickerOpen && (
+                        <div className="context_recolor_picker">
+                            <label className="context_recolor_label">
+                                <span>Color</span>
+                                <input
+                                    className="context_recolor_color"
+                                    type="color"
+                                    value={recolorDraftColor}
+                                    onChange={e =>
+                                        setRecolorDraftColor(
+                                            e.target.value
+                                        )
+                                    }
+                                    aria-label="Choose recolor"
+                                />
+                            </label>
+
+                            <button
+                                type="button"
+                                className="context_recolor_done"
+                                onClick={finishRecolor}
+                            >
+                                Done
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="context_transparency">
+                        <div className="context_transparency_header">
+                            <span>Transparency</span>
+                            <span className="context_transparency_value">
+                                {transparencyDraft.toFixed(2)}
+                            </span>
+                        </div>
+
+                        <input
+                            className="context_transparency_slider"
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={transparencyDraft}
+                            onChange={e =>
+                                setTransparencyDraft(
+                                    Number(e.target.value)
+                                )
+                            }
+                            aria-label="Element transparency"
+                        />
+
+                        <div className="context_transparency_scale">
+                            <span>0 = visible</span>
+                            <span>1 = invisible</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="context_transparency_done"
+                            onClick={finishTransparency}
+                        >
+                            Done
+                        </button>
+                    </div>
+
+                    <div className="layer_context_subtitle">Move to Layer</div>
+
                     {layers
                         .slice()
                         .reverse()
@@ -6799,8 +7632,11 @@ return lines
                         type="button"
                         className="mobile_panel_button"
                         onClick={openMobileLayerMenu}
+                        title="Move selected objects to another layer"
+                        aria-label="Move selected objects to another layer"
                     >
-                        Move Layer
+                        <span className="toolbar_icon mobile_layers_icon" aria-hidden="true">≡</span>
+                        <span className="toolbar_sr_text">Move Layer</span>
                     </button>
                 )}
 
@@ -6813,34 +7649,49 @@ return lines
                                 prev => !prev
                             )
                         }
+                        title={mobilePanelOpen ? "Close reference and layers panel" : "Open reference and layers panel"}
+                        aria-label={mobilePanelOpen ? "Close reference and layers panel" : "Open reference and layers panel"}
                     >
-                        {mobilePanelOpen
-                            ? "Close Panel"
-                            : "Layers / Ref"}
+                        <span className="toolbar_icon" aria-hidden="true">
+                            {mobilePanelOpen ? "×" : "≡"}
+                        </span>
+                        <span className="toolbar_sr_text">
+                            {mobilePanelOpen ? "Close Panel" : "Layers / Ref"}
+                        </span>
                     </button>
                 )}
 
                 <button
                     type="button"
+                    className="toolbar_button toolbar_undo"
                     onClick={undo}
+                    title="Undo"
+                    aria-label="Undo"
                 >
-                    Undo
+                    <svg className="toolbar_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 7H4l3.5-3.5M4 7c7.8-2.2 13.5.7 13.5 6.5 0 3.2-2.3 5.5-5.5 5.5H9" />
+                    </svg>
                 </button>
-
 
                 <button
                     type="button"
+                    className="toolbar_button toolbar_redo"
                     onClick={redo}
+                    title="Redo"
+                    aria-label="Redo"
                 >
-                    Redo
+                    <svg className="toolbar_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M15 7h5l-3.5-3.5M20 7c-7.8-2.2-13.5.7-13.5 6.5 0 3.2 2.3 5.5 5.5 5.5h3" />
+                    </svg>
                 </button>
 
-
                 <div className="zoom_controls">
+
                     <button
                         type="button"
                         onClick={() => zoomCanvas(zoom / 1.1)}
                         title="Zoom out"
+                        aria-label="Zoom out"
                     >
                         −
                     </button>
@@ -6851,71 +7702,83 @@ return lines
                         type="button"
                         onClick={() => zoomCanvas(zoom * 1.1)}
                         title="Zoom in"
+                        aria-label="Zoom in"
                     >
                         +
                     </button>
+
                 </div>
 
-
                 <button
-
                     type="button"
-
                     className={
-                        tool === "select"
-                            ? "active"
-                            : ""
+                        "toolbar_button toolbar_drag " +
+                        (
+                            tool === "select"
+                                ? "active"
+                                : ""
+                        )
                     }
-
                     onClick={() => {
                         setTool("select");
                         setPendingInsert(null);
                     }}
-
+                    title="Drag / Select"
+                    aria-label="Drag / Select"
                 >
-                   Drag
+                    <svg className="toolbar_svg toolbar_drag_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V10M11 9V4.5a1.5 1.5 0 0 1 3 0V10M14 9V6a1.5 1.5 0 0 1 3 0v5M17 11V9.5a1.5 1.5 0 0 1 3 0v4.3c0 4.5-2.7 7.2-6.8 7.2H11c-2 0-3.4-.8-4.5-2.2L4 15.5a1.5 1.5 0 0 1 2.2-2l1.8 1.6V11" />
+                    </svg>
                 </button>
 
-
                 <button
-
                     type="button"
-
                     className={
-                        tool === "pen"
-                            ? "active"
-                            : ""
+                        "toolbar_button toolbar_pen " +
+                        (
+                            tool === "pen"
+                                ? "active"
+                                : ""
+                        )
                     }
-
                     onClick={() => {
                         setTool("pen");
                         setPendingInsert(null);
                         setSelectedElements([]);
                     }}
-
+                    title="Pen"
+                    aria-label="Pen"
                 >
-                    Pen
+                    <svg className="toolbar_svg toolbar_pen_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 19l1.7-4.9L15.9 4.9a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L9.9 17.3 5 19z" />
+                        <path d="M14.6 6.2l3.2 3.2" />
+                        <path d="M5 19l4.9-1.7" />
+                    </svg>
                 </button>
 
-
                 <button
-
                     type="button"
-
                     className={
-                        tool === "eraser"
-                            ? "active"
-                            : ""
+                        "toolbar_button toolbar_eraser " +
+                        (
+                            tool === "eraser"
+                                ? "active"
+                                : ""
+                        )
                     }
-
                     onClick={() => {
                         setTool("eraser");
                         setPendingInsert(null);
                         setSelectedElements([]);
                     }}
-
+                    title="Eraser"
+                    aria-label="Eraser"
                 >
-                    Eraser
+                    <svg className="toolbar_svg toolbar_eraser_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4.5 15.8l8.9-8.9a2.2 2.2 0 0 1 3.1 0l3.6 3.6a2.2 2.2 0 0 1 0 3.1L15.3 18.4H8.1l-3.6-2.6z" />
+                        <path d="M8.1 18.4l4.4-4.4" />
+                        <path d="M15.3 18.4h4.2" />
+                    </svg>
                 </button>
 
                 <div className="shape_menu">
@@ -6923,257 +7786,42 @@ return lines
                     <button
                         type="button"
                         className={
-                            pendingInsert?.type === "shape"
-                                ? "active"
-                                : ""
+                            "toolbar_button toolbar_shapes " +
+                            (
+                                pendingInsert?.type === "shape"
+                                    ? "active"
+                                    : ""
+                            )
                         }
-                                        >
-                        Shapes
+                        title="Shapes"
+                        aria-label="Shapes"
+                    >
+                        <svg className="toolbar_svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="8" cy="9" r="4" />
+                            <rect x="12" y="11" width="7" height="7" rx="1" />
+                        </svg>
                     </button>
-
 
                     <div className="shape_dropdown">
 
                         <div className="shape_grid">
 
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "square"
-                                    )
-                                }
-                            >
-                                □
-                                <span>
-                                    Square
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "circle"
-                                    )
-                                }
-                            >
-                                ○
-                                <span>
-                                    Circle
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "triangle"
-                                    )
-                                }
-                            >
-                                △
-                                <span>
-                                    Triangle
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "diamond"
-                                    )
-                                }
-                            >
-                                ◇
-                                <span>
-                                    Diamond
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "hexagon"
-                                    )
-                                }
-                            >
-                                ⬡
-                                <span>
-                                    Hexagon
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "oval"
-                                    )
-                                }
-                            >
-                                ⬭
-                                <span>
-                                    Oval
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "parallelogram"
-                                    )
-                                }
-                            >
-                                ▱
-                                <span>
-                                    Parallelogram
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "star"
-                                    )
-                                }
-                            >
-                                ☆
-                                <span>
-                                    Star
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "cloud"
-                                    )
-                                }
-                            >
-                                ☁
-                                <span>
-                                    Cloud
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "heart"
-                                    )
-                                }
-                            >
-                                ♡
-                                <span>
-                                    Heart
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "incorrect"
-                                    )
-                                }
-                            >
-                                ☐
-                                <span>
-                                    Incorrect
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "correct"
-                                    )
-                                }
-                            >
-                                ☑
-                                <span>
-                                    Correct
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "leftArrow"
-                                    )
-                                }
-                            >
-                                ←
-                                <span>
-                                    Left
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "upArrow"
-                                    )
-                                }
-                            >
-                                ↑
-                                <span>
-                                    Up
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "downArrow"
-                                    )
-                                }
-                            >
-                                ↓
-                                <span>
-                                    Down
-                                </span>
-                            </button>
-
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    chooseShape(
-                                        "rightArrow"
-                                    )
-                                }
-                            >
-                                →
-                                <span>
-                                    Right
-                                </span>
-                            </button>
+                            <button type="button" onClick={() => chooseShape("square")}>□<span>Square</span></button>
+                            <button type="button" onClick={() => chooseShape("circle")}>○<span>Circle</span></button>
+                            <button type="button" onClick={() => chooseShape("triangle")}>△<span>Triangle</span></button>
+                            <button type="button" onClick={() => chooseShape("diamond")}>◇<span>Diamond</span></button>
+                            <button type="button" onClick={() => chooseShape("hexagon")}>⬡<span>Hexagon</span></button>
+                            <button type="button" onClick={() => chooseShape("oval")}>⬭<span>Oval</span></button>
+                            <button type="button" onClick={() => chooseShape("parallelogram")}>▱<span>Parallelogram</span></button>
+                            <button type="button" onClick={() => chooseShape("star")}>☆<span>Star</span></button>
+                            <button type="button" onClick={() => chooseShape("cloud")}>☁<span>Cloud</span></button>
+                            <button type="button" onClick={() => chooseShape("heart")}>♡<span>Heart</span></button>
+                            <button type="button" onClick={() => chooseShape("incorrect")}>☐<span>Incorrect</span></button>
+                            <button type="button" onClick={() => chooseShape("correct")}>☑<span>Correct</span></button>
+                            <button type="button" onClick={() => chooseShape("leftArrow")}>←<span>Left</span></button>
+                            <button type="button" onClick={() => chooseShape("upArrow")}>↑<span>Up</span></button>
+                            <button type="button" onClick={() => chooseShape("downArrow")}>↓<span>Down</span></button>
+                            <button type="button" onClick={() => chooseShape("rightArrow")}>→<span>Right</span></button>
 
                         </div>
 
@@ -7184,96 +7832,235 @@ return lines
                 <button
                     type="button"
                     className={
-                        pendingInsert?.type === "text"
-                            ? "active"
-                            : ""
+                        "toolbar_button toolbar_text " +
+                        (
+                            pendingInsert?.type === "text"
+                                ? "active"
+                                : ""
+                        )
                     }
                     onClick={chooseText}
+                    title="Text"
+                    aria-label="Text"
                 >
-                    Text
+                    <span className="toolbar_text_letter" aria-hidden="true">T</span>
                 </button>
 
                 <button
                     type="button"
                     className={
-                        pendingInsert?.type === "note"
-                            ? "active"
-                            : ""
+                        "toolbar_button toolbar_note " +
+                        (
+                            pendingInsert?.type === "note"
+                                ? "active"
+                                : ""
+                        )
                     }
                     onClick={chooseNote}
+                    title="Note"
+                    aria-label="Note"
                 >
-                    Note
+                    <svg className="toolbar_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3.5h9l4 4V20.5H6z" />
+                        <path d="M15 3.5v5h4M9 13h6M9 16h6" />
+                    </svg>
                 </button>
 
-                <label className="image_button">
-
-                    Image
+                <label
+                    className="toolbar_button toolbar_image image_button"
+                    title="Add image"
+                    aria-label="Add image"
+                >
+                    <svg className="toolbar_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3.5" y="5" width="17" height="14" rx="2" />
+                        <circle cx="9" cy="10" r="1.7" />
+                        <path d="M5.5 17l4.5-4.5 3 3 2.2-2.2 3.3 3.7M18 3v6M15 6h6" />
+                    </svg>
 
                     <input
-
                         type="file"
-
                         accept="image/*"
-
-                        onChange={
-                            addImage
-                        }
-
+                        onChange={addImage}
                     />
-
                 </label>
 
-                <label>
+                <div
+                    className={
+                        "toolbar_color_control " +
+                        (frequentColorsOpen ? "open" : "")
+                    }
+                >
 
-                    Color
+                    <button
+                        type="button"
+                        className="toolbar_button toolbar_color"
+                        title="Brush colour"
+                        aria-label="Brush colour"
+                        aria-expanded={frequentColorsOpen}
+                        onClick={e => {
+                            e.stopPropagation();
 
-                    <input
+                            if (frequentColorsOpen) {
+                                cancelFrequentColorSelection();
+                            } else {
+                                openFrequentColors();
+                            }
+                        }}
+                    >
+                        <svg className="toolbar_svg toolbar_color_svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="7"
+                                style={{
+                                    fill: color,
+                                    stroke: "#fff"
+                                }}
+                            />
+                        </svg>
+                    </button>
 
-                        type="color"
+                    {frequentColorsOpen && (
+                        <div
+                            className="frequent_colors_popup"
+                            onMouseDown={e =>
+                                e.stopPropagation()
+                            }
+                        >
+                            <div className="frequent_colors_title">
+                                Frequent colours
+                            </div>
 
-                        value={
-                            color
-                        }
+                            <button
+                                type="button"
+                                className="frequent_custom_color"
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    customColorInputRef.current?.click();
+                                }}
+                            >
+                                <span>Custom colour</span>
+                                <span
+                                    className="frequent_custom_color_preview"
+                                    style={{
+                                        backgroundColor: draftColor
+                                    }}
+                                />
+                            </button>
 
-                        onChange={
-                            e =>
-                                setColor(
-                                    e.target.value
-                                )
-                        }
-
-                    />
-
-                </label>
-
-                <label>
-
-                    Size
-
-                    <input
-
-                        type="range"
-
-                        min="1"
-
-                        max="50"
-
-                        value={
-                            brushSize
-                        }
-
-                        onChange={
-                            e =>
-                                setBrushSize(
-                                    Number(
+                            <input
+                                ref={customColorInputRef}
+                                className="frequent_hidden_color_input"
+                                type="color"
+                                value={draftColor}
+                                onChange={e =>
+                                    selectDraftColor(
                                         e.target.value
                                     )
-                                )
+                                }
+                            />
+
+                            <div className="frequent_colors_grid">
+                                {frequentColors.map(
+                                    frequentColor => (
+                                        <button
+                                            key={frequentColor}
+                                            type="button"
+                                            className={
+                                                "frequent_color_swatch " +
+                                                (
+                                                    frequentColor === draftColor
+                                                        ? "active"
+                                                        : ""
+                                                )
+                                            }
+                                            style={{
+                                                backgroundColor:
+                                                    frequentColor
+                                            }}
+                                            title={frequentColor}
+                                            aria-label={
+                                                "Use brush colour " +
+                                                frequentColor
+                                            }
+                                            onClick={() =>
+                                                selectDraftColor(
+                                                    frequentColor
+                                                )
+                                            }
+                                        />
+                                    )
+                                )}
+                            </div>
+
+                            <div className="frequent_color_footer">
+                                <button
+                                    type="button"
+                                    className="frequent_color_done"
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        finishFrequentColorSelection();
+                                    }}
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+
+                <div
+                    className={
+                        "toolbar_button toolbar_size " +
+                        (brushSizeOpen ? "open" : "")
+                    }
+                    title="Brush size"
+                    aria-label="Brush size"
+                    role="button"
+                    tabIndex={0}
+                    onClick={e => {
+                        e.stopPropagation();
+                        setBrushSizeOpen(prev => !prev);
+                    }}
+                    onKeyDown={e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setBrushSizeOpen(prev => !prev);
                         }
 
-                    />
+                        if (e.key === "Escape") {
+                            e.preventDefault();
+                            setBrushSizeOpen(false);
+                        }
+                    }}
+                >
+                    <svg className="toolbar_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14M8 8v8M16 9.5v5" />
+                    </svg>
 
-                </label>
+                    <div
+                        className="brush_size_popover"
+                        onMouseDown={e => e.stopPropagation()}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="brush_size_value">
+                            {brushSize}px
+                        </div>
+
+                        <input
+                            type="range"
+                            min="1"
+                            max="50"
+                            value={brushSize}
+                            onClick={e => e.stopPropagation()}
+                            onChange={e =>
+                                setBrushSize(Number(e.target.value))
+                            }
+                            aria-label="Brush size"
+                        />
+                    </div>
+                </div>
 
             </div>
 

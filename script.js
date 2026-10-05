@@ -40,7 +40,7 @@ const translations = {
 
     en: {
 
-        page_title: "La Peace Lab",
+        page_title: "Lem.co",
 
         credits_link: "Credits",
 
@@ -142,6 +142,218 @@ languageSelector.value =
 changeLanguage(savedLanguage);
 
 
+
+/* =========================================================
+   PREFERENCES
+========================================================= */
+
+const preferencesButton =
+    document.getElementById("preferences_button");
+
+const preferencesMenu =
+    document.getElementById("preferences_menu");
+
+const adBarsToggle =
+    document.getElementById("ads_toggle");
+
+const backgroundMusicToggle =
+    document.getElementById("music_toggle");
+
+const backgroundMusic =
+    document.getElementById("background_music");
+
+
+function setAdBarsEnabled(enabled) {
+
+    document.body.classList.toggle(
+        "hide_ad_bars",
+        !enabled
+    );
+
+    localStorage.setItem(
+        "adBars",
+        enabled ? "enabled" : "disabled"
+    );
+}
+
+
+function setBackgroundMusicEnabled(enabled) {
+
+    if (!backgroundMusic) {
+        return;
+    }
+
+    backgroundMusicToggle.checked = enabled;
+
+    localStorage.setItem(
+        "backgroundMusic",
+        enabled ? "enabled" : "disabled"
+    );
+
+    if (!enabled) {
+
+        backgroundMusic.pause();
+
+        return;
+    }
+
+    /*
+       Browsers may block autoplay until the
+       visitor interacts with the page.
+    */
+
+    backgroundMusic.play().catch(() => {});
+
+}
+
+
+if (preferencesButton && preferencesMenu) {
+
+    preferencesButton.addEventListener(
+        "click",
+        (event) => {
+
+            event.stopPropagation();
+
+            const isOpen = !preferencesMenu.hasAttribute("hidden");
+
+            if (isOpen) {
+                preferencesMenu.setAttribute("hidden", "");
+                preferencesButton.setAttribute("aria-expanded", "false");
+            } else {
+                preferencesMenu.removeAttribute("hidden");
+                preferencesButton.setAttribute("aria-expanded", "true");
+            }
+
+        }
+    );
+
+
+    document.addEventListener(
+        "click",
+        (event) => {
+
+            if (
+                !preferencesMenu.contains(event.target) &&
+                event.target !== preferencesButton
+            ) {
+
+                preferencesMenu.setAttribute("hidden", "");
+                preferencesButton.setAttribute("aria-expanded", "false");
+
+            }
+
+        }
+    );
+
+}
+
+
+const savedAdBars =
+    localStorage.getItem("adBars") !== "disabled";
+
+
+const savedBackgroundMusic =
+    localStorage.getItem("backgroundMusic") === "enabled";
+
+
+if (adBarsToggle) {
+
+    adBarsToggle.checked =
+        savedAdBars;
+
+    setAdBarsEnabled(
+        savedAdBars
+    );
+
+    adBarsToggle.addEventListener(
+        "change",
+        () => {
+
+            setAdBarsEnabled(
+                adBarsToggle.checked
+            );
+
+        }
+    );
+
+}
+
+
+if (backgroundMusicToggle) {
+
+    backgroundMusicToggle.checked =
+        savedBackgroundMusic;
+
+    setBackgroundMusicEnabled(
+        savedBackgroundMusic
+    );
+
+    backgroundMusicToggle.addEventListener(
+        "change",
+        () => {
+
+            setBackgroundMusicEnabled(
+                backgroundMusicToggle.checked
+            );
+
+        }
+    );
+
+}
+
+
+/*
+   If music was enabled previously, wait for the
+   visitor's first interaction before attempting
+   playback. This avoids browser autoplay blocks.
+*/
+
+if (backgroundMusic) {
+
+    const startMusicAfterInteraction =
+        () => {
+
+            if (
+                backgroundMusicToggle &&
+                backgroundMusicToggle.checked
+            ) {
+
+                backgroundMusic.play().catch(
+                    () => {}
+                );
+
+            }
+
+            document.removeEventListener(
+                "click",
+                startMusicAfterInteraction
+            );
+
+            document.removeEventListener(
+                "keydown",
+                startMusicAfterInteraction
+            );
+
+        };
+
+
+    document.addEventListener(
+        "click",
+        startMusicAfterInteraction,
+        { once: true }
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        startMusicAfterInteraction,
+        { once: true }
+    );
+
+}
+
+
 /* =========================================================
    PAGE INITIALIZATION
 ========================================================= */
@@ -194,8 +406,12 @@ document.addEventListener(
 
             "the music lab was our first app",
 
-            "𓀀 𓀁 𓀂 𓀃 𓀄 𓀅 𓀆 𓀇 𓀈 𓀉 𓀊 𓀋 𓀌 𓀍 𓀎 𓀏 𓀐 𓀑 𓀒 𓀓 𓀔 𓀕 𓀖 𓀗 𓀘 𓀙 𓀚 𓀛 𓀜 𓀝 𓀞 𓀟 𓀠 𓀡 𓀢 𓀣 𓀤 𓀥 𓀦 𓀧 𓀨 𓀩 𓀪 𓀫 𓀬 𓀭 𓀮 𓀯 𓀰 𓀱 𓀲 𓀳 𓀴 𓀵 𓀶 𓀷 𓀸 𓀹 𓀺 𓀻 𓀼 𓀽 𓀾 𓀿 𓁀 𓁁 𓁂 𓁃 𓁄𓁈𓂀𓋹𓆣𓁀𓀾"
-
+            "𓀀 𓀁 𓀂 𓀃 𓀄 𓀅 𓀆 𓀇 𓀈 𓀉 𓀊 𓀋 𓀌 𓀍 𓀎 𓀏 𓀐 𓀑 𓀒 𓀓 𓀔 𓀕 𓀖 𓀗 𓀘 𓀙 𓀚 𓀛 𓀜 𓀝 𓀞 𓀟 𓀠 𓀡 𓀢 𓀣 𓀤 𓀥 𓀦 𓀧 𓀨 𓀩 𓀪 𓀫 𓀬 𓀭 𓀮 𓀯 𓀰 𓀱 𓀲 𓀳 𓀴 𓀵 𓀶 𓀷 𓀸 𓀹 𓀺 𓀻 𓀼 𓀽 𓀾 𓀿 𓁀 𓁁 𓁂 𓁃 𓁄𓁈𓂀𓋹𓆣𓁀𓀾",
+			
+			"Hi lol",
+			
+			"bitzies boys are back again"
+			
         ];
 
 
@@ -412,8 +628,7 @@ document.addEventListener(
 
 
             /*
-                Recalculate the distance because
-                every message can have a different width.
+			calc
             */
 
             ticker.classList.remove(
@@ -425,8 +640,7 @@ document.addEventListener(
 
 
             /*
-                Force the browser to reset
-                the animation.
+			animation reset
             */
 
             void ticker.offsetWidth;
@@ -439,8 +653,7 @@ document.addEventListener(
 
 
         /*
-            When the current message reaches
-            the right side, start another one.
+		marquee effect
         */
 
         ticker.addEventListener(
@@ -486,4 +699,204 @@ document.addEventListener(
         );
 
     }
+);
+
+/* =========================================================
+   FEATURED ARTWORK ROTATION
+========================================================= */
+
+/*
+   TABLE
+*/
+
+const featuredArtworks = [
+
+    {
+        image: "art/space.png",
+
+        creator: "Naildoor",
+
+        socials: {
+            instagram: "https://www.instagram.com/naildoority/",
+            x: "#",
+            other: "#"
+        },
+
+        description:
+            "an artwork depicting an astronaut in space"
+    },
+
+    {
+        image: "art/album-full.png",
+
+        creator: "Naildoor",
+
+        socials: {
+            instagram: "https://www.instagram.com/naildoority/",
+            x: "#",
+            other: "#"
+        },
+
+        description:
+            "an artwork based on an album"
+    },
+
+    {
+        image: "art/manhunter.png",
+
+        creator: "Naildoor",
+
+        socials: {
+            instagram: "https://www.instagram.com/naildoority/",
+            x: "#",
+            other: "#"
+        },
+
+        description:
+            "john jones"
+    }
+
+];
+
+
+/*
+SHUFFLE
+*/
+function shuffleFeaturedArtworks(artworks) {
+
+    const shuffled = [...artworks];
+
+    for (
+        let i = shuffled.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const j = Math.floor(
+            Math.random() * (i + 1)
+        );
+
+        [shuffled[i], shuffled[j]] =
+            [shuffled[j], shuffled[i]];
+
+    }
+
+    return shuffled;
+}
+
+
+function renderFeaturedArtwork(artwork, card) {
+
+    if (!artwork || !card) {
+        return;
+    }
+
+    const image =
+        card.querySelector(".feature_artwork img");
+
+    const creator =
+        card.querySelector(".feature_creator");
+
+    const description =
+        card.querySelector(".feature_description span");
+
+    const socialLinks =
+        card.querySelectorAll(".feature_socials a");
+
+
+    if (image && artwork.image) {
+
+        image.src = artwork.image;
+
+        image.alt =
+            `${artwork.creator || "Featured"} artwork`;
+
+    }
+
+
+    if (creator) {
+
+        creator.textContent =
+            artwork.creator || "Creator's Name";
+
+    }
+
+
+    if (description) {
+
+        description.textContent =
+            artwork.description || "";
+
+    }
+
+
+    if (socialLinks.length > 0) {
+
+        socialLinks[0].href =
+            artwork.socials?.instagram || "#";
+
+    }
+
+
+    if (socialLinks.length > 1) {
+
+        socialLinks[1].href =
+            artwork.socials?.x || "#";
+
+    }
+
+
+    if (socialLinks.length > 2) {
+
+        socialLinks[2].href =
+            artwork.socials?.other || "#";
+
+    }
+
+}
+
+
+function randomizeFeaturedArtworks() {
+
+    const cards =
+        document.querySelectorAll(".feature_card");
+
+    if (!cards.length || !featuredArtworks.length) {
+        return;
+    }
+
+    const shuffled =
+        shuffleFeaturedArtworks(featuredArtworks);
+
+
+    /*
+	ASSIGNMENT OF ARTWORK
+    */
+    cards.forEach((card, index) => {
+
+        if (!shuffled.length) {
+            return;
+        }
+
+        const artwork =
+            shuffled[index % shuffled.length];
+
+        renderFeaturedArtwork(
+            artwork,
+            card
+        );
+
+    });
+
+}
+
+
+/*
+RANDOM SHUFFLE
+*/
+randomizeFeaturedArtworks();
+
+setInterval(
+    randomizeFeaturedArtworks,
+    60 * 1000
 );
