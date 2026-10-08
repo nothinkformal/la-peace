@@ -1,51 +1,746 @@
-.tutorial {
-	max-width: 800px;
-	margin: 60px auto;
-	padding: 40px;
-	text-align: center;
-    font-family: Arial, sans-serif;
-    font-weight: bold;
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body {
+    color: #111;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .tutorial-p {
-	background-image: url("");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    min-height: 100vh;
+    background: #7278f2;
+    padding: 30px;
 }
 
-.tutorial h1{
-	margin-bottom: 40px;
-    font-family: Arial, sans-serif;
-    font-weight: bold;
+.site-shell {
+    width: 100%;
+    max-width: 1940px;
+    height: min(900px, 92vh);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    background: #f8efd9;
+    border: 3px solid #111;
+    box-shadow: 5px 5px 0 #111;
+    overflow: hidden;
 }
 
-.tutorial-step{
-	margin-bottom: 30px;
-	padding: 25px;
-	border: 3px soldier #222;
-	background: #eeeee;
-	font-family: Arial, sans-serif;
-    font-weight: bold;
+.sidebar {
+    min-width: 0;
+    background: #a9d9bd;
+    border-right: 2px solid #111;
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
 }
 
-.tutorial-step h2 {
-	margin-top: 0;
+.sidebar_brand {
+    padding: 5px 4px 24px;
+    border-bottom: 2px solid #111;
 }
 
-.start-button {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 15px 30px;
-    background: #f7bb52;
-    border: 3px solid #222;
-    color: #FFF;
+.brand_link {
+    color: #111;
     text-decoration: none;
-	font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand_logo {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    border: 2px solid #111;
+    background: #fff8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.brand_logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.brand_text {
+    display: flex;
+    flex-direction: column;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.brand_text strong {
+    font-size: 14px;
+}
+
+.brand_text span {
+    font-size: 14px;
+}
+
+.sidebar_navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 20px;
+}
+
+.sidebar_link {
+    min-height: 38px;
+    padding: 8px 9px;
+    color: #111;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar_link:hover,
+.sidebar_link.active {
+    background: #111;
+    color: #fff;
+}
+
+.sidebar_icon {
+    width: 18px;
+    flex: 0 0 18px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.sidebar_bottom {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 2px solid #111;
+}
+
+.sidebar_small_link {
+    color: #111;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    font-size: 13px;
     font-weight: bold;
 }
 
-.start-button:hover {
-    transform: scale(1.03);
+.sidebar_small_link:hover {
+    background: #111;
+    color: #fff;
+}
+
+.tutorial {
+    min-width: 0;
+    background: #fff8e8;
+}
+
+.tutorial_header {
+    width: 100%;
+    height: 68px;
+    min-height: 68px;
+    flex-shrink: 0;
+    padding: 11px 18px;
+    border-bottom: 2px solid #111;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.tutorial_title {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.tutorial_title h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 29px;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.back_button {
+    width: 34px;
+    height: 34px;
+    border: 2px solid #111;
+    background: #fff8e8;
+    color: #111;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.back_button:hover {
+    background: #111;
+    color: #fff;
+}
+
+.header_controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header_controls select,
+.header_controls button {
+    border: 2px solid #111;
+    border-radius: 0;
+    background: #fff8e7;
+    color: #111;
+    cursor: pointer;
+    outline: none;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.header_controls select {
+    width: 110px;
+    min-width: 110px;
+    height: 36px;
+    min-height: 36px;
+    flex: 0 0 110px;
+    padding: 0 9px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.header_controls button {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    flex: 0 0 36px;
+    padding: 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header_controls select:hover {
+    background: #f3ead7;
+}
+
+.header_controls button:hover {
+    background: #111;
+    color: white;
+}
+
+.article_area {
+    position: relative;
+    padding: 30px;
+}
+
+.article_navigation {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 190px;
+    gap: 14px 17px;
+}
+
+.article_block {
+    min-width: 0;
+    min-height: 220px;
+    padding: 19px;
+    border: 2px solid #111;
+    color: #111;
+    text-decoration: none;
+    display: flex;
+    align-items: flex-start;
+    transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.article_block:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.article_block:nth-child(2),
+.article_block:nth-child(3) {
+    grid-column: 1 / -1;
+}
+
+.music_lab_button {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 190px;
+    color: #111;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+}.article_block:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
+.article_block:active {
+    transform: translateY(0);
+}
+
+.article_block h2 {
+    margin: 0 0 12px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 42px;
+    font-weight: 400;
+}
+
+.article_block p {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.article_block_blue {
+    background: #63a8ed;
+}
+
+.article_block_light_blue {
+    background: #8eaef2;
+}
+
+.article_block_dark_blue {
+    background: #416dd4;
+}
+
+.article_block_green {
+    background: #9bd1b4;
+}
+
+.music_lab_button {
+    align-self: start;
+    justify-self: center;
+    color: #111;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    height: 220px;
+    width: 200px;
+}
+
+.music_lab_image {
+    aspect-ratio: 1 / 1;
+    border: 2px solid #111;
+    background: #fff8e8;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s ease, filter 0.12s ease;
+    height: 220px;
+    width: 200px;
+}
+
+.music_lab_image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.music_lab_button:hover .music_lab_image {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+}
+
+.music_lab_label {
+    width: 180px;
+    padding: 5px 3px;
+    border: 2px solid #111;
+    background: #fff8e8;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .tutorial-p {
+        padding: 25px;
+    }
+
+    .site-shell {
+        width: 96vw;
+        max-width: none;
+        height: min(850px, 92vh);
+        grid-template-columns: 210px minmax(0, 1fr);
+    }
+
+    .sidebar {
+        padding: 12px 9px;
+    }
+
+    .sidebar_link {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 800px) {
+.article_navigation {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .article_block:nth-child(1),
+    .article_block:nth-child(2),
+    .article_block:nth-child(3) {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .tutorial-p {
+        padding: 12px;
+    }
+
+    .site-shell {
+        min-height: calc(100vh - 24px);
+        grid-template-columns: 210px minmax(0, 1fr);
+    }
+
+    .tutorial_header {
+        padding: 0 8px;
+    }
+
+    .tutorial_title h1 {
+        font-size: 27px;
+    }
+
+    .header_controls select {
+        display: none;
+    }
+
+    .article_area {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .music_lab_button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .music_lab_image,
+    .music_lab_label {
+        width: 92px;
+    }
+
+    .article_navigation {
+        padding-right: 84px;
+    }
+
+    .article_block {
+        min-height: 105px;
+        padding: 14px;
+    }
+
+    .article_block h2 {
+        font-size: 25px;
+    }
+
+    .article_block p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 700px) {
+    .tutorial-p {
+        padding: 0;
+    }
+
+    .site-shell {
+        min-height: 100vh;
+        border-width: 0;
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 10px;
+        border-right: none;
+        border-bottom: 3px solid #111;
+    }
+
+    .brand_text {
+        display: none;
+    }
+
+    .sidebar_link {
+        font-size: 10px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .tutorial_title {
+        gap: 9px;
+    }
+
+    .tutorial_title h1 {
+        font-size: 24px;
+    }
+
+    .header_controls button:nth-last-child(-n + 2) {
+        display: none;
+    }
+
+    .article_area {
+        padding: 10px;
+    }
+
+    .article_block {
+        min-height: 95px;
+        padding: 12px;
+    }
+
+    .article_block h2 {
+        font-size: 22px;
+    }
+
+    .article_block p {
+        font-size: 16px;
+    }
+
+    .music_lab_button {
+        top: 7px;
+        right: 7px;
+    }
+
+    .music_lab_image,
+    .music_lab_label {
+        width: 76px;
+    }
+
+    .article_navigation {
+        padding-right: 72px;
+    }
+}
+
+/* =========================================================
+   TOP BAR — MATCH MAIN MENU CSS
+========================================================= */
+
+@media (max-width: 700px) {
+    .tutorial_header {
+        height: 55px;
+        padding: 8px 10px;
+    }
+
+    .back_button {
+        width: 30px;
+        height: 30px;
+        font-size: 15px;
+    }
+
+    .header_controls {
+        gap: 5px;
+    }
+
+    .header_controls select {
+        min-width: 95px;
+        height: 30px;
+        padding: 0 5px;
+        font-size: 10px;
+    }
+
+    .header_controls button {
+        width: 30px;
+        height: 30px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 400px) {
+    .tutorial_header {
+        padding: 7px;
+    }
+
+    .header_controls select {
+        min-width: 85px;
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   FONT FAMILIES
+   Main tutorial area = Courier New
+   Sidebar = Arial
+========================================================= */
+
+.tutorial,
+.tutorial_header,
+.tutorial_title,
+.tutorial_title h1,
+.back_button,
+.article_area,
+.article_navigation,
+.article_block,
+.article_block h2,
+.article_block p,
+.music_lab_button,
+.music_lab_label {
+    font-family: "Courier New", monospace;
+}
+
+/* Sidebar keeps the same Arial styling as the main LEM.CO menu. */
+.sidebar,
+.sidebar_brand,
+.brand_link,
+.brand_text,
+.brand_text strong,
+.brand_text span,
+.sidebar_navigation,
+.sidebar_link,
+.sidebar_icon,
+.sidebar_bottom,
+
+.sidebar_small_link {
+    font-family: Arial, sans-serif;
+	font-weight: bold;
+}
+
+
+/* =========================================================
+   PREFERENCES MENU
+========================================================= */
+
+.tutorial_header {
+    position: relative;
+}
+
+.preferences_menu {
+    position: absolute;
+    top: 58px;
+    right: 18px;
+    z-index: 20;
+    min-width: 210px;
+    padding: 12px;
+    border: 2px solid #111;
+    background: #fff8e8;
+    color: #111;
+    box-shadow: 4px 4px 0 #111;
+}
+
+.preferences_menu[hidden] {
+    display: none;
+}
+
+.preference_option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 5px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.preference_option input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #111;
+}
+
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+body.dark_mode {
+    color: #f4f4f4;
+    background: #1b1b1b;
+}
+
+body.dark_mode .site-shell {
+    background: #242424;
+    border-color: #f4f4f4;
+    box-shadow: 5px 5px 0 #000;
+}
+
+body.dark_mode .sidebar {
+    background: #355b4a;
+    border-color: #f4f4f4;
+}
+
+body.dark_mode .sidebar_brand,
+body.dark_mode .sidebar_bottom {
+    border-color: #f4f4f4;
+}
+
+body.dark_mode .sidebar_link,
+body.dark_mode .sidebar_small_link,
+body.dark_mode .brand_link {
+    color: #f4f4f4;
+}
+
+body.dark_mode .sidebar_link:hover,
+body.dark_mode .sidebar_link.active,
+body.dark_mode .sidebar_small_link:hover {
+    background: #f4f4f4;
+    color: #111;
+}
+
+body.dark_mode .brand_logo,
+body.dark_mode .tutorial,
+body.dark_mode .tutorial_header {
+    background: #242424;
+    color: #f4f4f4;
+}
+
+body.dark_mode .tutorial_header {
+    border-color: #f4f4f4;
+}
+
+body.dark_mode .back_button,
+body.dark_mode .header_controls select,
+body.dark_mode .header_controls button {
+    background: #242424;
+    color: #f4f4f4;
+    border-color: #f4f4f4;
+}
+
+body.dark_mode .back_button:hover,
+body.dark_mode .header_controls button:hover {
+    background: #f4f4f4;
+    color: #111;
+}
+
+body.dark_mode .header_controls select:hover {
+    background: #333;
+}
+
+body.dark_mode .preferences_menu {
+    background: #242424;
+    color: #f4f4f4;
+    border-color: #f4f4f4;
+    box-shadow: 4px 4px 0 #000;
+}
+
+body.dark_mode .music_lab_label {
+    background: #242424;
+    color: #f4f4f4;
+    border-color: #f4f4f4;
 }

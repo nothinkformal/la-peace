@@ -162,6 +162,109 @@ const backgroundMusicToggle =
 const backgroundMusic =
     document.getElementById("background_music");
 
+const sidebarMusicToggle =
+    document.getElementById("sidebar_music_toggle");
+
+const adCountIncrease =
+    document.getElementById("ad_count_increase");
+
+const adCountValue =
+    document.getElementById("ad_count_value");
+
+
+/* =========================================================
+   AD BAR COUNT
+========================================================= */
+
+const MAX_AD_BARS = 2;
+const MIN_AD_BARS = 1;
+
+let adBarCount = Math.min(
+    MAX_AD_BARS,
+    Math.max(
+        MIN_AD_BARS,
+        parseInt(
+            localStorage.getItem("adBarCount") || "1",
+            10
+        ) || 1
+    )
+);
+
+
+function updateAdBarLayout() {
+
+    const layout =
+        document.getElementById("lab_layout");
+
+    const adBars =
+        document.querySelectorAll(".feature_card");
+
+    if (!layout || !adBars.length) {
+        return;
+    }
+
+    /*
+       Keep the selected layout on the BODY.
+
+       The CSS is responsible for the actual grid:
+       1 = right ad only
+       2 = both ads
+
+       We deliberately do NOT set gridTemplateColumns
+       inline here. The CSS controls the ad widths.
+    */
+    document.body.classList.remove(
+        "ad_bars_1",
+        "ad_bars_2"
+    );
+
+    document.body.classList.add(
+        `ad_bars_${adBarCount}`
+    );
+
+    /* Let CSS control display, including mobile rules. */
+    adBars.forEach((bar) => {
+        bar.style.display = "";
+    });
+
+    if (adCountValue) {
+        adCountValue.textContent = adBarCount;
+    }
+
+    if (adCountIncrease) {
+        adCountIncrease.disabled = false;
+        adCountIncrease.setAttribute(
+            "aria-disabled",
+            "false"
+        );
+        adCountIncrease.setAttribute(
+            "aria-label",
+            adBarCount >= MAX_AD_BARS
+                ? "Show one ad bar"
+                : "Show two ad bars"
+        );
+    }
+}
+
+
+function setAdBarCount(count) {
+
+    adBarCount = Math.min(
+        MAX_AD_BARS,
+        Math.max(
+            MIN_AD_BARS,
+            count
+        )
+    );
+
+    localStorage.setItem(
+        "adBarCount",
+        String(adBarCount)
+    );
+
+    updateAdBarLayout();
+}
+
 
 function setAdBarsEnabled(enabled) {
 
@@ -174,7 +277,68 @@ function setAdBarsEnabled(enabled) {
         "adBars",
         enabled ? "enabled" : "disabled"
     );
+
+    const adBars =
+        document.querySelectorAll(".feature_card");
+
+    if (!enabled) {
+
+        document.body.classList.remove(
+            "ad_bars_1",
+            "ad_bars_2"
+        );
+
+        adBars.forEach((bar) => {
+            bar.style.display = "none";
+        });
+
+        if (adCountValue) {
+            adCountValue.textContent = adBarCount;
+        }
+
+        return;
+    }
+
+    updateAdBarLayout();
 }
+
+
+/*
+   Cycle the ad count:
+
+   1 -> 2
+   2 -> 1
+*/
+if (adCountIncrease) {
+
+    adCountIncrease.addEventListener(
+        "click",
+        (event) => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const nextCount =
+                adBarCount >= MAX_AD_BARS
+                    ? MIN_AD_BARS
+                    : adBarCount + 1;
+
+            setAdBarCount(nextCount);
+        }
+    );
+}
+
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        if (localStorage.getItem("adBars") !== "disabled") {
+            updateAdBarLayout();
+        }
+
+    }
+);
 
 
 function setBackgroundMusicEnabled(enabled) {
@@ -183,12 +347,47 @@ function setBackgroundMusicEnabled(enabled) {
         return;
     }
 
-    backgroundMusicToggle.checked = enabled;
+
+    if (backgroundMusicToggle) {
+
+        backgroundMusicToggle.checked =
+            enabled;
+
+    }
+
+
+    if (sidebarMusicToggle) {
+
+        sidebarMusicToggle.classList.toggle(
+            "is_off",
+            !enabled
+        );
+
+        sidebarMusicToggle.setAttribute(
+            "aria-pressed",
+            enabled ? "true" : "false"
+        );
+
+        sidebarMusicToggle.setAttribute(
+            "aria-label",
+            enabled
+                ? "Disable background music"
+                : "Enable background music"
+        );
+
+        sidebarMusicToggle.title =
+            enabled
+                ? "Disable background music"
+                : "Enable background music";
+
+    }
+
 
     localStorage.setItem(
         "backgroundMusic",
         enabled ? "enabled" : "disabled"
     );
+
 
     if (!enabled) {
 
@@ -197,12 +396,15 @@ function setBackgroundMusicEnabled(enabled) {
         return;
     }
 
+
     /*
        Browsers may block autoplay until the
        visitor interacts with the page.
     */
 
-    backgroundMusic.play().catch(() => {});
+    backgroundMusic.play().catch(
+        () => {}
+    );
 
 }
 
@@ -253,6 +455,10 @@ const savedAdBars =
     localStorage.getItem("adBars") !== "disabled";
 
 
+/* Restore the saved ad count before applying the visibility state. */
+setAdBarCount(adBarCount);
+
+
 const savedBackgroundMusic =
     localStorage.getItem("backgroundMusic") === "enabled";
 
@@ -295,6 +501,32 @@ if (backgroundMusicToggle) {
 
             setBackgroundMusicEnabled(
                 backgroundMusicToggle.checked
+            );
+
+        }
+    );
+
+}
+
+
+/*
+   Sidebar music-note button.
+   It controls the exact same setting as the
+   Background music checkbox in Preferences.
+*/
+if (sidebarMusicToggle) {
+
+    sidebarMusicToggle.addEventListener(
+        "click",
+        () => {
+
+            const currentlyEnabled =
+                backgroundMusicToggle
+                    ? backgroundMusicToggle.checked
+                    : localStorage.getItem("backgroundMusic") === "enabled";
+
+            setBackgroundMusicEnabled(
+                !currentlyEnabled
             );
 
         }

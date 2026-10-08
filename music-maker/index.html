@@ -1,358 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>La Peace Lab</title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Maker — LEM.CO</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
-
-    <div class="app">
-
-
-        <h1>
-            La Peace Lab
-        </h1>
-
-
-        <div class="grid-navigation">
-    <button id="scrollLeftButton" class="grid-arrow">←</button>
-
-    <div class="grid-container">
-        <div id="grid"></div>
-    </div>
-
-    <button id="scrollRightButton" class="grid-arrow">→</button>
-</div>
-
-<div class = "toggle_theme">
-<button id = "light_mode_button"
-
-class = "theme_button active"
-
-type = "button" >
-🌞
-</button>
-
-<button id = "dark_mode_button"
-class = "theme_button"
-type = "button" >
-🌕
-</button>
-</div>
-
-
-            <div class="controls">
-
-
-
-            <button id="playButton">
-                Play
-            </button>
-
-
-
-            <button id="stopButton">
-                Stop
-            </button>
-
-
-
-            <button id="clearButton">
-                Clear
-            </button>
-
-            <button id="downloadButton">Download</button>
-
-
-
-            <div class="tempo-control">
-
-                <label for="tempoInput">
-                    BPM
-                </label>
-
-                <input
-                    type="range"
-                    id="tempoInput"
-                    min="40"
-                    max="240"
-                    value="120"
-                    step="1"
-                >
-
-                <span id="tempoValue">
-                    120
-                </span>
-
+    <div class="music_shell">
+        <aside class="music_sidebar">
+            <div class="brand">
+                <div class="brand-mark"><img src="../images/lemon.png" alt="LEM.CO"></div>
+                <div class="brand-name">LEM.CO<span>LAB</span></div>
             </div>
 
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a class="nav-item" href="../index.html"><span>⌂</span> Home</a>
+                <a class="nav-item active" href="index.html"><span>♫</span> Music Maker</a>
+                <a class="nav-item" href="../drawing-hub/dist/index.html"><span>✎</span> Drawing Lab</a>
+                <a class="nav-item" href="#"><span>▣</span> Gallery</a>
+                <a class="nav-item" href="#"><span>▤</span> The Story</a>
+                <a class="nav-item" href="#"><span>★</span> Our Mission</a>
+                <a class="nav-item" href="#"><span>ⓘ</span> Credits</a>
+            </nav>
 
+            <a class="about-link" href="#"><span>?</span> About</a>
+        </aside>
 
-            <button id="settingsButton">
-                Settings
-            </button>
-
-
-        </div>
-
-
-              <div class="instrument-section">
-
-
-            <h2>
-                Instrument
-            </h2>
-
-
-            <div id="instrumentSelector">
-
-
-                <div
-                    class="instrument active"
-                    data-instrument="piano"
-                >
-
-                    <div class="instrument-icon">
-                        🎹
+        <main class="music_main">
+            <header class="topbar">
+                <button class="back-button" type="button" onclick="history.back()" aria-label="Go back">←</button>
+                <div class="topbar-actions">
+                    <select class="language-select" aria-label="Language">
+                        <option>English</option>
+                    </select>
+                    <button class="square-button" type="button" id="settingsButton" aria-label="Settings">⚙</button>
+                    <div class="theme-switcher" aria-label="Theme">
+                        <button id="light_mode_button" class="theme_button active" type="button" aria-label="Light mode">☀</button>
+                        <button id="dark_mode_button" class="theme_button" type="button" aria-label="Dark mode">☾</button>
                     </div>
+                </div>
+            </header>
 
-                    <div class="instrument-name">
-                        Piano
+            <section class="music_lab" aria-label="Music Maker">
+                <div class="lab-heading">
+                    <div>
+                        <div class="eyebrow">LEM.CO</div>
+                        <h1>Music Maker</h1>
+                        <p>make music</p>
                     </div>
-
+                    <div class="lab-badge">MUSIC</div>
                 </div>
 
-
-                <div
-                    class="instrument"
-                    data-instrument="synth"
-                >
-
-                    <div class="instrument-icon">
-                        🎛️
+                <div class="sequencer-card">
+                    <div class="grid-navigation">
+                        <button id="scrollLeftButton" class="grid-arrow" type="button" aria-label="Scroll left">←</button>
+                        <div class="grid-container">
+                            <div id="grid"></div>
+                        </div>
+                        <button id="scrollRightButton" class="grid-arrow" type="button" aria-label="Scroll right">→</button>
                     </div>
-
-                    <div class="instrument-name">
-                        Synth
-                    </div>
-
                 </div>
 
-
-                <div
-                    class="instrument"
-                    data-instrument="marimba"
-                >
-
-                    <div class="instrument-icon">
-                        🪵
+                <div class="controls-card">
+                    <div class="transport-controls">
+                        <button id="playButton" class="primary-control" type="button">Play</button>
+                        <button id="stopButton" type="button">Stop</button>
+                        <button id="clearButton" type="button">Clear</button>
+                        <button id="downloadButton" type="button">Download</button>
                     </div>
 
-                    <div class="instrument-name">
-                        Marimba
+                    <div class="tempo-control">
+                        <label for="tempoInput">BPM</label>
+                        <input type="range" id="tempoInput" min="40" max="240" value="120" step="1">
+                        <span id="tempoValue">120</span>
                     </div>
-
                 </div>
 
-
-                <div
-                    class="instrument"
-                    data-instrument="strings"
-                >
-
-                    <div class="instrument-icon">
-                        🎻
+                <section class="instrument-section">
+                    <div class="section-label">
+                        <h2>Instruments</h2>
+                        <span>pick a instrument</span>
                     </div>
-
-                    <div class="instrument-name">
-                        Strings
+                    <div id="instrumentSelector">
+                        <div class="instrument active" data-instrument="piano">
+                            <div class="instrument-icon">🎹</div>
+                            <div class="instrument-name">Piano</div>
+                        </div>
+                        <div class="instrument" data-instrument="synth">
+                            <div class="instrument-icon">🎛️</div>
+                            <div class="instrument-name">Synth</div>
+                        </div>
+                        <div class="instrument" data-instrument="marimba">
+                            <div class="instrument-icon">🪵</div>
+                            <div class="instrument-name">Marimba</div>
+                        </div>
+                        <div class="instrument" data-instrument="strings">
+                            <div class="instrument-icon">🎻</div>
+                            <div class="instrument-name">Strings</div>
+                        </div>
+                        <div class="instrument" data-instrument="flute">
+                            <div class="instrument-icon">🎶</div>
+                            <div class="instrument-name">Flute</div>
+                        </div>
                     </div>
+                </section>
+            </section>
+        </main>
 
-                </div>
-
-
-                <div
-                    class="instrument"
-                    data-instrument="flute"
-                >
-
-                    <div class="instrument-icon">
-                        🎶
-                    </div>
-
-                    <div class="instrument-name">
-                        Flute
-                    </div>
-
-                </div>
-
-
-            </div>
-
-        </div>
-
-        <div
-            id="settingsOverlay"
-            class="settings-overlay"
-        >
-
-
+        <div id="settingsOverlay" class="settings-overlay">
             <div class="settings-panel">
-
                 <div class="settings-header">
-
-
-                    <h2>
-                        Settings
-                    </h2>
-
-
-                    <button
-                        id="closeSettingsButton"
-                        class="close-settings"
-                        type="button"
-                    >
-                        ×
-                    </button>
-
-
+                    <div>
+                        <div class="eyebrow">MUSIC MAKER</div>
+                        <h2>Settings</h2>
+                    </div>
+                    <button id="closeSettingsButton" class="close-settings" type="button">×</button>
                 </div>
 
                 <div class="setting">
-
-
                     <div class="setting-label">
-
-
-                        <label for="volumeInput">
-                            Volume
-                        </label>
-
-
-                        <span id="volumeValue">
-                            100%
-                        </span>
-
-
+                        <label for="volumeInput">Volume</label>
+                        <span id="volumeValue">100%</span>
                     </div>
-
-
-                    <input
-                        type="range"
-                        id="volumeInput"
-                        min="0"
-                        max="100"
-                        value="100"
-                        step="1"
-                    >
-
-
+                    <input type="range" id="volumeInput" min="0" max="100" value="100" step="1">
                 </div>
 
                 <div class="setting mute-setting">
-
-
-                    <label for="muteInput">
-                        Mute
-                    </label>
-
-
+                    <label for="muteInput">Mute</label>
                     <label class="switch">
-
-
-                        <input
-                            type="checkbox"
-                            id="muteInput"
-                        >
-
-
+                        <input type="checkbox" id="muteInput">
                         <span class="slider"></span>
-
-
                     </label>
-
-
                 </div>
 
                 <div class="setting">
-
-
                     <div class="setting-label">
-
-                        <label>
-                            Track Length
-                        </label>
-
+                        <label>Track Length</label>
                     </div>
-
-
                     <div class="track-length-control">
-
-
-                        <button
-                            type="button"
-                            id="decreaseLengthButton"
-                            class="length-button"
-                        >
-                            −
-                        </button>
-
-
-                        <span id="trackLengthValue">
-                            32
-                        </span>
-
-
-                        <button
-                            type="button"
-                            id="increaseLengthButton"
-                            class="length-button"
-                        >
-                            +
-                        </button>
-
-
+                        <button type="button" id="decreaseLengthButton" class="length-button">−</button>
+                        <span id="trackLengthValue">32</span>
+                        <button type="button" id="increaseLengthButton" class="length-button">+</button>
                     </div>
-
-
                 </div>
-
-
             </div>
-
-
         </div>
-
-
     </div>
 
-
     <script src="https://unpkg.com/tone@15.1.22/build/Tone.js"></script>
-
-
-    <!-- ==============================
-         MAIN SCRIPT
-    =============================== -->
-
     <script src="script.js"></script>
-
-
 </body>
-
 </html>

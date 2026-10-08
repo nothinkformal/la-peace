@@ -295,6 +295,24 @@
 
 
 
+                <!-- BACKGROUND MUSIC -->
+
+                <div class="sidebar_music_control">
+
+                    <button
+                        id="sidebar_music_toggle"
+                        class="sidebar_music_toggle"
+                        type="button"
+                        aria-label="Enable background music"
+                        aria-pressed="false"
+                        title="Enable background music"
+                    >
+                        ♪
+                    </button>
+
+                </div>
+
+
                 <!-- ABOUT -->
 
                 <div class="sidebar_bottom">
@@ -382,14 +400,26 @@
                                     Preferences
                                 </div>
 
-                                <label class="preference_option">
-                                    <input
-                                        type="checkbox"
-                                        id="ads_toggle"
-                                        checked
-                                    >
-                                    <span>Show ad bars</span>
-                                </label>
+                                <div class="ad_bars_preference">
+                                    <label class="preference_option">
+                                        <input
+                                            type="checkbox"
+                                            id="ads_toggle"
+                                            checked
+                                        >
+                                        <span>Show ad bars</span>
+                                    </label>
+
+                                    <div class="ad_count_control" aria-label="Number of ad bars">
+                                        <button
+                                            id="ad_count_increase"
+                                            class="ad_count_button"
+                                            type="button"
+                                            aria-label="Show another ad bar"
+                                        >+</button>
+                                        <span id="ad_count_value">1</span>
+                                    </div>
+                                </div>
 
                                 <label class="preference_option">
                                     <input
@@ -622,7 +652,7 @@
 
 
                             <span class="info_label">
-                                LEM.CO
+                               <a href = "" >  LEM.CO Guidelines </a>
                             </span>
 
 

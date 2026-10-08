@@ -3,39 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>music maker</title>
+    <title id="page_title">Music Theory — LEM.CO</title>
     <link rel="stylesheet" href="style-t.css">
 </head>
-<body class = "tutorial-p">
+<body class="tutorial-p">
+
+<div class="site-shell">
+
+    <aside class="sidebar">
+        <div class="sidebar_brand">
+            <a href="../index.html" class="brand_link">
+                <div class="brand_logo">
+                    <img src="../images/lemon.png" alt="LEM.CO">
+                </div>
+                <div class="brand_text">
+                    <strong>LEM.CO</strong>
+                    <span>LAB</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="sidebar_navigation" aria-label="Main navigation">
+            <a href="../index.html" class="sidebar_link active"><span class="sidebar_icon">⌂</span><span id="home_link">Home</span></a>
+            <a href="../music/index.html" class="sidebar_link"><span class="sidebar_icon">♫</span><span id="music_link">Music Maker</span></a>
+            <a href="#" class="sidebar_link"><span class="sidebar_icon">✎</span><span id="drawing_link">Drawing Lab</span></a>
+            <a href="#" class="sidebar_link"><span class="sidebar_icon">▣</span><span id="gallery_link">Gallery</span></a>
+            <a href="#" class="sidebar_link"><span class="sidebar_icon">▤</span><span id="story_link">The Story</span></a>
+            <a href="#" class="sidebar_link"><span class="sidebar_icon">★</span><span id="mission_link">Our Mission</span></a>
+            <a href="#" class="sidebar_link"><span class="sidebar_icon">ⓘ</span><span id="credits_link">Credits</span></a>
+        </nav>
+
+        <div class="sidebar_bottom">
+            <a href="#" class="sidebar_small_link"><span>?</span><span id="about_link">About</span></a>
+        </div>
+    </aside>
 
     <main class="tutorial">
-        <h1>music maker</h1>
+        <header class="tutorial_header">
+            <div class="tutorial_title">
+                <a href="../index.html" class="back_button" aria-label="Back to home" title="Back to home">←</a>
+                <h1 id="music_title">Music</h1>
+            </div>
 
-        <section class="tutorial-step">
-            <h2>1. tba</h2>
-            <p>
-                tba
-            </p>
+            <div class="header_controls">
+                <select id="language_selector" aria-label="Language"><option value="en">English</option><option value="id">Indonesian</option></select>
+                <button type="button" id="preferences_button" aria-label="Preferences" aria-expanded="false" aria-controls="preferences_menu">⚙</button>
+                <button type="button" id="light_mode_button" aria-label="Light mode" aria-pressed="false">☀</button>
+                <button type="button" id="dark_mode_button" aria-label="Dark mode" aria-pressed="false">☾</button>
+            </div>
+
+            <div class="preferences_menu" id="preferences_menu" hidden>
+                <label class="preference_option">
+                    <input type="checkbox" id="music_toggle">
+                    <span id="background_music_label">Background music</span>
+                </label>
+            </div>
+        </header>
+
+        <section class="article_area">
+            <div class="article_navigation">
+
+                <a href="" class="article_block article_block_blue">
+                    <div class="article_block_text">
+                        <h2 id="music_theory_title">Music theory</h2>
+                        <p id="music_theory_description">Learn the foundations behind music.</p>
+                    </div>
+                </a>
+
+                <a href="" class="article_block article_block_light_blue">
+                    <div class="article_block_text">
+                        <h2 id="creating_music_title">Creating Music</h2>
+                        <p id="creating_music_description">Learn about creating music, the tools available, and how to begin making your own.</p>
+                    </div>
+                </a>
+
+                <a href="" class="article_block article_block_dark_blue">
+                    <div class="article_block_text">
+                        <h2 id="genres_title">Genres</h2>
+                        <p id="genres_description">Explore different musical genres and what makes each one distinct.</p>
+                    </div>
+                </a>
+
+            </div>
+
+            <a href="../music/index.html"
+               class="music_lab_button"
+               aria-label="Launch Music Lab"
+               title="Launch Music Lab">
+                <div class="music_lab_image">
+                    <img src="../images/music-lab.png" alt="Launch Music Lab">
+                </div>
+            </a>
         </section>
-
-        <section class="tutorial-step">
-            <h2>2.tba</h2>
-            <p>
-                tba
-            </p>
-        </section>
-
-        <section class="tutorial-step">
-            <h2>3. tba</h2>
-            <p>
-                tba
-            </p>
-        </section>
-
-        <a href="index.html" class="start-button">
-            launch music maker
-        </a>
     </main>
 
+</div>
+
+<audio id="background_music" src="../audio/background-music.mp3" loop preload="auto"></audio>
+<script src="script-t.js"></script>
 </body>
 </html>

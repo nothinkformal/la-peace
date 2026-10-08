@@ -194,6 +194,45 @@ body {
     cursor: pointer;
 }
 
+
+/* Brush selection popover */
+.toolbar_pen_control { position: relative; }
+.brush_menu_popover {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    width: 270px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    background: #18191b;
+    border: 1px solid #3b3d41;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+    z-index: 30;
+}
+.brush_menu_popover::after { content: ""; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px; }
+.brush_menu_title { color: #fff; font-size: 14px; font-weight: 700; padding: 1px 3px 3px; }
+.brush_menu_list { display: flex; flex-direction: column; gap: 5px; }
+.brush_option { width: 100%; min-height: 48px; padding: 7px 8px; display: flex; align-items: center; gap: 9px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #fff; cursor: pointer; text-align: left; }
+.brush_option:hover, .brush_option.selected { background: #303236; }
+.brush_option.selected { border-color: #55585d; }
+.brush_option_text { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.brush_option_text strong { font-size: 13px; line-height: 1.1; }
+.brush_option_text small { color: #aeb0b5; font-size: 10px; line-height: 1.15; }
+.brush_option_check { font-size: 16px; font-weight: 700; }
+.brush_preview { width: 45px; height: 30px; flex: 0 0 45px; display: flex; align-items: center; }
+.brush_preview span { display: block; width: 42px; height: 5px; border-radius: 999px; background: #fff; }
+.brush_preview_pencil span { width: 39px; height: 3px; opacity: .55; }
+.brush_preview_marker span { width: 42px; height: 11px; opacity: .5; }
+.brush_preview_ink span { width: 42px; height: 4px; }
+.brush_preview_airbrush span { width: 42px; height: 12px; opacity: .18; filter: blur(4px); }
+.brush_preview_chalk span { width: 42px; height: 5px; opacity: .6; background: repeating-linear-gradient(90deg, #fff 0 5px, transparent 5px 8px); }
+.brush_menu_done { width: 100%; min-height: 36px; border: none; border-radius: 8px; background: #303236; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+.brush_menu_done:hover { background: #414348; }
+
 .toolbar_size {
     position: relative;
 }
@@ -1437,4 +1476,66 @@ textarea[style*="zIndex"] {
     background: #fff59d !important;
     border-color: #222 !important;
     padding: 12px !important;
+}
+
+
+/* =========================================================
+   REFERENCE PANEL — DESKTOP HIDE / SHOW
+   The panel slides to the right while a persistent toggle
+   remains at the top-right edge so it can be brought back.
+========================================================= */
+
+.reference_panel {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reference_panel.reference_hidden {
+    transform: translateX(100%);
+    pointer-events: none;
+}
+
+.reference_panel_toggle {
+    position: fixed;
+    top: 15px;
+    z-index: 6000;
+
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #222;
+    border-radius: 6px;
+    background: #fff;
+    color: #222;
+
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1;
+
+    cursor: pointer;
+    transition:
+        right 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        background 0.12s ease,
+        color 0.12s ease,
+        transform 0.12s ease;
+}
+
+.reference_panel_toggle:hover {
+    background: #222;
+    color: #fff;
+}
+
+.reference_panel_toggle:active {
+    transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+    .reference_panel_toggle {
+        display: none;
+    }
 }

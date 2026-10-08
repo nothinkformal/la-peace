@@ -36,6 +36,7 @@ function App() {
 
     const [lines, setLines] = useState([]);
     const [objects, setObjects] = useState([]);
+    const [fills, setFills] = useState([]);
 
 
     
@@ -206,6 +207,54 @@ function App() {
 
     const [brushSize, setBrushSize] =
         useState(5);
+
+    const [brushType, setBrushType] =
+        useState("basic");
+
+    const [brushMenuOpen, setBrushMenuOpen] =
+        useState(false);
+
+    const brushOptions = [
+        { id: "basic", name: "Basic", description: "default solid line" },
+        { id: "pencil", name: "Pencil", description: "soft, for lighter sketches" },
+        { id: "marker", name: "Marker", description: "a bit thicker and transparent" },
+        { id: "ink", name: "Ink", description: "for smoother lines" },
+        { id: "airbrush", name: "Airbrush", description: "for more softer lines" },
+        { id: "chalk", name: "Chalk", description: "for more rougher lines" }
+    ];
+
+    const selectBrush = nextBrush => {
+        setBrushType(nextBrush);
+        setTool("pen");
+        setPendingInsert(null);
+        setSelectedElements([]);
+    };
+
+    const finishBrushSelection = () => {
+        setBrushMenuOpen(false);
+    };
+
+    useEffect(() => {
+        const handleBrushMenuClose = event => {
+            const control = document.querySelector(".toolbar_pen_control");
+
+            if (brushMenuOpen && control && !control.contains(event.target)) {
+                setBrushMenuOpen(false);
+            }
+        };
+
+        const handleBrushMenuEscape = event => {
+            if (event.key === "Escape") setBrushMenuOpen(false);
+        };
+
+        document.addEventListener("mousedown", handleBrushMenuClose);
+        document.addEventListener("keydown", handleBrushMenuEscape);
+
+        return () => {
+            document.removeEventListener("mousedown", handleBrushMenuClose);
+            document.removeEventListener("keydown", handleBrushMenuEscape);
+        };
+    }, [brushMenuOpen]);
 
     
     
@@ -457,6 +506,15 @@ function App() {
     const [selectedElements, setSelectedElements] =
         useState([]);
 
+    // The Fill tool is a painting tool, not a selection tool.
+    // Clear any existing selection as soon as Fill becomes active so
+    // the Transformer cannot remain visible while filling.
+    useEffect(() => {
+        if (tool === "fill") {
+            setSelectedElements([]);
+        }
+    }, [tool]);
+
     
     const [layerContextMenu, setLayerContextMenu] =
         useState(null);
@@ -505,6 +563,9 @@ function App() {
     const stageRef =
         useRef(null);
 
+    const gridLayerRef =
+        useRef(null);
+
     const transformerRef =
         useRef(null);
 
@@ -542,6 +603,11 @@ function App() {
     const [mobilePanelOpen, setMobilePanelOpen] =
         useState(false);
 
+    // Desktop reference-panel visibility.
+    // The panel slides off the right side while the canvas expands.
+    const [referencePanelHidden, setReferencePanelHidden] =
+        useState(false);
+
 
     
     
@@ -557,7 +623,7 @@ function App() {
         Math.max(
             0,
             stageSize.width -
-            (isMobile ? 0 : referenceWidth)
+            (isMobile || referencePanelHidden ? 0 : referenceWidth)
         );
 
 
@@ -824,7 +890,8 @@ function App() {
             ...prev,
             {
                 lines: lines.map(line => ({ ...line, points: [...line.points] })),
-                objects: objects.map(object => ({ ...object }))
+                objects: objects.map(object => ({ ...object })),
+                fills: fills.map(fill => ({ ...fill }))
             }
         ]);
 
@@ -846,7 +913,8 @@ function App() {
             ...prev,
             {
                 lines: lines.map(line => ({ ...line, points: [...line.points] })),
-                objects: objects.map(object => ({ ...object }))
+                objects: objects.map(object => ({ ...object })),
+                fills: fills.map(fill => ({ ...fill }))
             }
         ]);
 
@@ -856,6 +924,10 @@ function App() {
 
         setObjects(
             previous.objects.map(object => ({ ...object }))
+        );
+
+        setFills(
+            previous.fills ? previous.fills.map(fill => ({ ...fill })) : []
         );
 
         setHistory(
@@ -881,7 +953,8 @@ function App() {
             ...prev,
             {
                 lines: lines.map(line => ({ ...line, points: [...line.points] })),
-                objects: objects.map(object => ({ ...object }))
+                objects: objects.map(object => ({ ...object })),
+                fills: fills.map(fill => ({ ...fill }))
             }
         ]);
 
@@ -891,6 +964,10 @@ function App() {
 
         setObjects(
             next.objects.map(object => ({ ...object }))
+        );
+
+        setFills(
+            next.fills ? next.fills.map(fill => ({ ...fill })) : []
         );
 
         setRedoHistory(
@@ -1033,6 +1110,16 @@ function App() {
                     line =>
                         getItemLayerId(
                             line
+                        ) !== layerId
+                )
+            );
+
+
+            setFills(prev =>
+                prev.filter(
+                    fill =>
+                        getItemLayerId(
+                            fill
                         ) !== layerId
                 )
             );
@@ -1399,6 +1486,398 @@ const handleLayerDragEnd = () => {
 
     };
 
+
+    // Paint-bucket / flood-fill tool.
+    //
+    // The important detail here is that the flood fill must be calculated
+    // in WORLD coordinates, not the currently zoomed viewport. We therefore
+    // temporarily render the stage at scale 1 / position 0, perform the
+    // flood fill there, and then restore the user's zoom and pan exactly.
+    //
+    // A fill that reaches the edge of the drawable canvas is rejected. This
+    // prevents a click on the empty white canvas from flooding the entire
+    // drawing.
+    const floodFillRegion = (
+        canvas,
+        startX,
+        startY,
+        fillColor
+    ) => {
+        const width = canvas.width;
+        const height = canvas.height;
+
+        if (!width || !height) {
+            return null;
+        }
+
+        const x = Math.floor(startX);
+        const y = Math.floor(startY);
+
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return null;
+        }
+
+        const context = canvas.getContext("2d", {
+            willReadFrequently: true
+        });
+
+        if (!context) {
+            return null;
+        }
+
+        const imageData = context.getImageData(
+            0,
+            0,
+            width,
+            height
+        );
+
+        const data = imageData.data;
+        const startIndex = (y * width + x) * 4;
+
+        const targetR = data[startIndex];
+        const targetG = data[startIndex + 1];
+        const targetB = data[startIndex + 2];
+        const targetA = data[startIndex + 3];
+
+        if (targetA < 240) {
+            return null;
+        }
+
+        // Read the selected colour through a canvas so named colours and
+        // hex/rgb values are all handled consistently by the browser.
+        const colourCanvas = document.createElement("canvas");
+        colourCanvas.width = 1;
+        colourCanvas.height = 1;
+        const colourContext = colourCanvas.getContext("2d");
+
+        if (!colourContext) {
+            return null;
+        }
+
+        colourContext.fillStyle = fillColor;
+        colourContext.fillRect(0, 0, 1, 1);
+
+        const fillPixel = colourContext
+            .getImageData(0, 0, 1, 1)
+            .data;
+
+        const fillR = fillPixel[0];
+        const fillG = fillPixel[1];
+        const fillB = fillPixel[2];
+        const fillA = 255;
+
+        // Clicking an area that is already the selected colour should do
+        // nothing rather than creating another fill image.
+        if (
+            Math.abs(targetR - fillR) <= 2 &&
+            Math.abs(targetG - fillG) <= 2 &&
+            Math.abs(targetB - fillB) <= 2
+        ) {
+            return null;
+        }
+
+        /*
+         * Use a normal 4-neighbour flood fill with an indexed queue.
+         * The previous scan-line implementation could lose neighbouring
+         * spans around anti-aliased edges, which made legitimate enclosed
+         * regions fail completely.
+         */
+        const targetIsLight =
+            targetR >= 235 &&
+            targetG >= 235 &&
+            targetB >= 235;
+
+        // White/near-white drawing areas need enough tolerance to cross the
+        // tiny anti-aliased variations inside a region, but not enough to
+        // cross a dark outline.
+        const tolerance = targetIsLight ? 42 : 32;
+        const alphaTolerance = 24;
+
+        const matchesTarget = pixelIndex => {
+            const r = data[pixelIndex];
+            const g = data[pixelIndex + 1];
+            const b = data[pixelIndex + 2];
+            const a = data[pixelIndex + 3];
+
+            if (a < 240 || Math.abs(a - targetA) > alphaTolerance) {
+                return false;
+            }
+
+            return (
+                Math.abs(r - targetR) <= tolerance &&
+                Math.abs(g - targetG) <= tolerance &&
+                Math.abs(b - targetB) <= tolerance
+            );
+        };
+
+        if (!matchesTarget(startIndex)) {
+            return null;
+        }
+
+        const pixelCount = width * height;
+        const visited = new Uint8Array(pixelCount);
+        const queue = new Int32Array(pixelCount);
+
+        let head = 0;
+        let tail = 0;
+
+        const startPixel = y * width + x;
+        queue[tail++] = startPixel;
+        visited[startPixel] = 1;
+
+        let minX = x;
+        let minY = y;
+        let maxX = x;
+        let maxY = y;
+        let filledPixels = 0;
+        let touchesBoundary = false;
+
+        while (head < tail) {
+            const pixel = queue[head++];
+            const px = pixel % width;
+            const py = Math.floor(pixel / width);
+
+            filledPixels++;
+
+            if (
+                px === 0 ||
+                py === 0 ||
+                px === width - 1 ||
+                py === height - 1
+            ) {
+                touchesBoundary = true;
+            }
+
+            if (px < minX) minX = px;
+            if (px > maxX) maxX = px;
+            if (py < minY) minY = py;
+            if (py > maxY) maxY = py;
+
+            const left = pixel - 1;
+            const right = pixel + 1;
+            const up = pixel - width;
+            const down = pixel + width;
+
+            if (
+                px > 0 &&
+                !visited[left] &&
+                matchesTarget(left * 4)
+            ) {
+                visited[left] = 1;
+                queue[tail++] = left;
+            }
+
+            if (
+                px < width - 1 &&
+                !visited[right] &&
+                matchesTarget(right * 4)
+            ) {
+                visited[right] = 1;
+                queue[tail++] = right;
+            }
+
+            if (
+                py > 0 &&
+                !visited[up] &&
+                matchesTarget(up * 4)
+            ) {
+                visited[up] = 1;
+                queue[tail++] = up;
+            }
+
+            if (
+                py < height - 1 &&
+                !visited[down] &&
+                matchesTarget(down * 4)
+            ) {
+                visited[down] = 1;
+                queue[tail++] = down;
+            }
+        }
+
+        // If the selected colour region reaches the edge, it is the open
+        // canvas rather than an enclosed bucket area. Reject it so a click
+        // on empty canvas can never colour the whole drawing.
+        if (touchesBoundary || filledPixels === 0) {
+            return null;
+        }
+
+        // Keep the safety check, but allow genuinely large enclosed rooms.
+        if (filledPixels / pixelCount > 0.90) {
+            return null;
+        }
+
+        const padding = 2;
+        minX = Math.max(0, minX - padding);
+        minY = Math.max(0, minY - padding);
+        maxX = Math.min(width - 1, maxX + padding);
+        maxY = Math.min(height - 1, maxY + padding);
+
+        const patchWidth = maxX - minX + 1;
+        const patchHeight = maxY - minY + 1;
+
+        const patchCanvas = document.createElement("canvas");
+        patchCanvas.width = patchWidth;
+        patchCanvas.height = patchHeight;
+
+        const patchContext = patchCanvas.getContext("2d");
+        if (!patchContext) {
+            return null;
+        }
+
+        const patchData = patchContext.createImageData(
+            patchWidth,
+            patchHeight
+        );
+
+        for (let py = minY; py <= maxY; py++) {
+            for (let px = minX; px <= maxX; px++) {
+                const sourcePixel = py * width + px;
+
+                if (!visited[sourcePixel]) {
+                    continue;
+                }
+
+                const patchIndex =
+                    ((py - minY) * patchWidth + (px - minX)) * 4;
+
+                patchData.data[patchIndex] = fillR;
+                patchData.data[patchIndex + 1] = fillG;
+                patchData.data[patchIndex + 2] = fillB;
+                patchData.data[patchIndex + 3] = fillA;
+            }
+        }
+
+        patchContext.putImageData(patchData, 0, 0);
+
+        return {
+            x: minX,
+            y: minY,
+            width: patchWidth,
+            height: patchHeight,
+            dataUrl: patchCanvas.toDataURL("image/png")
+        };
+    };
+
+
+    const performFill = () => {
+
+        const stage = stageRef.current;
+
+        if (!stage) {
+            return;
+        }
+
+        const position = getPointerPosition();
+
+        if (!position) {
+            return;
+        }
+
+        const stageWidth = Math.ceil(stage.width());
+        const stageHeight = Math.ceil(stage.height());
+
+        if (
+            position.x < 0 ||
+            position.y < 0 ||
+            position.x >= stageWidth ||
+            position.y >= stageHeight
+        ) {
+            return;
+        }
+
+        const selectionLayer = selectionUiLayerRef.current;
+        const transformerLayer = transformerUiLayerRef.current;
+        const gridLayer = gridLayerRef.current;
+
+        const selectionVisible =
+            selectionLayer?.visible() ?? true;
+        const transformerVisible =
+            transformerLayer?.visible() ?? true;
+        const gridVisible =
+            gridLayer?.visible() ?? false;
+
+        const oldScaleX = stage.scaleX();
+        const oldScaleY = stage.scaleY();
+        const oldPosition = stage.position();
+
+        selectionLayer?.visible(false);
+        transformerLayer?.visible(false);
+        gridLayer?.visible(false);
+
+        let renderedCanvas = null;
+
+        try {
+            /*
+               Always render in world space at a fixed pixel ratio.
+               The user's zoom and pan therefore have zero influence on the
+               flood-fill sampling or on the resulting fill coordinates.
+            */
+            stage.scale({ x: 1, y: 1 });
+            stage.position({ x: 0, y: 0 });
+            stage.batchDraw();
+
+            renderedCanvas = stage.toCanvas({
+                x: 0,
+                y: 0,
+                width: stageWidth,
+                height: stageHeight,
+                pixelRatio: 1
+            });
+        } finally {
+            stage.scale({
+                x: oldScaleX,
+                y: oldScaleY
+            });
+
+            stage.position(oldPosition);
+
+            selectionLayer?.visible(selectionVisible);
+            transformerLayer?.visible(transformerVisible);
+            gridLayer?.visible(gridVisible);
+
+            stage.batchDraw();
+        }
+
+        if (!renderedCanvas) {
+            return;
+        }
+
+        const result = floodFillRegion(
+            renderedCanvas,
+            position.x,
+            position.y,
+            color
+        );
+
+        if (!result) {
+            return;
+        }
+
+        const image = new window.Image();
+
+        image.onload = () => {
+            saveHistory();
+
+            setFills(prev => [
+                ...prev,
+                {
+                    type: "fill",
+                    x: result.x,
+                    y: result.y,
+                    width: result.width,
+                    height: result.height,
+                    image,
+                    layerId: activeLayerId
+                }
+            ]);
+
+            setSelectedElements([]);
+        };
+
+        image.src = result.dataUrl;
+    };
 
     const zoomCanvas = (newScale, focalPoint = null) => {
 
@@ -1996,6 +2475,9 @@ const handleLayerDragEnd = () => {
                 strokeWidth:
                     brushSize,
 
+                brushType:
+                    brushType,
+
                 globalCompositeOperation:
                     "source-over",
 
@@ -2439,7 +2921,8 @@ const handleElementMouseDown =
             if (
                 tool === "select" ||
                 tool === "pen" ||
-                tool === "eraser"
+                tool === "eraser" ||
+                tool === "fill"
             ) {
                 e.evt.preventDefault();
                 e.cancelBubble = true;
@@ -2483,7 +2966,8 @@ const handleElementMouseDown =
 
 
         if (
-            tool !== "select"
+            tool !== "select" &&
+            !(tool === "fill" && type === "fill")
         ) {
             return;
         }
@@ -2566,7 +3050,9 @@ const handleElementMouseDown =
         const source =
             type === "object"
                 ? objects[index]
-                : lines[index];
+                : type === "line"
+                ? lines[index]
+                : fills[index];
 
 
         if (source) {
@@ -2845,7 +3331,8 @@ const handleElementMouseDown =
                 if (
                     tool === "select" ||
                     tool === "pen" ||
-                    tool === "eraser"
+                    tool === "eraser" ||
+                    tool === "fill"
                 ) {
                     e.evt.preventDefault();
                     e.cancelBubble = true;
@@ -2876,6 +3363,14 @@ const handleElementMouseDown =
                 insertPendingObject(pos);
                 return;
             }
+
+            if (tool === "fill") {
+
+                performFill();
+                return;
+
+            }
+
 
             if (
                 tool === "pen" ||
@@ -3306,6 +3801,21 @@ const handleElementMouseDown =
         );
 
 
+        fills.forEach(
+            (fill, index) => {
+                const layer = getLayerById(getItemLayerId(fill));
+                if (!layer || !layer.visible) return;
+
+                const node = nodeRefs.current[makeKey("fill", index)];
+                if (!node) return;
+
+                const rect = node.getClientRect({ relativeTo: stageRef.current });
+                if (Konva.Util.haveIntersection(selectionRect, rect)) {
+                    selected.push({ type: "fill", index });
+                }
+            }
+        );
+
         setSelectedElements(
             selected
         );
@@ -3651,6 +4161,43 @@ const handleElementMouseDown =
             );
 
 
+
+
+            setFills(prev =>
+                prev.map(
+                    (fill, index) => {
+                        const selected =
+                            selectedElements.some(
+                                element =>
+                                    element.type === "fill" &&
+                                    element.index === index
+                            );
+
+                        if (!selected) {
+                            return fill;
+                        }
+
+                        const node =
+                            nodeRefs.current[
+                                makeKey("fill", index)
+                            ];
+
+                        if (!node) {
+                            return fill;
+                        }
+
+                        return {
+                            ...fill,
+                            x: node.x(),
+                            y: node.y(),
+                            rotation: node.rotation(),
+                            scaleX: node.scaleX(),
+                            scaleY: node.scaleY()
+                        };
+                    }
+                )
+            );
+
             dragStartPositionsRef.current =
                 null;
 
@@ -3703,6 +4250,7 @@ const handleElementMouseDown =
         selectedElements,
         objects,
         lines,
+        fills,
         layers,
         editingText,
         editingNote
@@ -4076,6 +4624,44 @@ const handleElementMouseDown =
                 )
             );
 
+
+            setFills(prev =>
+                prev.map((fill, index) => {
+                    if (!selectedElements.some(e => e.type === "fill" && e.index === index)) {
+                        return fill;
+                    }
+                    const node = nodeRefs.current[makeKey("fill", index)];
+                    if (!node) return fill;
+                    return {
+                        ...fill,
+                        x: node.x(),
+                        y: node.y(),
+                        scaleX: node.scaleX(),
+                        scaleY: node.scaleY(),
+                        rotation: node.rotation()
+                    };
+                })
+            );
+
+
+            setFills(prev =>
+                prev.map((fill, index) => {
+                    if (!selectedElements.some(e => e.type === "fill" && e.index === index)) {
+                        return fill;
+                    }
+                    const node = nodeRefs.current[makeKey("fill", index)];
+                    if (!node) return fill;
+                    return {
+                        ...fill,
+                        x: node.x(),
+                        y: node.y(),
+                        rotation: node.rotation(),
+                        scaleX: node.scaleX(),
+                        scaleY: node.scaleY()
+                    };
+                })
+            );
+
         };
 
 
@@ -4124,6 +4710,13 @@ const handleElementMouseDown =
             );
 
 
+        const fillIndexes = new Set(
+            selectedElements
+                .filter(element => element.type === "fill")
+                .map(element => element.index)
+        );
+
+
         setObjects(prev =>
             prev.filter(
                 (_, index) =>
@@ -4141,6 +4734,11 @@ const handleElementMouseDown =
                         index
                     )
             )
+        );
+
+
+        setFills(prev =>
+            prev.filter((_, index) => !fillIndexes.has(index))
         );
 
 
@@ -4237,6 +4835,7 @@ const handleElementMouseDown =
         selectedElements,
         objects,
         lines,
+        fills,
         history,
         redoHistory
     ]);
@@ -5819,6 +6418,61 @@ const handleElementMouseDown =
     
     
 
+    const renderLayerFills =
+        layerId => {
+
+        return fills
+            .map(
+                (fill, index) => ({
+                    fill,
+                    index
+                })
+            )
+            .filter(
+                item =>
+                    getItemLayerId(
+                        item.fill
+                    ) ===
+                    layerId
+            )
+            .map(
+                ({ fill, index }) => {
+
+                    const key =
+                        `fill-${index}`;
+
+                    return (
+                        <KonvaImage
+                            key={key}
+                            ref={node => {
+                                if (node) {
+                                    nodeRefs.current[makeKey("fill", index)] = node;
+                                }
+                            }}
+                            image={fill.image}
+                            x={fill.x}
+                            y={fill.y}
+                            width={fill.width}
+                            height={fill.height}
+                            rotation={fill.rotation || 0}
+                            scaleX={fill.scaleX || 1}
+                            scaleY={fill.scaleY || 1}
+                            opacity={fill.opacity ?? 1}
+                            draggable={tool === "select"}
+                            listening={tool === "select"}
+                            onMouseDown={e => handleElementMouseDown("fill", index, e)}
+                            onTouchStart={e => handleElementMouseDown("fill", index, e)}
+                            onDragStart={() => handleDragStart("fill", index)}
+                            onDragMove={e => handleDragMove("fill", index, e)}
+                            onDragEnd={handleDragEnd}
+                            onContextMenu={e => handleElementContextMenu("fill", index, e)}
+                        />
+                    );
+                }
+            );
+    };
+
+
     const renderLayerLines =
         layerId => {
 return lines
@@ -5879,7 +6533,15 @@ return lines
                                 }
 
                                 strokeWidth={
-                                    line.strokeWidth
+                                    line.brushType === "pencil"
+                                        ? line.strokeWidth * 0.65
+                                        : line.brushType === "marker"
+                                        ? line.strokeWidth * 2.2
+                                        : line.brushType === "airbrush"
+                                        ? line.strokeWidth * 3
+                                        : line.brushType === "chalk"
+                                        ? line.strokeWidth * 1.2
+                                        : line.strokeWidth
                                 }
 
                                 lineCap="round"
@@ -5887,8 +6549,35 @@ return lines
                                 lineJoin="round"
 
                                 tension={
-                                    line.tension ??
-                                    0.45
+                                    line.brushType === "pencil"
+                                        ? 0.2
+                                        : line.brushType === "ink"
+                                        ? 0.25
+                                        : line.tension ?? 0.45
+                                }
+
+                                dash={
+                                    line.brushType === "chalk"
+                                        ? [2, 5]
+                                        : undefined
+                                }
+
+                                shadowColor={
+                                    line.brushType === "airbrush"
+                                        ? line.stroke
+                                        : undefined
+                                }
+
+                                shadowBlur={
+                                    line.brushType === "airbrush"
+                                        ? Math.max(4, line.strokeWidth * 1.5)
+                                        : 0
+                                }
+
+                                shadowOpacity={
+                                    line.brushType === "airbrush"
+                                        ? 0.45
+                                        : 0
                                 }
 
                                 listening={
@@ -5927,8 +6616,16 @@ return lines
                                 }
 
                                 opacity={
-                                    line.opacity ??
-                                    1
+                                    (line.opacity ?? 1) *
+                                    (line.brushType === "pencil"
+                                        ? 0.65
+                                        : line.brushType === "marker"
+                                        ? 0.45
+                                        : line.brushType === "airbrush"
+                                        ? 0.16
+                                        : line.brushType === "chalk"
+                                        ? 0.6
+                                        : 1)
                                 }
 
                                 draggable={
@@ -6399,7 +7096,10 @@ return lines
 
 
                 {showGrid && (
-                    <Layer listening={false}>
+                    <Layer
+                        ref={gridLayerRef}
+                        listening={false}
+                    >
                         <Shape
                             listening={false}
                             perfectDrawEnabled={false}
@@ -6465,7 +7165,11 @@ return lines
                             }
 
                         >
-{renderLayerLines(
+                            {renderLayerFills(
+                                layer.id
+                            )}
+
+                            {renderLayerLines(
                                 layer.id
                             )}
 
@@ -7073,6 +7777,36 @@ return lines
             }
 
 
+            {!isMobile && (
+                <button
+                    type="button"
+                    className="reference_panel_toggle"
+                    style={{
+                        right: referencePanelHidden
+                            ? "10px"
+                            : `calc(${referenceWidth}px - 48px)`
+                    }}
+                    onClick={() =>
+                        setReferencePanelHidden(
+                            prev => !prev
+                        )
+                    }
+                    title={
+                        referencePanelHidden
+                            ? "Show reference and layers panel"
+                            : "Hide reference and layers panel"
+                    }
+                    aria-label={
+                        referencePanelHidden
+                            ? "Show reference and layers panel"
+                            : "Hide reference and layers panel"
+                    }
+                    aria-expanded={!referencePanelHidden}
+                >
+                    {referencePanelHidden ? "←" : "→"}
+                </button>
+            )}
+
             <div
 
                 className={
@@ -7082,7 +7816,11 @@ return lines
                                 ? "reference_panel mobile_open"
                                 : "reference_panel mobile_closed"
                         )
-                        : "reference_panel"
+                        : (
+                            referencePanelHidden
+                                ? "reference_panel reference_hidden"
+                                : "reference_panel"
+                        )
                 }
 
                 style={{
@@ -7731,30 +8469,78 @@ return lines
                     </svg>
                 </button>
 
-                <button
-                    type="button"
+                <div
                     className={
-                        "toolbar_button toolbar_pen " +
-                        (
-                            tool === "pen"
-                                ? "active"
-                                : ""
-                        )
+                        "toolbar_pen_control " +
+                        (brushMenuOpen ? "open" : "")
                     }
-                    onClick={() => {
-                        setTool("pen");
-                        setPendingInsert(null);
-                        setSelectedElements([]);
-                    }}
-                    title="Pen"
-                    aria-label="Pen"
                 >
-                    <svg className="toolbar_svg toolbar_pen_svg" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M5 19l1.7-4.9L15.9 4.9a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L9.9 17.3 5 19z" />
-                        <path d="M14.6 6.2l3.2 3.2" />
-                        <path d="M5 19l4.9-1.7" />
-                    </svg>
-                </button>
+                    <button
+                        type="button"
+                        className={
+                            "toolbar_button toolbar_pen " +
+                            (tool === "pen" || brushMenuOpen ? "active" : "")
+                        }
+                        onClick={() => {
+                            setTool("pen");
+                            setPendingInsert(null);
+                            setSelectedElements([]);
+                            setBrushMenuOpen(prev => !prev);
+                        }}
+                        title="Pen / Brushes"
+                        aria-label="Pen / Brushes"
+                        aria-expanded={brushMenuOpen}
+                    >
+                        <svg className="toolbar_svg toolbar_pen_svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 19l1.7-4.9L15.9 4.9a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L9.9 17.3 5 19z" />
+                            <path d="M14.6 6.2l3.2 3.2" />
+                            <path d="M5 19l4.9-1.7" />
+                        </svg>
+                    </button>
+
+                    {brushMenuOpen && (
+                        <div
+                            className="brush_menu_popover"
+                            onMouseDown={e => e.stopPropagation()}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="brush_menu_title">Brushes</div>
+
+                            <div className="brush_menu_list">
+                                {brushOptions.map(option => (
+                                    <button
+                                        key={option.id}
+                                        type="button"
+                                        className={
+                                            "brush_option " +
+                                            (brushType === option.id ? "selected" : "")
+                                        }
+                                        onClick={() => selectBrush(option.id)}
+                                    >
+                                        <span className={"brush_preview brush_preview_" + option.id}>
+                                            <span />
+                                        </span>
+                                        <span className="brush_option_text">
+                                            <strong>{option.name}</strong>
+                                            <small>{option.description}</small>
+                                        </span>
+                                        {brushType === option.id && (
+                                            <span className="brush_option_check">✓</span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                type="button"
+                                className="brush_menu_done"
+                                onClick={finishBrushSelection}
+                            >
+                                Done
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 <button
                     type="button"
@@ -7778,6 +8564,33 @@ return lines
                         <path d="M4.5 15.8l8.9-8.9a2.2 2.2 0 0 1 3.1 0l3.6 3.6a2.2 2.2 0 0 1 0 3.1L15.3 18.4H8.1l-3.6-2.6z" />
                         <path d="M8.1 18.4l4.4-4.4" />
                         <path d="M15.3 18.4h4.2" />
+                    </svg>
+                </button>
+
+                <button
+                    type="button"
+                    className={
+                        "toolbar_button toolbar_fill " +
+                        (
+                            tool === "fill"
+                                ? "active"
+                                : ""
+                        )
+                    }
+                    onClick={() => {
+                        setTool("fill");
+                        setPendingInsert(null);
+                        setSelectedElements([]);
+                    }}
+                    title="Fill"
+                    aria-label="Fill"
+                >
+                    <svg className="toolbar_svg toolbar_fill_svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5.2 8.2h12.1l-1.4 9.1a2 2 0 0 1-2 1.7H8.6a2 2 0 0 1-2-1.7L5.2 8.2z" />
+                        <path d="M4.2 8.2h14.1" />
+                        <path d="M7.2 8.2V6.8a4 4 0 0 1 7.9 0v1.4" />
+                        <path d="M17.7 14.8c1.2.3 1.9 1.1 1.9 2.2" />
+                        <path d="M19.6 17v.1" />
                     </svg>
                 </button>
 
