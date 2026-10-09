@@ -37,6 +37,36 @@ function App() {
     const [lines, setLines] = useState([]);
     const [objects, setObjects] = useState([]);
     const [fills, setFills] = useState([]);
+    const persistenceReadyRef = useRef(false);
+    const persistenceKey = "lemcoDrawingLabProjectV1";
+
+    const imageToDataUrl = image => {
+        if (!image) return null;
+        if (typeof image === "string") return image;
+        if (typeof image.src === "string" && image.src.startsWith("data:")) {
+            return image.src;
+        }
+        try {
+            const canvas = document.createElement("canvas");
+            canvas.width = image.naturalWidth || image.width;
+            canvas.height = image.naturalHeight || image.height;
+            if (!canvas.width || !canvas.height) return null;
+            canvas.getContext("2d").drawImage(image, 0, 0);
+            return canvas.toDataURL("image/png");
+        } catch {
+            return null;
+        }
+    };
+
+    const restoreImage = src => new Promise(resolve => {
+        if (!src) return resolve(null);
+        const image = new window.Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = src;
+    });
+
+
 
 
     
@@ -215,12 +245,12 @@ function App() {
         useState(false);
 
     const brushOptions = [
-        { id: "basic", name: "Basic", description: "default solid line" },
-        { id: "pencil", name: "Pencil", description: "soft, for lighter sketches" },
-        { id: "marker", name: "Marker", description: "a bit thicker and transparent" },
-        { id: "ink", name: "Ink", description: "for smoother lines" },
-        { id: "airbrush", name: "Airbrush", description: "for more softer lines" },
-        { id: "chalk", name: "Chalk", description: "for more rougher lines" }
+        { id: "basic", name: "Basic", description: "Clean solid line" },
+        { id: "pencil", name: "Pencil", description: "Soft, light sketch" },
+        { id: "marker", name: "Marker", description: "Broad, semi-transparent stroke" },
+        { id: "ink", name: "Ink", description: "Smooth, firm ink line" },
+        { id: "airbrush", name: "Airbrush", description: "Soft, feathered stroke" },
+        { id: "chalk", name: "Chalk", description: "Rough, broken stroke" }
     ];
 
     const selectBrush = nextBrush => {
@@ -615,6 +645,79 @@ function App() {
 
     const [zoom, setZoom] =
         useState(1);
+
+
+    useEffect(() => {
+        let cancelled = false;
+        const restoreProject = async () => {
+            try {
+                const raw = localStorage.getItem(persistenceKey);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    const [restoredObjects, restoredFills] = await Promise.all([
+                        Promise.all((saved.objects || []).map(async object => ({
+                            ...object,
+                            ...(object.imageData ? { image: await restoreImage(object.imageData) } : {}),
+                            imageData: undefined
+                        }))),
+                        Promise.all((saved.fills || []).map(async fill => ({
+                            ...fill,
+                            image: await restoreImage(fill.imageData),
+                            imageData: undefined
+                        })))
+                    ]);
+                    if (cancelled) return;
+                    setLines(Array.isArray(saved.lines) ? saved.lines : []);
+                    setObjects(restoredObjects.filter(object => object.type !== "image" || object.image));
+                    setFills(restoredFills.filter(fill => fill.image));
+                    if (Array.isArray(saved.layers) && saved.layers.length) setLayers(saved.layers);
+                    if (saved.activeLayerId) setActiveLayerId(saved.activeLayerId);
+                    if (typeof saved.referenceImage === "string") setReferenceImage(saved.referenceImage);
+                    if (typeof saved.referenceWidth === "number") setReferenceWidth(saved.referenceWidth);
+                    if (typeof saved.showGrid === "boolean") setShowGrid(saved.showGrid);
+                    if (typeof saved.color === "string") setColor(saved.color);
+                }
+            } catch (error) {
+                console.warn("Drawing Lab could not restore its saved canvas.", error);
+            } finally {
+                if (!cancelled) persistenceReadyRef.current = true;
+            }
+        };
+        restoreProject();
+        return () => { cancelled = true; };
+    }, []);
+
+    useEffect(() => {
+        if (!persistenceReadyRef.current) return;
+        const saveProject = async () => {
+            try {
+                const saved = {
+                    version: 1,
+                    lines,
+                    objects: objects.map(object => {
+                        const { image, ...rest } = object;
+                        return { ...rest, ...(image ? { imageData: imageToDataUrl(image) } : {}) };
+                    }),
+                    fills: fills.map(fill => {
+                        const { image, ...rest } = fill;
+                        return { ...rest, imageData: imageToDataUrl(image) };
+                    }),
+                    layers,
+                    activeLayerId,
+                    referenceImage,
+                    referenceWidth,
+                    showGrid,
+                    color,
+                    savedAt: Date.now()
+                };
+                localStorage.setItem(persistenceKey, JSON.stringify(saved));
+            } catch (error) {
+                console.warn("Drawing Lab could not save the canvas. Browser storage may be full.", error);
+            }
+        };
+        saveProject();
+    }, [lines, objects, fills, layers, activeLayerId, referenceImage, referenceWidth, showGrid, color]);
+
 
     const MIN_ZOOM = 0.25;
     const MAX_ZOOM = 4;
@@ -2695,6 +2798,12 @@ const handleLayerDragEnd = () => {
         e.evt.preventDefault();
         e.cancelBubble = true;
 
+        if (tool === "pen") {
+            setLayerContextMenu(null);
+            setRecolorPickerOpen(false);
+            return;
+        }
+
         let selection = selectedElements;
 
         
@@ -2714,6 +2823,11 @@ const handleLayerDragEnd = () => {
 
     const handleStageContextMenu = e => {
         e.evt.preventDefault();
+        if (tool === "pen") {
+            setLayerContextMenu(null);
+            setRecolorPickerOpen(false);
+            return;
+        }
         isRightPanning.current = false;
         lastPanPointer.current = null;
 
@@ -2840,16 +2954,25 @@ const handleLayerDragEnd = () => {
         );
 
         setObjects(prev =>
-            prev.map((object, index) =>
-                selectedElements.some(
-                    element =>
-                        element.type === "object" &&
-                        element.index === index &&
-                        object.type === "text"
-                )
-                    ? { ...object, fill: newColor }
-                    : object
-            )
+            prev.map((object, index) => {
+                const selected = selectedElements.some(
+                    element => element.type === "object" && element.index === index
+                );
+                if (!selected) return object;
+
+                if (object.type === "text") {
+                    return { ...object, fill: newColor };
+                }
+
+                // Shape color controls the outline; filled shapes also get their
+                // interior recolored. Transparent interiors stay transparent.
+                const hasFill = object.fill && object.fill !== "transparent";
+                return {
+                    ...object,
+                    stroke: newColor,
+                    ...(hasFill ? { fill: newColor } : {})
+                };
+            })
         );
     };
 
@@ -6502,191 +6625,52 @@ return lines
                             );
 
 
+                        const brush = line.brushType || "basic";
+                        const baseWidth = line.strokeWidth || 1;
+                        const baseOpacity = line.opacity ?? 1;
+
+                        // Original, non-textured brush presets: simple strokes with
+                        // brush-specific width, opacity and dash settings.
+                        const brushSettings = {
+                            basic:    { width: 1, opacity: 1, dash: [] },
+                            pencil:   { width: 0.72, opacity: 0.72, dash: [] },
+                            marker:   { width: 2.1, opacity: 0.55, dash: [] },
+                            ink:      { width: 1, opacity: 0.95, dash: [] },
+                            airbrush: { width: 1.4, opacity: 0.24, dash: [] },
+                            chalk:    { width: 0.9, opacity: 0.58, dash: [3, 5] }
+                        };
+                        const settings = brushSettings[brush] || brushSettings.basic;
+
                         return (
-
                             <Line
-
-                                key={
-                                    key
-                                }
-
-                                ref={
-                                    node => {
-
-                                        if (node) {
-
-                                            nodeRefs.current[
-                                                key
-                                            ] = node;
-
-                                        }
-
-                                    }
-                                }
-
-                                points={
-                                    line.points
-                                }
-
-                                stroke={
-                                    line.stroke
-                                }
-
-                                strokeWidth={
-                                    line.brushType === "pencil"
-                                        ? line.strokeWidth * 0.65
-                                        : line.brushType === "marker"
-                                        ? line.strokeWidth * 2.2
-                                        : line.brushType === "airbrush"
-                                        ? line.strokeWidth * 3
-                                        : line.brushType === "chalk"
-                                        ? line.strokeWidth * 1.2
-                                        : line.strokeWidth
-                                }
-
+                                key={key}
+                                ref={node => {
+                                    if (node) nodeRefs.current[key] = node;
+                                }}
+                                points={line.points}
+                                stroke={line.stroke}
+                                strokeWidth={baseWidth * settings.width}
                                 lineCap="round"
-
                                 lineJoin="round"
-
-                                tension={
-                                    line.brushType === "pencil"
-                                        ? 0.2
-                                        : line.brushType === "ink"
-                                        ? 0.25
-                                        : line.tension ?? 0.45
-                                }
-
-                                dash={
-                                    line.brushType === "chalk"
-                                        ? [2, 5]
-                                        : undefined
-                                }
-
-                                shadowColor={
-                                    line.brushType === "airbrush"
-                                        ? line.stroke
-                                        : undefined
-                                }
-
-                                shadowBlur={
-                                    line.brushType === "airbrush"
-                                        ? Math.max(4, line.strokeWidth * 1.5)
-                                        : 0
-                                }
-
-                                shadowOpacity={
-                                    line.brushType === "airbrush"
-                                        ? 0.45
-                                        : 0
-                                }
-
-                                listening={
-                                    tool === "select" &&
-                                    line.globalCompositeOperation !==
-                                        "destination-out"
-                                }
-
-                                globalCompositeOperation={
-                                    line.globalCompositeOperation
-                                }
-
-                                x={
-                                    line.x ||
-                                    0
-                                }
-
-                                y={
-                                    line.y ||
-                                    0
-                                }
-
-                                scaleX={
-                                    line.scaleX ||
-                                    1
-                                }
-
-                                scaleY={
-                                    line.scaleY ||
-                                    1
-                                }
-
-                                rotation={
-                                    line.rotation ||
-                                    0
-                                }
-
-                                opacity={
-                                    (line.opacity ?? 1) *
-                                    (line.brushType === "pencil"
-                                        ? 0.65
-                                        : line.brushType === "marker"
-                                        ? 0.45
-                                        : line.brushType === "airbrush"
-                                        ? 0.16
-                                        : line.brushType === "chalk"
-                                        ? 0.6
-                                        : 1)
-                                }
-
-                                draggable={
-                                    tool ===
-                                    "select"
-                                }
-
-                                hitStrokeWidth={
-                                    20
-                                }
-
-                                onMouseDown={
-                                    e =>
-                                        handleElementMouseDown(
-                                            "line",
-                                            index,
-                                            e
-                                        )
-                                }
-
-                                onContextMenu={
-                                    e =>
-                                        handleElementContextMenu(
-                                            "line",
-                                            index,
-                                            e
-                                        )
-                                }
-
-                                onTouchStart={
-                                    e =>
-                                        handleElementMouseDown(
-                                            "line",
-                                            index,
-                                            e
-                                        )
-                                }
-
-                                onDragStart={
-                                    () =>
-                                        handleDragStart(
-                                            "line",
-                                            index
-                                        )
-                                }
-
-                                onDragMove={
-                                    e =>
-                                        handleDragMove(
-                                            "line",
-                                            index,
-                                            e
-                                        )
-                                }
-
-                                onDragEnd={
-                                    handleDragEnd
-                                }
-
+                                tension={line.tension ?? 0.45}
+                                dash={settings.dash}
+                                opacity={baseOpacity * settings.opacity}
+                                globalCompositeOperation={line.globalCompositeOperation}
+                                x={line.x || 0}
+                                y={line.y || 0}
+                                scaleX={line.scaleX || 1}
+                                scaleY={line.scaleY || 1}
+                                rotation={line.rotation || 0}
+                                draggable={tool === "select"}
+                                hitStrokeWidth={20}
+                                listening={tool === "select" && line.globalCompositeOperation !== "destination-out"}
+                                onMouseDown={e => handleElementMouseDown("line", index, e)}
+                                onContextMenu={e => handleElementContextMenu("line", index, e)}
+                                onTouchStart={e => handleElementMouseDown("line", index, e)}
+                                onDragStart={() => handleDragStart("line", index)}
+                                onDragMove={e => handleDragMove("line", index, e)}
+                                onDragEnd={handleDragEnd}
                             />
-
                         );
 
                     }
