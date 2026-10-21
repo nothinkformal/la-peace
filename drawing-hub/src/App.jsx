@@ -23,6 +23,13 @@ import "./index.css";
 
 function App() {
 
+    const MAIN_MENU_URL = "https://nothinkformal.github.io/la-peace/index.html";
+
+    const goToMainMenu = (event) => {
+        if (event) event.preventDefault();
+        window.location.assign(MAIN_MENU_URL);
+    };
+
     
     
     
@@ -87,8 +94,16 @@ function App() {
     const [activeLayerId, setActiveLayerId] =
         useState(DEFAULT_LAYER_ID);
 
+    const [layerGroups, setLayerGroups] = useState([]);
+    const [selectedLayerIds, setSelectedLayerIds] = useState([]);
+    const [editingGroupId, setEditingGroupId] = useState(null);
+    const [editingGroupName, setEditingGroupName] = useState("");
+    const [draggedGroupId, setDraggedGroupId] = useState(null);
+    const [layerGroupContextMenu, setLayerGroupContextMenu] = useState(null);
+
     const [draggedLayerId, setDraggedLayerId] =
         useState(null);
+    const [draggedLayerIds, setDraggedLayerIds] = useState([]);
 
     const [editingLayerId, setEditingLayerId] =
         useState(null);
@@ -103,6 +118,16 @@ function App() {
 
     const [history, setHistory] = useState([]);
     const [redoHistory, setRedoHistory] = useState([]);
+    const lemFileInputRef = useRef(null);
+    const [exportSelection, setExportSelection] = useState(null);
+    const [exportPreview, setExportPreview] = useState("");
+    const [exportCrop, setExportCrop] = useState({ x: 100, y: 100, width: 500, height: 500 });
+    const exportDragRef = useRef(null);
+    const [lemDialog, setLemDialog] = useState(null);
+    const [lemPassword, setLemPassword] = useState("");
+    const [lemPasswordConfirm, setLemPasswordConfirm] = useState("");
+    const [lemDialogMessage, setLemDialogMessage] = useState("");
+    const [pendingLemFile, setPendingLemFile] = useState(null);
 
 
     
@@ -623,8 +648,10 @@ function App() {
 
     const [stageSize, setStageSize] =
         useState({
-            width: window.innerWidth,
-            height: window.innerHeight - 90
+            // Reserve the main-menu sidebar and top bar so the drawing surface
+            // lives inside the same dashboard layout as the rest of LEM.CO.
+            width: Math.max(320, window.innerWidth - 195),
+            height: Math.max(240, window.innerHeight)
         });
 
     const [isMobile, setIsMobile] =
@@ -654,28 +681,38 @@ function App() {
                 const raw = localStorage.getItem(persistenceKey);
                 if (raw) {
                     const saved = JSON.parse(raw);
+                    const restoreObjects = async list => Promise.all((list || []).map(async object => ({
+                        ...object,
+                        ...(object.imageData ? { image: await restoreImage(object.imageData) } : {}),
+                        imageData: undefined
+                    })));
+                    const restoreFills = async list => Promise.all((list || []).map(async fill => ({
+                        ...fill,
+                        image: await restoreImage(fill.imageData),
+                        imageData: undefined
+                    })));
                     const [restoredObjects, restoredFills] = await Promise.all([
-                        Promise.all((saved.objects || []).map(async object => ({
-                            ...object,
-                            ...(object.imageData ? { image: await restoreImage(object.imageData) } : {}),
-                            imageData: undefined
-                        }))),
-                        Promise.all((saved.fills || []).map(async fill => ({
-                            ...fill,
-                            image: await restoreImage(fill.imageData),
-                            imageData: undefined
-                        })))
+                        restoreObjects(saved.objects),
+                        restoreFills(saved.fills)
                     ]);
+                    const restoreSnapshots = async snapshots => Promise.all((snapshots || []).map(async snapshot => ({
+                        lines: (snapshot.lines || []).map(line => ({ ...line, points: [...(line.points || [])] })),
+                        objects: (await restoreObjects(snapshot.objects)).filter(object => object.type !== "image" || object.image),
+                        fills: (await restoreFills(snapshot.fills)).filter(fill => fill.image)
+                    })));
                     if (cancelled) return;
                     setLines(Array.isArray(saved.lines) ? saved.lines : []);
                     setObjects(restoredObjects.filter(object => object.type !== "image" || object.image));
                     setFills(restoredFills.filter(fill => fill.image));
                     if (Array.isArray(saved.layers) && saved.layers.length) setLayers(saved.layers);
+                    if (Array.isArray(saved.layerGroups)) setLayerGroups(saved.layerGroups);
                     if (saved.activeLayerId) setActiveLayerId(saved.activeLayerId);
                     if (typeof saved.referenceImage === "string") setReferenceImage(saved.referenceImage);
                     if (typeof saved.referenceWidth === "number") setReferenceWidth(saved.referenceWidth);
                     if (typeof saved.showGrid === "boolean") setShowGrid(saved.showGrid);
                     if (typeof saved.color === "string") setColor(saved.color);
+                    setHistory(await restoreSnapshots(saved.history));
+                    setRedoHistory(await restoreSnapshots(saved.redoHistory));
                 }
             } catch (error) {
                 console.warn("Drawing Lab could not restore its saved canvas.", error);
@@ -702,7 +739,30 @@ function App() {
                         const { image, ...rest } = fill;
                         return { ...rest, imageData: imageToDataUrl(image) };
                     }),
+                    history: history.map(snapshot => ({
+                        lines: snapshot.lines,
+                        objects: snapshot.objects.map(object => {
+                            const { image, ...rest } = object;
+                            return { ...rest, ...(image ? { imageData: imageToDataUrl(image) } : {}) };
+                        }),
+                        fills: (snapshot.fills || []).map(fill => {
+                            const { image, ...rest } = fill;
+                            return { ...rest, imageData: imageToDataUrl(image) };
+                        })
+                    })),
+                    redoHistory: redoHistory.map(snapshot => ({
+                        lines: snapshot.lines,
+                        objects: snapshot.objects.map(object => {
+                            const { image, ...rest } = object;
+                            return { ...rest, ...(image ? { imageData: imageToDataUrl(image) } : {}) };
+                        }),
+                        fills: (snapshot.fills || []).map(fill => {
+                            const { image, ...rest } = fill;
+                            return { ...rest, imageData: imageToDataUrl(image) };
+                        })
+                    })),
                     layers,
+                    layerGroups,
                     activeLayerId,
                     referenceImage,
                     referenceWidth,
@@ -716,8 +776,190 @@ function App() {
             }
         };
         saveProject();
-    }, [lines, objects, fills, layers, activeLayerId, referenceImage, referenceWidth, showGrid, color]);
+    }, [lines, objects, fills, layers, layerGroups, activeLayerId, referenceImage, referenceWidth, showGrid, color, history, redoHistory]);
 
+
+    // Native LEM project files are JSON documents with a .lem extension.
+    // They preserve editable artwork, layers/groups, reference image, and undo/redo history.
+    const serializeImageList = list => (list || []).map(item => {
+        const { image, ...rest } = item;
+        const imageData = imageToDataUrl(image);
+        return { ...rest, ...(imageData ? { imageData } : {}) };
+    });
+
+    const serializeHistoryList = snapshots => (snapshots || []).map(snapshot => ({
+        lines: snapshot.lines || [],
+        objects: serializeImageList(snapshot.objects || []),
+        fills: serializeImageList(snapshot.fills || [])
+    }));
+
+    const buildLemProject = () => ({
+        format: "LEM.CO Drawing Lab Project",
+        formatVersion: 1,
+        createdWith: "LEM.CO Lab",
+        savedAt: new Date().toISOString(),
+        canvas: {
+            lines,
+            objects: serializeImageList(objects),
+            fills: serializeImageList(fills),
+            layers,
+            layerGroups,
+            activeLayerId,
+            referenceImage,
+            referenceWidth,
+            showGrid,
+            color,
+            history: serializeHistoryList(history),
+            redoHistory: serializeHistoryList(redoHistory)
+        }
+    });
+
+    const LEM_ICON_URL = "https://raw.githubusercontent.com/nothinkformal/la-peace/refs/heads/version-4/images/lemon.png";
+
+    // Automatic .lem payload encryption. This obscures project JSON in the save file
+    // without asking the user for a password. Because this key ships with client code,
+    // it is file-format obfuscation, not strong secrecy against a determined attacker.
+    const LEM_AUTO_KEY_BYTES = new TextEncoder().encode("LEM.CO-Lab-Project-Format-Key-v1-2026");
+    const getLemAutoKey = async () => {
+        if (!window.crypto?.subtle) throw new Error("Automatic .lem encryption requires HTTPS or localhost.");
+        const digest = await window.crypto.subtle.digest("SHA-256", LEM_AUTO_KEY_BYTES);
+        return window.crypto.subtle.importKey("raw", digest, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+    };
+
+    const bytesToBase64 = bytes => {
+        let binary = "";
+        bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+        return btoa(binary);
+    };
+
+    const base64ToBytes = value => Uint8Array.from(atob(value), char => char.charCodeAt(0));
+
+    const beginSaveLemFile = () => {
+        setLemPassword("");
+        setLemPasswordConfirm("");
+        setLemDialogMessage("");
+        setPendingLemFile(null);
+        setLemDialog("save");
+    };
+
+    const beginLoadLemFile = () => {
+        setLemPassword("");
+        setLemPasswordConfirm("");
+        setLemDialogMessage("");
+        lemFileInputRef.current?.click();
+    };
+
+    const saveLemFile = async () => {
+        try {
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const key = await getLemAutoKey();
+            const plaintext = new TextEncoder().encode(JSON.stringify(buildLemProject()));
+            const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+            const envelope = {
+                format: "LEM.CO Auto-Encrypted Drawing",
+                formatVersion: 1,
+                encryption: "AES-256-GCM",
+                keyMode: "application-format-key-v1",
+                iv: bytesToBase64(iv),
+                icon: LEM_ICON_URL,
+                encryptedData: bytesToBase64(new Uint8Array(encrypted))
+            };
+            const blob = new Blob(["LEMENC1\n", JSON.stringify(envelope)], { type: "application/x-lem-project" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "drawing.lem";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            setLemDialogMessage("Encrypted .lem file saved successfully.");
+            setLemDialog("message");
+        } catch (error) {
+            console.error("Could not save the encrypted .lem drawing file.", error);
+            setLemDialogMessage(error.message || "The drawing could not be encrypted and saved.");
+        }
+    };
+
+    const loadLemFile = async event => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) return;
+        setPendingLemFile(file);
+        setLemPassword("");
+        setLemPasswordConfirm("");
+        setLemDialogMessage("");
+        setLemDialog("load");
+    };
+
+    const decryptAndLoadLemFile = async () => {
+        if (!pendingLemFile) {
+            setLemDialogMessage("Choose a .lem file first.");
+            return;
+        }
+        try {
+            const fileText = await pendingLemFile.text();
+            let envelopeText = fileText;
+            if (fileText.startsWith("LEMENC1\n")) envelopeText = fileText.slice("LEMENC1\n".length);
+            const envelope = JSON.parse(envelopeText);
+            let parsed;
+            if (envelope?.format === "LEM.CO Auto-Encrypted Drawing" && envelope?.formatVersion === 1) {
+                const key = await getLemAutoKey();
+                const decrypted = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: base64ToBytes(envelope.iv) },
+                    key,
+                    base64ToBytes(envelope.encryptedData)
+                );
+                parsed = JSON.parse(new TextDecoder().decode(decrypted));
+            } else if (envelope?.format === "LEM.CO Encrypted Drawing" && envelope?.formatVersion === 1) {
+                throw new Error("This .lem file uses the old password-protected format. Save it from the previous version as an unencrypted project first, then load and save it again here.");
+            } else if (envelope?.format === "LEM.CO Drawing Lab Project" && envelope?.formatVersion === 1) {
+                parsed = envelope;
+            } else {
+                throw new Error("This is not a supported .lem project file.");
+            }
+            if (parsed?.format !== "LEM.CO Drawing Lab Project" || parsed?.formatVersion !== 1 || !parsed.canvas) {
+                throw new Error("This is not a supported .lem project file.");
+            }
+            const saved = parsed.canvas;
+            const restoreImageList = async list => Promise.all((list || []).map(async item => {
+                const image = item.imageData ? await restoreImage(item.imageData) : null;
+                const { imageData, ...rest } = item;
+                return { ...rest, ...(image ? { image } : {}) };
+            }));
+            const restoreSnapshots = async snapshots => Promise.all((snapshots || []).map(async snapshot => ({
+                lines: (snapshot.lines || []).map(line => ({ ...line, points: [...(line.points || [])] })),
+                objects: (await restoreImageList(snapshot.objects)).filter(object => object.type !== "image" || object.image),
+                fills: (await restoreImageList(snapshot.fills)).filter(fill => fill.image)
+            })));
+            const [nextObjects, nextFills, nextHistory, nextRedoHistory] = await Promise.all([
+                restoreImageList(saved.objects), restoreImageList(saved.fills),
+                restoreSnapshots(saved.history), restoreSnapshots(saved.redoHistory)
+            ]);
+
+            // Clear the existing canvas only after the file has decrypted and validated.
+            setLines([]); setObjects([]); setFills([]);
+            setLayers([{ id: DEFAULT_LAYER_ID, name: "Layer 1", visible: true }]);
+            setLayerGroups([]); setHistory([]); setRedoHistory([]); setSelectedLayerIds([]); setReferenceImage(null);
+            setLines(Array.isArray(saved.lines) ? saved.lines : []);
+            setObjects(nextObjects.filter(object => object.type !== "image" || object.image));
+            setFills(nextFills.filter(fill => fill.image));
+            if (Array.isArray(saved.layers) && saved.layers.length) setLayers(saved.layers);
+            if (Array.isArray(saved.layerGroups)) setLayerGroups(saved.layerGroups);
+            setActiveLayerId(saved.activeLayerId || DEFAULT_LAYER_ID);
+            setReferenceImage(typeof saved.referenceImage === "string" ? saved.referenceImage : null);
+            if (typeof saved.referenceWidth === "number") setReferenceWidth(saved.referenceWidth);
+            if (typeof saved.showGrid === "boolean") setShowGrid(saved.showGrid);
+            if (typeof saved.color === "string") setColor(saved.color);
+            setHistory(nextHistory); setRedoHistory(nextRedoHistory); setSelectedLayerIds([]); setExportSelection(null);
+            setPendingLemFile(null);
+            setLemDialogMessage("Drawing loaded successfully.");
+            setLemDialog("message");
+        } catch (error) {
+            console.error("Could not load the .lem drawing file.", error);
+            setLemDialogMessage(error.message || "Could not decrypt or load this .lem file. Make sure the file is valid.");
+        }
+    };
 
     const MIN_ZOOM = 0.25;
     const MAX_ZOOM = 4;
@@ -790,8 +1032,8 @@ function App() {
         const handleWindowResize = () => {
 
             setStageSize({
-                width: window.innerWidth,
-                height: window.innerHeight - 90
+                width: Math.max(320, window.innerWidth - (window.innerWidth <= 768 ? 0 : 195)),
+                height: Math.max(240, window.innerHeight)
             });
 
             setIsMobile(
@@ -1086,6 +1328,82 @@ function App() {
     
     
 
+    const createLayerGroup = () => {
+        const memberIds = selectedLayerIds.filter(id =>
+            layers.some(layer => layer.id === id) &&
+            !layerGroups.some(group => group.layerIds.includes(id))
+        );
+        if (memberIds.length < 2) {
+            window.alert("Select at least two layers to create a group.");
+            return;
+        }
+        const id = `layer-group-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        let number = 1;
+        while (layerGroups.some(group => group.name === `Group ${number}`)) number++;
+        setLayerGroups(prev => [...prev, { id, name: `Group ${number}`, layerIds: memberIds, collapsed: false, visible: true }]);
+        setSelectedLayerIds([]);
+    };
+
+    const toggleGroupCollapsed = groupId => setLayerGroups(prev => prev.map(group => group.id === groupId ? { ...group, collapsed: !group.collapsed } : group));
+    const toggleGroupVisibility = groupId => {
+        const group = layerGroups.find(item => item.id === groupId);
+        if (!group) return;
+        const nextVisible = !group.visible;
+        setLayerGroups(prev => prev.map(item => item.id === groupId ? { ...item, visible: nextVisible } : item));
+        setLayers(prev => prev.map(layer => group.layerIds.includes(layer.id) ? { ...layer, visible: nextVisible } : layer));
+        if (!nextVisible && group.layerIds.includes(activeLayerId)) {
+            const replacement = layers.find(layer => !group.layerIds.includes(layer.id) && layer.visible);
+            if (replacement) setActiveLayerId(replacement.id);
+        }
+    };
+    const startGroupRename = group => { setEditingGroupId(group.id); setEditingGroupName(group.name); };
+    const finishGroupRename = () => {
+        if (!editingGroupId) return;
+        const name = editingGroupName.trim();
+        if (name) setLayerGroups(prev => prev.map(group => group.id === editingGroupId ? { ...group, name } : group));
+        setEditingGroupId(null);
+    };
+    const ungroupLayerGroup = groupId => {
+        setLayerGroups(prev => prev.filter(group => group.id !== groupId));
+        setLayers(prev => prev.map(layer => ({ ...layer, groupId: layer.groupId === groupId ? null : layer.groupId })));
+    };
+    const moveLayerGroup = (groupId, direction) => {
+        const group = layerGroups.find(item => item.id === groupId);
+        if (!group) return;
+        const memberIds = new Set(group.layerIds);
+        setLayers(prev => {
+            const ordered = [...prev].reverse();
+            const members = ordered.filter(layer => memberIds.has(layer.id));
+            const rest = ordered.filter(layer => !memberIds.has(layer.id));
+            const firstMemberIndex = Math.min(...ordered.map((layer, index) => memberIds.has(layer.id) ? index : Infinity));
+            const targetIndex = Math.max(0, Math.min(rest.length, firstMemberIndex + direction));
+            rest.splice(targetIndex, 0, ...members);
+            return rest.reverse();
+        });
+    };
+    const moveGroupToLayer = (groupId, targetLayerId, dropAbove) => {
+        const group = layerGroups.find(item => item.id === groupId);
+        if (!group || group.layerIds.includes(targetLayerId)) return;
+        setLayers(prev => {
+            const ordered = [...prev].reverse();
+            const memberIds = new Set(group.layerIds);
+            const members = ordered.filter(layer => memberIds.has(layer.id));
+            const rest = ordered.filter(layer => !memberIds.has(layer.id));
+            const targetIndex = rest.findIndex(layer => layer.id === targetLayerId);
+            if (targetIndex < 0) return prev;
+            rest.splice(targetIndex + (dropAbove ? 0 : 1), 0, ...members);
+            return rest.reverse();
+        });
+    };
+    const addLayerToGroup = (layerId, groupId) => {
+        if (layerGroups.some(group => group.id !== groupId && group.layerIds.includes(layerId))) {
+            setLayerGroups(prev => prev.map(group => group.id === groupId ? { ...group, layerIds: [...group.layerIds, layerId] } : { ...group, layerIds: group.layerIds.filter(id => id !== layerId) }));
+        } else {
+            setLayerGroups(prev => prev.map(group => group.id === groupId && !group.layerIds.includes(layerId) ? { ...group, layerIds: [...group.layerIds, layerId] } : group));
+        }
+        setLayerGroups(prev => prev.map(group => group.id === groupId ? { ...group, layerIds: [...new Set(group.layerIds)] } : group));
+    };
+
     const addLayer = () => {
 
         let number = 1;
@@ -1168,6 +1486,28 @@ function App() {
                 return;
             }
 
+            if (Array.isArray(layerDeleteConfirm.layerIds)) {
+                const requestedIds = new Set(layerDeleteConfirm.layerIds);
+                const matched = layers.filter(layer => requestedIds.has(layer.id));
+                const deletable = matched.length >= layers.length ? matched.slice(0, layers.length - 1) : matched;
+                const deleteIds = new Set(deletable.map(layer => layer.id));
+                if (!deleteIds.size) { setLayerDeleteConfirm(null); return; }
+                const remainingLayers = layers.filter(layer => !deleteIds.has(layer.id));
+                setLayers(remainingLayers);
+                setLayerGroups(prev => prev.map(group => ({ ...group, layerIds: group.layerIds.filter(id => !deleteIds.has(id)) })).filter(group => group.layerIds.length));
+                setObjects(prev => prev.filter(item => !deleteIds.has(getItemLayerId(item))));
+                setLines(prev => prev.filter(item => !deleteIds.has(getItemLayerId(item))));
+                setFills(prev => prev.filter(item => !deleteIds.has(getItemLayerId(item))));
+                setSelectedLayerIds(prev => prev.filter(id => !deleteIds.has(id)));
+                setSelectedElements([]);
+                if (deleteIds.has(activeLayerId)) {
+                    const nextActive = remainingLayers.find(layer => layer.visible) || remainingLayers[0];
+                    if (nextActive) setActiveLayerId(nextActive.id);
+                }
+                setLayerDeleteConfirm(null);
+                return;
+            }
+
             const layerId =
                 layerDeleteConfirm.layerId;
 
@@ -1196,6 +1536,11 @@ function App() {
                         layerId
                 )
             );
+            setLayerGroups(prev => prev.map(group => ({
+                ...group,
+                layerIds: group.layerIds.filter(id => id !== layerId)
+            })).filter(group => group.layerIds.length > 0));
+            setSelectedLayerIds(prev => prev.filter(id => id !== layerId));
 
 
             setObjects(prev =>
@@ -1438,143 +1783,70 @@ function App() {
 
 
 
-    const handleLayerDragStart =
-        (e, layerId) => {
+    const handleLayerDragStart = (e, layerId) => {
+        e.stopPropagation();
+        // Drag the whole current selection when the dragged layer is selected.
+        // Otherwise, start a single-layer drag and make it the selection.
+        const movingIds = selectedLayerIds.includes(layerId)
+            ? layers.filter(layer => selectedLayerIds.includes(layer.id)).map(layer => layer.id)
+            : [layerId];
+        setDraggedLayerIds(movingIds);
+        setDraggedLayerId(layerId);
+        setDraggedGroupId(null);
+        if (!selectedLayerIds.includes(layerId)) setSelectedLayerIds([layerId]);
+        e.dataTransfer.effectAllowed = "move";
+        try { e.dataTransfer.setData("text/plain", movingIds.join(",")); } catch {}
+    };
 
-            setDraggedLayerId(
-                layerId
-            );
+    const handleLayerDragEnd = () => {
+        setDraggedLayerId(null);
+        setDraggedLayerIds([]);
+    };
 
-            e.dataTransfer.effectAllowed =
-                "move";
+    const handleLayerDragOver = e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    };
 
-        };
+    const handleLayerDrop = (e, targetLayerId) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const movingIds = (draggedLayerIds.length ? draggedLayerIds : [draggedLayerId])
+            .filter(Boolean);
+        if (!movingIds.length || movingIds.includes(targetLayerId)) {
+            handleLayerDragEnd();
+            return;
+        }
 
-const handleLayerDragEnd = () => {
-    setDraggedLayerId(null);
-};
+        const displayOrder = [...layers].reverse();
+        const targetIndexBefore = displayOrder.findIndex(layer => layer.id === targetLayerId);
+        if (targetIndexBefore < 0) { handleLayerDragEnd(); return; }
+        const rect = e.currentTarget.getBoundingClientRect();
+        const dropAbove = e.clientY < rect.top + rect.height / 2;
+        const movingSet = new Set(movingIds);
+        const movingLayers = displayOrder.filter(layer => movingSet.has(layer.id));
+        const remaining = displayOrder.filter(layer => !movingSet.has(layer.id));
+        const remainingTargetIndex = remaining.findIndex(layer => layer.id === targetLayerId);
+        if (remainingTargetIndex < 0) { handleLayerDragEnd(); return; }
+        remaining.splice(remainingTargetIndex + (dropAbove ? 0 : 1), 0, ...movingLayers);
+        setLayers(remaining.reverse());
 
-
-    const handleLayerDragOver =
-        e => {
-
-            e.preventDefault();
-
-            e.dataTransfer.dropEffect =
-                "move";
-
-        };
-
-
-    const handleLayerDrop =
-        (e, targetLayerId) => {
-
-            e.preventDefault();
-
-            if (
-                !draggedLayerId ||
-                draggedLayerId ===
-                    targetLayerId
-            ) {
-
-                setDraggedLayerId(null);
-
-                return;
-
+        // Keep group membership consistent for every dragged layer.
+        const targetGroup = layerGroups.find(group => group.layerIds.includes(targetLayerId));
+        setLayerGroups(prev => {
+            let next = prev.map(group => ({ ...group, layerIds: group.layerIds.filter(id => !movingSet.has(id)) }));
+            if (targetGroup) {
+                next = next.map(group => group.id === targetGroup.id
+                    ? { ...group, layerIds: [...new Set([...group.layerIds, ...movingIds])] }
+                    : group);
             }
+            return next.filter(group => group.layerIds.length > 0);
+        });
+        handleLayerDragEnd();
+    };
 
 
-            
-            
-            const displayOrder =
-                [...layers].reverse();
-
-
-            const fromIndex =
-                displayOrder.findIndex(
-                    layer =>
-                        layer.id ===
-                        draggedLayerId
-                );
-
-
-            if (fromIndex === -1) {
-
-                setDraggedLayerId(null);
-
-                return;
-
-            }
-
-
-            const [
-                movedLayer
-            ] =
-                displayOrder.splice(
-                    fromIndex,
-                    1
-                );
-
-
-            const targetIndex =
-                displayOrder.findIndex(
-                    layer =>
-                        layer.id ===
-                        targetLayerId
-                );
-
-
-            if (targetIndex === -1) {
-
-                setDraggedLayerId(null);
-
-                return;
-
-            }
-
-
-            const targetElement =
-                e.currentTarget;
-
-            const rect =
-                targetElement.getBoundingClientRect();
-
-            const dropAbove =
-                e.clientY <
-                rect.top +
-                rect.height / 2;
-
-
-            const insertIndex =
-                dropAbove
-                    ? targetIndex
-                    : targetIndex + 1;
-
-
-            displayOrder.splice(
-                insertIndex,
-                0,
-                movedLayer
-            );
-
-
-            
-            
-            setLayers(
-                displayOrder.reverse()
-            );
-
-
-            setDraggedLayerId(null);
-
-        };
-
-
-    
-    
-    
-
-    const getPointerPosition = () => {
+        const getPointerPosition = () => {
 
         const stage =
             stageRef.current;
@@ -1872,10 +2144,45 @@ const handleLayerDragEnd = () => {
             return;
         }
 
-        const position = getPointerPosition();
+        const screenPointer = stage.getPointerPosition();
+        if (!screenPointer) return;
 
-        if (!position) {
-            return;
+        // Convert the screen pointer to canvas/world coordinates before either
+        // vector hit-testing or raster flood filling. This keeps fill working
+        // while the canvas is zoomed or panned.
+        const position = stage.getRelativePointerPosition();
+        if (!position) return;
+
+        // Prefer recolouring a vector shape directly when the click lands on
+        // one. This avoids raster flood-fill leaks through anti-aliased edges.
+        // Fill mode never selects or drags the hit element.
+        const hitNode = stage.getIntersection(screenPointer);
+        let currentHit = hitNode;
+        let hitObjectIndex = -1;
+
+        while (currentHit && hitObjectIndex < 0) {
+            for (let i = 0; i < objects.length; i++) {
+                if (nodeRefs.current[makeKey("object", i)] === currentHit) {
+                    hitObjectIndex = i;
+                    break;
+                }
+            }
+            currentHit = currentHit.getParent ? currentHit.getParent() : null;
+        }
+
+        if (hitObjectIndex >= 0) {
+            const hitObject = objects[hitObjectIndex];
+            const nonFillableTypes = ["text", "note", "image"];
+            if (hitObject && !nonFillableTypes.includes(hitObject.type)) {
+                saveHistory();
+                setObjects(prev => prev.map((object, index) =>
+                    index === hitObjectIndex
+                        ? { ...object, fill: color }
+                        : object
+                ));
+                setSelectedElements([]);
+                return;
+            }
         }
 
         const stageWidth = Math.ceil(stage.width());
@@ -1947,8 +2254,24 @@ const handleLayerDragEnd = () => {
             return;
         }
 
+        // Konva exports transparent pixels outside strokes. Flood-fill was
+        // rejecting those pixels because their alpha was below 240, so enclosed
+        // spaces between drawn lines could not be filled. Composite onto white
+        // first: this matches the editor's white paper and gives the bucket a
+        // stable, opaque surface to sample.
+        const fillSurface = document.createElement("canvas");
+        fillSurface.width = stageWidth;
+        fillSurface.height = stageHeight;
+        const fillSurfaceContext = fillSurface.getContext("2d", {
+            willReadFrequently: true
+        });
+        if (!fillSurfaceContext) return;
+        fillSurfaceContext.fillStyle = "#ffffff";
+        fillSurfaceContext.fillRect(0, 0, stageWidth, stageHeight);
+        fillSurfaceContext.drawImage(renderedCanvas, 0, 0);
+
         const result = floodFillRegion(
-            renderedCanvas,
+            fillSurface,
             position.x,
             position.y,
             color
@@ -2516,6 +2839,13 @@ const handleLayerDragEnd = () => {
         };
 
 
+    const getDrawingTargetLayerId = () => {
+            const firstSelectedLayer = selectedLayerIds
+                .map(id => layers.find(layer => layer.id === id))
+                .find(layer => layer && layer.visible);
+            return firstSelectedLayer ? firstSelectedLayer.id : activeLayerId;
+        };
+
     const startFreehandDrawing =
         () => {
 
@@ -2526,17 +2856,13 @@ const handleLayerDragEnd = () => {
                 return;
             }
 
-            const activeLayer =
-                getLayerById(
-                    activeLayerId
-                );
+            const drawingLayerId = getDrawingTargetLayerId();
+            const activeLayer = getLayerById(drawingLayerId);
 
-            if (
-                !activeLayer ||
-                !activeLayer.visible
-            ) {
+            if (!activeLayer || !activeLayer.visible) {
                 return;
             }
+            if (drawingLayerId !== activeLayerId) setActiveLayerId(drawingLayerId);
 
             const pos =
                 getPointerPosition();
@@ -2563,7 +2889,7 @@ const handleLayerDragEnd = () => {
             const newLine = {
 
                 layerId:
-                    activeLayerId,
+                    getDrawingTargetLayerId(),
 
                 points: [
                     pos.x,
@@ -3038,8 +3364,12 @@ const handleLayerDragEnd = () => {
 const handleElementMouseDown =
     (type, index, e) => {
 
-        
-        
+        if (tool === "pen" && e.evt?.button === 2) {
+            e.evt.preventDefault();
+            e.cancelBubble = true;
+            return;
+        }
+
         if (e.evt?.button === 2) {
             if (
                 tool === "select" ||
@@ -3088,10 +3418,13 @@ const handleElementMouseDown =
         }
 
 
-        if (
-            tool !== "select" &&
-            !(tool === "fill" && type === "fill")
-        ) {
+        // Fill is exclusively a canvas painting tool. Shape and fill nodes
+        // must not become selectable/draggable while it is active.
+        if (tool === "fill") {
+            return;
+        }
+
+        if (tool !== "select") {
             return;
         }
 
@@ -5442,83 +5775,162 @@ const handleElementMouseDown =
     
     
 
-    const exportCanvas = () => {
-
+    const openExportSelection = () => {
         const stage = stageRef.current;
-
         if (!stage) return;
-
-        const selectionLayer =
-            selectionUiLayerRef.current;
-
-        const transformerLayer =
-            transformerUiLayerRef.current;
-
-        const previousSelectionVisibility =
-            selectionLayer?.visible() ?? true;
-
-        const previousTransformerVisibility =
-            transformerLayer?.visible() ?? true;
-
-        if (selectionLayer) {
-            selectionLayer.visible(false);
+        const width = Math.min(500, stage.width());
+        const height = Math.min(500, stage.height());
+        const selectionLayer = selectionUiLayerRef.current;
+        const transformerLayer = transformerUiLayerRef.current;
+        const gridLayer = gridLayerRef.current;
+        const oldSelectionVisibility = selectionLayer?.visible() ?? true;
+        const oldTransformerVisibility = transformerLayer?.visible() ?? true;
+        const oldGridVisibility = gridLayer?.visible() ?? true;
+        let preview = "";
+        try {
+            // Capture the actual artwork as seen in the canvas, without editor-only overlays.
+            selectionLayer?.visible(false);
+            transformerLayer?.visible(false);
+            gridLayer?.visible(false);
+            stage.draw();
+            preview = stage.toDataURL({
+                x: 0,
+                y: 0,
+                width: stage.width(),
+                height: stage.height(),
+                pixelRatio: 1,
+                mimeType: "image/png"
+            });
+        } catch (error) {
+            console.error("Could not create export preview.", error);
+        } finally {
+            selectionLayer?.visible(oldSelectionVisibility);
+            transformerLayer?.visible(oldTransformerVisibility);
+            gridLayer?.visible(oldGridVisibility);
+            stage.draw();
         }
-
-        if (transformerLayer) {
-            transformerLayer.visible(false);
-        }
-
-        
-        
-        const previousScale = stage.scaleX();
-        const previousPosition = stage.position();
-
-        stage.scale({
-            x: 1,
-            y: 1
+        setExportPreview(preview);
+        setExportCrop({
+            x: Math.max(0, (stage.width() - width) / 2),
+            y: Math.max(0, (stage.height() - height) / 2),
+            width,
+            height
         });
-
-        stage.position({
-            x: 0,
-            y: 0
-        });
-
-        stage.draw();
-
-        const dataURL = stage.toDataURL({
-            pixelRatio: 2,
-            mimeType: "image/png"
-        });
-
-        stage.scale({
-            x: previousScale,
-            y: previousScale
-        });
-
-        stage.position(previousPosition);
-
-        if (selectionLayer) {
-            selectionLayer.visible(
-                previousSelectionVisibility
-            );
-        }
-
-        if (transformerLayer) {
-            transformerLayer.visible(
-                previousTransformerVisibility
-            );
-        }
-
-        stage.draw();
-
-        const link = document.createElement("a");
-        link.download = "la-peace-lab-drawing.png";
-        link.href = dataURL;
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        setExportSelection({ width: stage.width(), height: stage.height() });
     };
+
+    const clampExportCrop = crop => {
+        const stage = stageRef.current;
+        if (!stage) return crop;
+        const width = Math.max(1, Math.min(stage.width(), crop.width));
+        const height = Math.max(1, Math.min(stage.height(), crop.height));
+        return {
+            x: Math.max(0, Math.min(stage.width() - width, crop.x)),
+            y: Math.max(0, Math.min(stage.height() - height, crop.y)),
+            width,
+            height
+        };
+    };
+
+    const exportCanvas = () => {
+        const stage = stageRef.current;
+        if (!stage || !exportSelection) return;
+        const crop = clampExportCrop(exportCrop);
+        const selectionLayer = selectionUiLayerRef.current;
+        const transformerLayer = transformerUiLayerRef.current;
+        const gridLayer = gridLayerRef.current;
+        const previousSelectionVisibility = selectionLayer?.visible() ?? true;
+        const previousTransformerVisibility = transformerLayer?.visible() ?? true;
+        const previousGridVisibility = gridLayer?.visible() ?? true;
+        let artworkDataURL;
+        try {
+            selectionLayer?.visible(false);
+            transformerLayer?.visible(false);
+            gridLayer?.visible(false);
+            stage.draw();
+            artworkDataURL = stage.toDataURL({
+                x: crop.x,
+                y: crop.y,
+                width: crop.width,
+                height: crop.height,
+                pixelRatio: 2,
+                mimeType: "image/png"
+            });
+        } catch (error) {
+            console.error("Drawing Lab export failed.", error);
+            return;
+        } finally {
+            selectionLayer?.visible(previousSelectionVisibility);
+            transformerLayer?.visible(previousTransformerVisibility);
+            gridLayer?.visible(previousGridVisibility);
+            stage.draw();
+        }
+
+        const exportWidth = Math.max(1, Math.round(crop.width * 2));
+        const exportHeight = Math.max(1, Math.round(crop.height * 2));
+        const flattenedCanvas = document.createElement("canvas");
+        flattenedCanvas.width = exportWidth;
+        flattenedCanvas.height = exportHeight;
+        const context = flattenedCanvas.getContext("2d");
+        if (!context) return;
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, exportWidth, exportHeight);
+        const artworkImage = new Image();
+        artworkImage.onload = () => {
+            context.drawImage(artworkImage, 0, 0, exportWidth, exportHeight);
+            const link = document.createElement("a");
+            link.download = `la-peace-lab-drawing-${Math.round(crop.width)}x${Math.round(crop.height)}.png`;
+            link.href = flattenedCanvas.toDataURL("image/png");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setExportSelection(null);
+        };
+        artworkImage.onerror = () => console.error("Drawing Lab could not prepare the PNG export.");
+        artworkImage.src = artworkDataURL;
+    };
+
+    const startExportCropDrag = (event, mode = "move") => {
+        event.preventDefault();
+        event.stopPropagation();
+        exportDragRef.current = {
+            mode,
+            startX: event.clientX,
+            startY: event.clientY,
+            crop: { ...exportCrop },
+            scaleX: (stageRef.current?.width() || 1) / Math.max(1, (event.currentTarget.parentElement?.getBoundingClientRect().width || 1)),
+            scaleY: (stageRef.current?.height() || 1) / Math.max(1, (event.currentTarget.parentElement?.getBoundingClientRect().height || 1))
+        };
+        const move = moveEvent => {
+            const drag = exportDragRef.current;
+            if (!drag) return;
+            const dx = (moveEvent.clientX - drag.startX) * drag.scaleX;
+            const dy = (moveEvent.clientY - drag.startY) * drag.scaleY;
+            const stage = stageRef.current;
+            if (!stage) return;
+            if (drag.mode === "resize") {
+                setExportCrop(clampExportCrop({
+                    ...drag.crop,
+                    width: Math.max(50, drag.crop.width + dx),
+                    height: Math.max(50, drag.crop.height + dy)
+                }));
+            } else {
+                setExportCrop(clampExportCrop({
+                    ...drag.crop,
+                    x: drag.crop.x + dx,
+                    y: drag.crop.y + dy
+                }));
+            }
+        };
+        const stop = () => {
+            exportDragRef.current = null;
+            window.removeEventListener("pointermove", move);
+            window.removeEventListener("pointerup", stop);
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", stop);
+    };
+
 
 
     
@@ -5653,7 +6065,7 @@ const handleElementMouseDown =
                             100
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -5692,7 +6104,7 @@ const handleElementMouseDown =
                             50
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -5750,7 +6162,7 @@ const handleElementMouseDown =
                             60
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -5794,7 +6206,7 @@ const handleElementMouseDown =
                             45
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -5843,7 +6255,7 @@ const handleElementMouseDown =
                             65
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -5919,7 +6331,7 @@ const handleElementMouseDown =
                             }
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -6012,7 +6424,7 @@ const handleElementMouseDown =
                             }
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -6109,7 +6521,7 @@ const handleElementMouseDown =
                             }
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -6154,7 +6566,7 @@ const handleElementMouseDown =
                                 80
                             }
 
-                            fill="transparent"
+                            fill={object.fill ?? "transparent"}
 
                             stroke={
                                 object.stroke ||
@@ -6246,7 +6658,7 @@ const handleElementMouseDown =
                                 80
                             }
 
-                            fill="transparent"
+                            fill={object.fill ?? "transparent"}
 
                             stroke={
                                 object.stroke ||
@@ -6379,7 +6791,7 @@ const handleElementMouseDown =
                             20
                         }
 
-                        fill="transparent"
+                        fill={object.fill ?? "transparent"}
 
                         stroke={
                             object.stroke ||
@@ -6762,7 +7174,17 @@ return lines
                 }
 
                 .layer_context_menu {
+                    box-sizing: border-box;
                     min-width: 190px;
+                    max-width: calc(100vw - 16px);
+                    width: 190px;
+                    max-height: min(55vh, calc(100dvh - 120px));
+                    overflow-x: hidden;
+                    overscroll-behavior: contain;
+                    scrollbar-gutter: stable;
+                    scrollbar-width: auto;
+                    scrollbar-color: #6f6a60 #f2eee5;
+                    -webkit-overflow-scrolling: touch;
                     padding: 6px;
                     background: white;
                     border: 2px solid #222;
@@ -6770,6 +7192,11 @@ return lines
                     box-shadow: 3px 4px 10px rgba(0, 0, 0, 0.22);
                     font-family: Arial, sans-serif;
                 }
+
+                .layer_context_menu.has-many-layers::-webkit-scrollbar { width: 12px; }
+                .layer_context_menu:not(.has-many-layers)::-webkit-scrollbar { display: none; }
+                .layer_context_menu::-webkit-scrollbar-track { background: #f2eee5; border-radius: 8px; }
+                .layer_context_menu::-webkit-scrollbar-thumb { background: #8e877a; border: 2px solid #f2eee5; border-radius: 8px; }
 
                 .layer_context_title {
                     padding: 6px 8px 7px;
@@ -7012,6 +7439,31 @@ return lines
                 }
             `}</style>
 
+            <aside className="drawing_sidebar">
+                <a href="https://nothinkformal.github.io/la-peace/index.html" onClick={goToMainMenu} className="drawing_brand" aria-label="LEM.CO main menu">
+                    <span className="drawing_brand_logo"><img src={LEM_ICON_URL} alt="LEM.CO" /></span>
+                    <span className="drawing_brand_text"><strong>LEM.CO</strong><small>LAB</small></span>
+                </a>
+                <div className="drawing_sidebar_rule" />
+                <nav className="drawing_navigation" aria-label="Main navigation">
+                    <a href="https://nothinkformal.github.io/la-peace/index.html" onClick={goToMainMenu} className="drawing_nav_link"><span>⌂</span>Home</a>
+                    <a href="https://nothinkformal.github.io/la-peace/music-maker/tutorial.html" className="drawing_nav_link"><span>♫</span>Music Maker</a>
+                    <a href="./index.html" className="drawing_nav_link active"><span>✎</span>Drawing Lab</a>
+                    <a href="https://nothinkformal.github.io/la-peace/gallery/index.html" className="drawing_nav_link"><span>▣</span>Gallery</a>
+                    <a href="https://nothinkformal.github.io/la-peace/story/index.html" className="drawing_nav_link"><span>▤</span>The Story</a>
+                    <a href="https://nothinkformal.github.io/la-peace/mission/index.html" className="drawing_nav_link"><span>★</span>Our Mission</a>
+                    <a href="https://nothinkformal.github.io/la-peace/credits/index.html" className="drawing_nav_link"><span>ⓘ</span>Credits</a>
+                </nav>
+                <a href="../about/index.html" className="drawing_sidebar_bottom"><span>?</span> About</a>
+            </aside>
+
+            <header className="drawing_topbar">
+                <a href="https://nothinkformal.github.io/la-peace/index.html" onClick={goToMainMenu} className="drawing_back_button" aria-label="Back to main menu" title="Back to main menu">←</a>
+                <div className="drawing_topbar_title">Drawing Lab</div>
+                <span className="drawing_topbar_spacer" />
+                <span className="drawing_topbar_tag">LEM.CO</span>
+            </header>
+
             <div className="drawing_title">
                 Drawing Lab
             </div>
@@ -7029,6 +7481,16 @@ return lines
                 height={
                     stageSize.height
                 }
+                style={{
+                    position: "absolute",
+                    left: isMobile ? 0 : 195,
+                    top: 0,
+                    border: "none",
+                    outline: "none",
+                    boxSizing: "border-box",
+                    background: "#ffffff",
+                    zIndex: 1
+                }}
 
                 onMouseDown={
                     handleStageMouseDown
@@ -7832,19 +8294,23 @@ return lines
                         Reference
                     </h2>
 
-                    {isMobile && (
-                        <button
-                            type="button"
-                            className="mobile_panel_close"
-                            onClick={() =>
-                                setMobilePanelOpen(false)
-                            }
-                        >
-                            Close
-                        </button>
-                    )}
+                    <button
+                        type="button"
+                        className="reference_back_button"
+                        onClick={goToMainMenu}
+                        title="Back to main menu"
+                        aria-label="Back to main menu"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M4 3.5h12.5v17H4z" />
+                            <path d="M16.5 7H20v10h-3.5" />
+                            <circle cx="13" cy="12" r=".8" />
+                        </svg>
+                    </button>
                 </div>
 
+
+                <h2 className="reference_image_heading">Reference Image</h2>
 
                 <label className="reference_upload">
 
@@ -7913,21 +8379,17 @@ return lines
                             Layers
                         </h2>
 
-                        <button
-
-                            type="button"
-
-                            className={
-                                "add_layer_button"
-                            }
-
-                            onClick={
-                                addLayer
-                            }
-
-                        >
-                            + Layer
-                        </button>
+                        <div className="layers_header_actions">
+                            <button type="button" className="delete_selected_layers_button"
+                                disabled={selectedLayerIds.length === 0 || layers.length <= 1}
+                                title="Delete selected layers"
+                                onClick={() => {
+                                    const ids = selectedLayerIds.filter(id => layers.some(layer => layer.id === id));
+                                    if (!ids.length || layers.length <= 1) return;
+                                    setLayerDeleteConfirm({ layerIds: ids, layerName: `${ids.length} selected layer${ids.length === 1 ? "" : "s"}` });
+                                }}>🗑 Delete ({selectedLayerIds.length})</button>
+                            <button type="button" className="add_layer_button" onClick={addLayer}>+ Layer</button>
+                        </div>
 
                     </div>
 
@@ -7947,241 +8409,98 @@ return lines
 
                     </div>
 
-
                     <div className="layers_list">
-
-                        {layers
-                            .slice()
-                            .reverse()
-                            .map(
-                                layer => {
-
-                                    const active =
-                                        activeLayerId ===
-                                        layer.id;
-
-
-                                    const dragging =
-                                        draggedLayerId ===
-                                        layer.id;
-
-
-                                    return (
-
-                                        <div
-
-                                            key={
-                                                layer.id
-                                            }
-
-                                            className={
-
-                                                "layer_item" +
-
-                                                (
-                                                    active
-                                                        ? " active"
-                                                        : ""
-                                                ) +
-
-                                                (
-                                                    dragging
-                                                        ? " dragging"
-                                                        : ""
-                                                )
-
-                                            }
-
-                                            draggable={
-                                                true
-                                            }
-
-                                            onDragStart={
-                                                e =>
-                                                    handleLayerDragStart(
-                                                        e,
-                                                        layer.id
-                                                    )
-                                            }
-
-                                            onDragEnd={
-                                                    handleLayerDragEnd
-                                            }
-
-                                            onDragOver={
-                                                handleLayerDragOver
-                                            }
-
-                                            onDrop={
-                                                e =>
-                                                    handleLayerDrop(
-                                                        e,
-                                                        layer.id
-                                                    )
-                                            }
-
-                                            onClick={() =>
-                                                setActiveLayerId(
-                                                    layer.id
-                                                )
-                                            }
-
-                                            onDoubleClick={() =>
-                                                startLayerRename(
-                                                    layer
-                                                )
-                                            }
-
-                                        >
-
-
-                                            <span className="layer_drag_handle">
-                                                ⋮⋮
-                                            </span>
-
-                                            <button
-
-                                                type="button"
-
-                                                className={
-                                                    "layer_control"
+                        {(() => {
+                            const orderedLayers = layers.slice().reverse();
+                            const renderedGroups = new Set();
+                            const rows = [];
+                            orderedLayers.forEach(layer => {
+                                const group = layerGroups.find(item => item.layerIds.includes(layer.id));
+                                if (group && !renderedGroups.has(group.id)) {
+                                    renderedGroups.add(group.id);
+                                    rows.push(
+                                        <div key={group.id} className={'layer_group_item' + (draggedGroupId === group.id ? ' dragging' : '')} draggable
+                                            onDragStart={e => { setDraggedGroupId(group.id); e.dataTransfer.effectAllowed = 'move'; }}
+                                            onDragEnd={() => setDraggedGroupId(null)}
+                                            onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                                            onDrop={e => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (draggedGroupId) {
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    const dropAbove = e.clientY < rect.top + rect.height / 2;
+                                                    const targetLayerId = group.layerIds.find(id => layers.some(layer => layer.id === id));
+                                                    if (targetLayerId) moveGroupToLayer(draggedGroupId, targetLayerId, dropAbove);
+                                                    setDraggedGroupId(null);
+                                                    return;
                                                 }
-
-                                                title={
-                                                    layer.visible
-                                                        ? "Hide layer"
-                                                        : "Show layer"
-                                                }
-
-                                                onClick={
-                                                    e => {
-
-                                                        e.stopPropagation();
-
-                                                        toggleLayerVisibility(
-                                                            layer.id
-                                                        );
-
+                                                const movingIds = (draggedLayerIds.length ? draggedLayerIds : (draggedLayerId ? [draggedLayerId] : [])).filter(id => layers.some(layer => layer.id === id));
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const dropIntoGroup = e.clientY >= rect.top + rect.height * 0.28 && e.clientY <= rect.bottom - rect.height * 0.18;
+                                                if (dropIntoGroup) {
+                                                    movingIds.forEach(id => addLayerToGroup(id, group.id));
+                                                } else {
+                                                    const targetLayerId = group.layerIds.find(id => layers.some(layer => layer.id === id));
+                                                    if (targetLayerId && movingIds.length) {
+                                                        const movingSet = new Set(movingIds);
+                                                        setLayers(prev => {
+                                                            const ordered = [...prev].reverse();
+                                                            const moving = ordered.filter(layer => movingSet.has(layer.id));
+                                                            const rest = ordered.filter(layer => !movingSet.has(layer.id));
+                                                            const targetIndex = rest.findIndex(layer => layer.id === targetLayerId);
+                                                            if (targetIndex < 0) return prev;
+                                                            rest.splice(targetIndex, 0, ...moving);
+                                                            return rest.reverse();
+                                                        });
+                                                        setLayerGroups(prev => prev.map(item => ({...item, layerIds: item.layerIds.filter(id => !movingSet.has(id))})).filter(item => item.layerIds.length));
                                                     }
                                                 }
-
-                                            >
-                                                {
-                                                    layer.visible
-                                                        ? "👁"
-                                                        : "🚫"
-                                                }
-                                            </button>
-
-
-                                            {editingLayerId ===
-                                                layer.id ? (
-
-                                                <input
-
-                                                    autoFocus
-
-                                                    className={
-                                                        "layer_name_input"
-                                                    }
-
-                                                    value={
-                                                        editingLayerName
-                                                    }
-
-                                                    onChange={
-                                                        e =>
-                                                            setEditingLayerName(
-                                                                e.target.value
-                                                            )
-                                                    }
-
-                                                    onBlur={
-                                                        finishLayerRename
-                                                    }
-
-                                                    onKeyDown={
-                                                        e => {
-
-                                                            if (
-                                                                e.key ===
-                                                                "Enter"
-                                                            ) {
-
-                                                                finishLayerRename();
-
-                                                            }
-
-                                                            if (
-                                                                e.key ===
-                                                                "Escape"
-                                                            ) {
-
-                                                                setEditingLayerId(
-                                                                    null
-                                                                );
-
-                                                            }
-
-                                                        }
-                                                    }
-
-                                                    onClick={
-                                                        e =>
-                                                            e.stopPropagation()
-                                                    }
-
-                                                />
-
-                                            ) : (
-
-                                                <span className="layer_name">
-
-                                                    {
-                                                        layer.name
-                                                    }
-
-                                                </span>
-
-                                            )}
-
-
-
-                                            <button
-
-                                                type="button"
-
-                                                className={
-                                                    "layer_control delete_layer"
-                                                }
-
-                                                title={
-                                                    "Delete layer"
-                                                }
-
-                                                onClick={
-                                                    e => {
-
-                                                        e.stopPropagation();
-
-                                                        deleteLayer(
-                                                            layer.id
-                                                        );
-
-                                                    }
-                                                }
-
-                                            >
-                                                🗑
-                                            </button>
-
+                                                setDraggedLayerId(null);
+                                                setDraggedLayerIds([]);
+                                                setDraggedGroupId(null);
+                                            }}>
+                                            <button type="button" className="layer_group_toggle" onClick={() => toggleGroupCollapsed(group.id)} title={group.collapsed ? 'Expand group' : 'Collapse group'}>{group.collapsed ? '▸' : '▾'}</button>
+                                            <img className="layer_group_icon" src="https://raw.githubusercontent.com/nothinkformal/la-peace/refs/heads/version-4/images/lemon.png" alt="" draggable="false" />
+                                            {editingGroupId === group.id ? <input autoFocus className="layer_name_input" value={editingGroupName} onChange={e => setEditingGroupName(e.target.value)} onBlur={finishGroupRename} onKeyDown={e => { if (e.key === 'Enter') finishGroupRename(); if (e.key === 'Escape') setEditingGroupId(null); }} onClick={e => e.stopPropagation()} /> : <span className="layer_group_name" onDoubleClick={() => startGroupRename(group)}>{group.name}</span>}
+                                            <button type="button" className="layer_control" title={group.visible ? 'Hide group' : 'Show group'} onClick={() => toggleGroupVisibility(group.id)}>{group.visible ? '👁' : '🚫'}</button>
+                                            <button type="button" className="layer_control" title="Move group up" onClick={() => moveLayerGroup(group.id, -1)}>↑</button>
+                                            <button type="button" className="layer_control" title="Move group down" onClick={() => moveLayerGroup(group.id, 1)}>↓</button>
+                                            <button type="button" className="layer_control" title="Ungroup layers" onClick={() => ungroupLayerGroup(group.id)}>↗</button>
                                         </div>
-
                                     );
-
                                 }
-                            )}
-
+                                if (group?.collapsed) return;
+                                const active = selectedLayerIds.includes(layer.id);
+                                const dragging = draggedLayerIds.includes(layer.id) || draggedLayerId === layer.id;
+                                rows.push(
+                                    <div key={layer.id} className={'layer_item' + (active ? ' active' : '') + (selectedLayerIds.includes(layer.id) ? ' multi_selected' : '') + (dragging ? ' dragging' : '') + (group ? ' grouped_layer' : '')}
+                                        draggable onDragStart={e => handleLayerDragStart(e, layer.id)} onDragEnd={handleLayerDragEnd}
+                                        onDragOver={handleLayerDragOver} onDrop={e => { if (draggedGroupId) { e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); moveGroupToLayer(draggedGroupId, layer.id, e.clientY < rect.top + rect.height / 2); setDraggedGroupId(null); } else handleLayerDrop(e, layer.id); }}
+                                        onClick={e => {
+                                            setActiveLayerId(layer.id);
+                                            if (e.ctrlKey || e.metaKey) {
+                                                setSelectedLayerIds(prev => prev.includes(layer.id) ? prev.filter(id => id !== layer.id) : [...prev, layer.id]);
+                                            } else {
+                                                setSelectedLayerIds([layer.id]);
+                                            }
+                                        }}
+                                        onContextMenu={e => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (!selectedLayerIds.includes(layer.id)) setSelectedLayerIds([layer.id]);
+                                            setLayerGroupContextMenu({ x: e.clientX, y: e.clientY, layerId: layer.id });
+                                        }}
+                                        onDoubleClick={() => startLayerRename(layer)}>
+                                        <input type="checkbox" className="layer_group_select" aria-label={'Select ' + layer.name + ' for grouping'} checked={selectedLayerIds.includes(layer.id)} onChange={e => setSelectedLayerIds(prev => e.target.checked ? [...new Set([...prev, layer.id])] : prev.filter(id => id !== layer.id))} onClick={e => e.stopPropagation()} />
+                                        <span className="layer_drag_handle" title="Drag to reorder">⋮⋮</span>
+                                        <button type="button" className="layer_control" title={layer.visible ? 'Hide layer' : 'Show layer'} onClick={e => { e.stopPropagation(); toggleLayerVisibility(layer.id); }}>{layer.visible ? '👁' : '🚫'}</button>
+                                        {editingLayerId === layer.id ? <input autoFocus className="layer_name_input" value={editingLayerName} onChange={e => setEditingLayerName(e.target.value)} onBlur={finishLayerRename} onKeyDown={e => { if (e.key === 'Enter') finishLayerRename(); if (e.key === 'Escape') setEditingLayerId(null); }} onClick={e => e.stopPropagation()} /> : <span className="layer_name">{layer.name}</span>}
+                                        <button type="button" className="layer_control delete_layer" title="Delete layer" onClick={e => { e.stopPropagation(); deleteLayer(layer.id); }}>🗑</button>
+                                    </div>
+                                );
+                            });
+                            return rows;
+                        })()}
                     </div>
 
                 </div>
@@ -8192,17 +8511,69 @@ return lines
     <button
         type="button"
         className="export_button"
-        onClick={exportCanvas}
+        onClick={openExportSelection}
     >
-        Export Canvas
+        Export Canvas (PNG)
     </button>
 
-    <p className="export_hint">
-        Export and Download your canvas as a image
-    </p>
+    <button type="button" className="export_button" onClick={beginSaveLemFile} style={{ marginTop: 8 }}>
+        Save Drawing (.lem)
+    </button>
+
+    <button type="button" className="export_button" onClick={beginLoadLemFile} style={{ marginTop: 8 }}>
+        Load Drawing (.lem)
+    </button>
+    <input ref={lemFileInputRef} type="file" accept=".lem,application/json,application/x-lem-project+json" onChange={loadLemFile} style={{ display: "none" }} />
 </div>
 
 </div>
+
+            {lemDialog && (
+                <div style={{ position: "fixed", inset: 0, zIndex: 12000, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onMouseDown={e => { if (e.target === e.currentTarget) { setLemDialog(null); setPendingLemFile(null); } }}>
+                    <div role="dialog" aria-modal="true" aria-labelledby="lem-dialog-title" style={{ width: "min(420px, 96vw)", background: "#fff", color: "#202020", borderRadius: 14, padding: 22, boxShadow: "0 16px 48px rgba(0,0,0,.4)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                            <img src="https://raw.githubusercontent.com/nothinkformal/la-peace/refs/heads/version-4/images/lemon.png" alt="LEM" style={{ width: 42, height: 42, objectFit: "contain" }} />
+                            <div><h2 id="lem-dialog-title" style={{ margin: 0 }}>{lemDialog === "save" ? "Save encrypted .lem" : lemDialog === "load" ? "Load .lem drawing" : "LEM.CO Lab"}</h2><div style={{ fontSize: 12, color: "#666" }}>LEM.CO Drawing Project</div></div>
+                        </div>
+                        {lemDialog === "save" && <p style={{ fontSize: 14, lineHeight: 1.5 }}>Your project data will be automatically encrypted inside the .lem file. No password is required. The file contents will not appear as readable project JSON, although this client-side format encryption is not intended to protect secrets from a determined reverse engineer.</p>}
+                        {lemDialog === "load" && <p style={{ fontSize: 14, lineHeight: 1.5 }}>The .lem file will be decrypted automatically. Your current canvas is replaced only after the file has been successfully decrypted and validated.</p>}
+                        {lemDialogMessage && <p role="status" style={{ fontSize: 13, color: lemDialogMessage.toLowerCase().includes("success") ? "#16713b" : "#b42318", margin: "10px 0" }}>{lemDialogMessage}</p>}
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }}>
+                            <button type="button" onClick={() => { setLemDialog(null); setPendingLemFile(null); setLemPassword(""); setLemPasswordConfirm(""); }} style={{ border: "1px solid #bbb", background: "#fff", borderRadius: 7, padding: "9px 15px", cursor: "pointer" }}>Cancel</button>
+                            {lemDialog === "save" && <button type="button" onClick={saveLemFile} style={{ border: 0, background: "#202020", color: "#fff", borderRadius: 7, padding: "9px 16px", cursor: "pointer" }}>Save Encrypted File</button>}
+                            {lemDialog === "load" && <button type="button" onClick={decryptAndLoadLemFile} style={{ border: 0, background: "#202020", color: "#fff", borderRadius: 7, padding: "9px 16px", cursor: "pointer" }}>OK</button>}
+                            {lemDialog === "message" && <button type="button" onClick={() => { setLemDialog(null); setLemDialogMessage(""); }} style={{ border: 0, background: "#202020", color: "#fff", borderRadius: 7, padding: "9px 18px", cursor: "pointer" }}>OK</button>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {exportSelection && (
+                <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.68)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+                    <div style={{ background: "#fff", color: "#222", borderRadius: 12, padding: 20, width: "min(560px, 95vw)", boxShadow: "0 12px 40px rgba(0,0,0,.35)" }}>
+                        <h2 style={{ margin: "0 0 8px" }}>Export selection</h2>
+                        <p style={{ margin: "0 0 16px", color: "#555", fontSize: 14 }}>anything inside the selected area is exported</p>
+                        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+                            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13 }}>Width (px)
+                                <input type="number" min="50" max={Math.floor(stageRef.current?.width() || 500)} value={Math.round(exportCrop.width)} onChange={e => setExportCrop(c => clampExportCrop({ ...c, width: Number(e.target.value) || 50 }))} style={{ width: 120, padding: 7 }} />
+                            </label>
+                            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13 }}>Height (px)
+                                <input type="number" min="50" max={Math.floor(stageRef.current?.height() || 500)} value={Math.round(exportCrop.height)} onChange={e => setExportCrop(c => clampExportCrop({ ...c, height: Number(e.target.value) || 50 }))} style={{ width: 120, padding: 7 }} />
+                            </label>
+                        </div>
+                        <div style={{ position: "relative", width: "100%", aspectRatio: `${exportSelection.width} / ${exportSelection.height}`, maxHeight: "45vh", backgroundColor: "#fff", backgroundImage: exportPreview ? `url(${exportPreview})` : "none", backgroundSize: "100% 100%", backgroundPosition: "center", backgroundRepeat: "no-repeat", border: "1px solid #ddd", borderRadius: 6, overflow: "hidden", marginBottom: 16, touchAction: "none" }}>
+                            <div style={{ position: "absolute", left: `${(exportCrop.x / Math.max(1, exportSelection.width)) * 100}%`, top: `${(exportCrop.y / Math.max(1, exportSelection.height)) * 100}%`, width: `${(exportCrop.width / Math.max(1, exportSelection.width)) * 100}%`, height: `${(exportCrop.height / Math.max(1, exportSelection.height)) * 100}%`, boxSizing: "border-box", border: "2px solid #2684ff", background: "rgba(38,132,255,0.08)", cursor: "move", touchAction: "none" }} onPointerDown={e => startExportCropDrag(e, "move")}>
+                                <span style={{ position: "absolute", left: 4, top: 4, background: "#2684ff", color: "white", fontSize: 11, padding: "2px 5px", borderRadius: 3, pointerEvents: "none" }}>{Math.round(exportCrop.width)} × {Math.round(exportCrop.height)}</span>
+                                <div title="Resize export area" onPointerDown={e => startExportCropDrag(e, "resize")} style={{ position: "absolute", right: -2, bottom: -2, width: 16, height: 16, background: "#2684ff", border: "2px solid white", borderRadius: 3, cursor: "nwse-resize", touchAction: "none" }} />
+                            </div>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                            <button type="button" onClick={() => setExportSelection(null)} style={{ padding: "9px 14px", border: "1px solid #ccc", borderRadius: 6, background: "white", cursor: "pointer" }}>Cancel</button>
+                            <button type="button" onClick={exportCanvas} style={{ padding: "9px 14px", border: 0, borderRadius: 6, background: "#222", color: "white", cursor: "pointer" }}>Export PNG</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {layerDeleteConfirm && (
                 <div
@@ -8241,14 +8612,55 @@ return lines
                 </div>
             )}
 
+            {layerGroupContextMenu && (
+                <>
+                    <div className="layer_group_context_dismiss" onMouseDown={() => setLayerGroupContextMenu(null)} onClick={() => setLayerGroupContextMenu(null)} onContextMenu={e => { e.preventDefault(); setLayerGroupContextMenu(null); }} />
+                    <div className="layer_group_context_menu" style={{ left: Math.max(8, Math.min(layerGroupContextMenu.x, window.innerWidth - 245)), top: Math.max(8, Math.min(layerGroupContextMenu.y, window.innerHeight - 255)) }} onMouseDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()} onContextMenu={e => e.preventDefault()}>
+                        <div className="layer_group_context_title">Layer options ({selectedLayerIds.length || 1} selected)</div>
+                        <button type="button" className="layer_group_context_action" disabled={selectedLayerIds.filter(id => layers.some(layer => layer.id === id) && !layerGroups.some(group => group.layerIds.includes(id))).length < 2} onClick={() => { createLayerGroup(); setLayerGroupContextMenu(null); }}>
+                            <img className="layer_group_context_lemon_icon" src={LEM_ICON_URL} alt="" draggable="false" /> Group selected layers
+                        </button>
+                        <button type="button" className="layer_group_context_action layer_group_context_delete_action" disabled={!selectedLayerIds.some(id => layers.some(layer => layer.id === id)) || layers.length <= selectedLayerIds.filter(id => layers.some(layer => layer.id === id)).length} onClick={() => { const ids = selectedLayerIds.filter(id => layers.some(layer => layer.id === id)); if (!ids.length) { setLayerGroupContextMenu(null); return; } setLayerDeleteConfirm({ layerIds: ids, layerName: `${ids.length} selected layer${ids.length === 1 ? "" : "s"}` }); setLayerGroupContextMenu(null); }}>
+                            <span aria-hidden="true">🗑</span> Delete selected layers
+                        </button>
+                        <button type="button" className="layer_group_context_action" disabled={!selectedLayerIds.length} onClick={() => { const ids = new Set(selectedLayerIds); setLayers(prev => prev.map(layer => ids.has(layer.id) ? { ...layer, visible: true } : layer)); setLayerGroups(prev => prev.map(group => group.layerIds.some(id => ids.has(id)) ? { ...group, visible: true } : group)); setLayerGroupContextMenu(null); }}>
+                            <span>👁</span> Show selected layers
+                        </button>
+                        <button type="button" className="layer_group_context_action" disabled={!selectedLayerIds.length} onClick={() => { const ids = new Set(selectedLayerIds); setLayers(prev => prev.map(layer => ids.has(layer.id) ? { ...layer, visible: false } : layer)); setLayerGroups(prev => prev.map(group => group.layerIds.some(id => ids.has(id)) ? { ...group, visible: false } : group)); if (ids.has(activeLayerId)) { const replacement = layers.find(layer => !ids.has(layer.id) && layer.visible); if (replacement) setActiveLayerId(replacement.id); } setLayerGroupContextMenu(null); }}>
+                            <span>🚫</span> Hide selected layers
+                        </button>
+                        <div className="layer_group_context_separator" />
+                        <button type="button" className="layer_group_context_action" disabled={!selectedLayerIds.some(id => layerGroups.some(group => group.layerIds.includes(id)))} onClick={() => { const ids = new Set(selectedLayerIds); const groupsToUngroup = layerGroups.filter(group => group.layerIds.some(id => ids.has(id))).map(group => group.id); setLayerGroups(prev => prev.filter(group => !groupsToUngroup.includes(group.id))); setLayers(prev => prev.map(layer => groupsToUngroup.includes(layer.groupId) ? { ...layer, groupId: null } : layer)); setLayerGroupContextMenu(null); }}>
+                            <span>↗</span> Ungroup selected layer groups
+                        </button>
+                    </div>
+                </>
+            )}
+
             {layerContextMenu && (
                 <div
-                    className="layer_context_menu"
+                    className={`layer_context_menu ${layers.length > 8 ? "has-many-layers" : ""}`}
                     style={{
                         position: "fixed",
                         left: Math.max(8, Math.min(layerContextMenu.x, window.innerWidth - 230)),
-                        top: Math.max(8, Math.min(layerContextMenu.y, window.innerHeight - 410)),
-                        zIndex: 5000
+                        top: Math.max(8, Math.min(layerContextMenu.y, window.innerHeight - 140)),
+                        zIndex: 5000,
+                        // Only constrain the menu when it has more than eight layer destinations.
+                        ...(layers.length > 8 ? {
+                            maxHeight: "min(55vh, calc(100dvh - 120px))",
+                            height: "min(55vh, calc(100dvh - 120px))",
+                            overflowY: "auto",
+                            overflowX: "hidden",
+                            overscrollBehavior: "contain",
+                            scrollbarWidth: "auto",
+                            scrollbarColor: "#6f6a60 #f2eee5",
+                            WebkitOverflowScrolling: "touch"
+                        } : {
+                            height: "auto",
+                            maxHeight: "none",
+                            overflowY: "visible",
+                            overflowX: "visible"
+                        })
                     }}
                     onMouseDown={e => e.stopPropagation()}
                     onContextMenu={e => e.preventDefault()}
