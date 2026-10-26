@@ -1,0 +1,28 @@
+{
+  "name": "lemco-animation-lab",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
+    "konva": "^9.3.22",
+    "lucide-react": "^1.57.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-konva": "^18.2.16"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "esbuild": "^0.28.2",
+    "vite": "^6.0.5"
+  },
+  "allowScripts": {
+    "@ffmpeg/util@0.12.2": true
+  }
+}

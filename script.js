@@ -666,7 +666,7 @@ document.addEventListener(
             randomItem(loadingMessages);
 
 
-        const loadingDuration = 9000;
+        const loadingDuration = 5000;
 
         const expansionDelay = 1001;
 

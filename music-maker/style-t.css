@@ -582,12 +582,6 @@ body {
 }
 
 
-/* =========================================================
-   FONT FAMILIES
-   Main tutorial area = Courier New
-   Sidebar = Arial
-========================================================= */
-
 .tutorial,
 .tutorial_header,
 .tutorial_title,
@@ -603,7 +597,6 @@ body {
     font-family: "Courier New", monospace;
 }
 
-/* Sidebar keeps the same Arial styling as the main LEM.CO menu. */
 .sidebar,
 .sidebar_brand,
 .brand_link,
@@ -743,4 +736,31 @@ body.dark_mode .music_lab_label {
     background: #242424;
     color: #f4f4f4;
     border-color: #f4f4f4;
+}
+
+
+/* =========================================================
+   MUSIC MAKER PAGE — SELECT THE MUSIC MAKER SIDEBAR ITEM
+   The page's Music Maker link is active; Home is not.
+========================================================= */
+
+body:has(.sidebar_link[href*="music-maker"]) .sidebar_link.active:not([href*="music-maker"]) {
+    background: transparent;
+    color: #111;
+}
+
+body:has(.sidebar_link[href*="music-maker"]) .sidebar_link[href*="music-maker"] {
+    background: #111;
+    color: #fff;
+}
+
+/* Keep the selected state readable in dark mode too. */
+body.dark_mode:has(.sidebar_link[href*="music-maker"]) .sidebar_link.active:not([href*="music-maker"]) {
+    background: transparent;
+    color: #f4f4f4;
+}
+
+body.dark_mode:has(.sidebar_link[href*="music-maker"]) .sidebar_link[href*="music-maker"] {
+    background: #f4f4f4;
+    color: #111;
 }

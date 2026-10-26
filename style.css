@@ -1861,3 +1861,47 @@ body.dark_mode .ad_count_button:hover:not(:disabled) {
         height: 28px;
     }
 }
+
+
+/* Animation Hub creative-tool card */
+.animation-hub {
+    background: #ed1c24;
+    color: white;
+}
+
+
+/* Animation Hub film-strip icons */
+.sidebar-film-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.app-film-icon {
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+
+/* App-card text follows the requested theme colours consistently. */
+.apps .app_card,
+.apps .app_card .app_card_content,
+.apps .app_card .app_card_content h2,
+.apps .app_card .app_card_content p,
+.apps .app_card .app_card_arrow,
+.apps .app_card .app_card_icon {
+    color: #fff;
+}
+
+body.dark_mode .apps .app_card,
+body.dark_mode .apps .app_card .app_card_content,
+body.dark_mode .apps .app_card .app_card_content h2,
+body.dark_mode .apps .app_card .app_card_content p,
+body.dark_mode .apps .app_card .app_card_arrow,
+body.dark_mode .apps .app_card .app_card_icon {
+    color: #000;
+}
