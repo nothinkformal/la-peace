@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Writing Hub — Lem CO Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell" id="appShell">
+
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-logo">
+                <img src="../images/lemon.png" alt="Lem CO Lab lemon logo">
+            </div>
+            <span>
+                <strong>LEM CO</strong>
+                <small>WRITING HUB</small>
+            </span>
+        </div>
+
+        <p class="eyebrow">PROJECT</p>
+        <label for="projectName">Story title</label>
+        <input id="projectName" value="Untitled Story">
+        <div class="saved-status" id="saveStatus">● Saved locally</div>
+    </aside>
+
+    <main>
+        <header class="topbar">
+            <button id="toggleSidebar" title="Hide/show sidebar" type="button">‹</button>
+            <button id="restorePages" class="restore-pages" title="Show pages panel"
+                    aria-label="Show pages panel" type="button">▤</button>
+
+            <div class="story-heading">
+                <small>WRITING HUB</small>
+                <strong id="topTitle">Untitled Story</strong>
+            </div>
+
+            <button id="newPageTop" class="plain" type="button">＋ New page</button>
+            <button id="themeToggle" title="Dark mode" type="button">☾</button>
+        </header>
+
+        <div class="work-area">
+            <aside class="pages-panel" id="pagesPanel">
+                <div class="panel-title">
+                    <div><small>Script</small><h2>Pages</h2></div>
+                    <button id="togglePages" title="Hide/show pages" type="button">‹</button>
+                </div>
+                <button class="primary full" id="newPage" type="button">＋ Add page</button>
+                <div id="pageList" class="page-list"></div>
+                <div class="word-count">
+                    <small>WORD COUNT</small>
+                    <b id="wordCount">0</b>
+                </div>
+            </aside>
+
+            <section class="editor">
+                <div class="toolbar" id="toolbar">
+                    <select id="format" aria-label="Text style" title="Text style">
+                        <option value="p">Paragraph</option>
+                        <option value="h1">Heading 1</option>
+                        <option value="h2">Heading 2</option>
+                        <option value="h3">Heading 3</option>
+                        <option value="blockquote">Quote</option>
+                    </select>
+
+                    <select id="fontFamily" aria-label="Font family" title="Font family">
+                        <option value="Literata">Literata</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Arial">Arial</option>
+                        <option value="DM Sans">DM Sans</option>
+                        <option value="DM Mono">DM Mono</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Tahoma">Tahoma</option>
+                        <option value="Trebuchet MS">Trebuchet MS</option>
+                        <option value="Impact">Impact</option>
+                        <option value="Palatino Linotype">Palatino Linotype</option>
+                        <option value="Book Antiqua">Book Antiqua</option>
+                        <option value="Garamond">Garamond</option>
+                        <option value="Cambria">Cambria</option>
+                        <option value="Calibri">Calibri</option>
+                        <option value="Candara">Candara</option>
+                        <option value="Constantia">Constantia</option>
+                        <option value="Corbel">Corbel</option>
+                        <option value="Franklin Gothic Medium">Franklin Gothic Medium</option>
+                        <option value="Gill Sans">Gill Sans</option>
+                        <option value="Segoe UI">Segoe UI</option>
+                        <option value="Lucida Sans">Lucida Sans</option>
+                        <option value="Lucida Console">Lucida Console</option>
+                        <option value="Arial Black">Arial Black</option>
+                        <option value="Comic Sans MS">Comic Sans MS</option>
+                        <option value="Brush Script MT">Brush Script MT</option>
+                        <option value="Copperplate">Copperplate</option>
+                        <option value="Optima">Optima</option>
+                        <option value="Futura">Futura</option>
+                        <option value="Baskerville">Baskerville</option>
+                        <option value="Didot">Didot</option>
+                        <option value="Rockwell">Rockwell</option>
+                        <option value="American Typewriter">American Typewriter</option>
+                        <option value="Andale Mono">Andale Mono</option>
+                        <option value="Monaco">Monaco</option>
+                        <option value="Consolas">Consolas</option>
+                        <option value="Perpetua">Perpetua</option>
+                        <option value="Century Gothic">Century Gothic</option>
+                        <option value="Century Schoolbook">Century Schoolbook</option>
+                        <option value="Bookman Old Style">Bookman Old Style</option>
+                        <option value="MS Gothic">MS Gothic</option>
+                        <option value="MS Mincho">MS Mincho</option>
+                        <option value="Noto Sans">Noto Sans</option>
+                        <option value="Noto Serif">Noto Serif</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Open Sans">Open Sans</option>
+                        <option value="Lato">Lato</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Merriweather">Merriweather</option>
+                        <option value="Playfair Display">Playfair Display</option>
+                    </select>
+
+                    <div class="font-size-control" role="group" aria-label="Font size controls">
+                        <span class="font-size-unit">PX</span>
+                        <button type="button" class="font-step" data-font-step="1" aria-label="Increase font size" title="Increase font size">+</button>
+                        <input id="fontSize" type="number" min="1" max="200" step="1" value="17"
+                               aria-label="Font size in pixels">
+                        <button type="button" class="font-step" data-font-step="-1" aria-label="Decrease font size" title="Decrease font size">−</button>
+                    </div>
+
+                    <button type="button" data-cmd="bold" title="Bold" aria-label="Bold"><svg viewBox="0 0 24 24"><path d="M7 4h7a4 4 0 0 1 0 8H7zM7 12h8a4 4 0 0 1 0 8H7z"/></svg></button>
+                    <button type="button" data-cmd="italic" title="Italic" aria-label="Italic"><svg viewBox="0 0 24 24"><path d="M14 4h6M4 20h6M15 4 9 20"/></svg></button>
+                    <button type="button" data-cmd="underline" title="Underline" aria-label="Underline"><svg viewBox="0 0 24 24"><path d="M7 4v7a5 5 0 0 0 10 0V4M5 21h14"/></svg></button>
+                    <button type="button" data-cmd="strikeThrough" title="Strikethrough" aria-label="Strikethrough"><svg viewBox="0 0 24 24"><path d="M4 12h16M7 7a4 4 0 0 1 7-2M17 17a4 4 0 0 1-7 2"/></svg></button>
+
+                    <span class="toolbar-divider"></span>
+
+                    <button type="button" data-cmd="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button>
+                    <button type="button" data-cmd="insertOrderedList" title="Numbered list" aria-label="Numbered list"><svg viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M3 5h2v3M3 11h2l-2 2h2M3 17h2v2H3"/></svg></button>
+                    <button type="button" data-cmd="outdent" title="Decrease indent" aria-label="Decrease indent"><svg viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M4 9l-3 3 3 3"/></svg></button>
+                    <button type="button" data-cmd="indent" title="Increase indent" aria-label="Increase indent"><svg viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M1 9l3 3-3 3"/></svg></button>
+
+                    <span class="toolbar-divider"></span>
+
+                    <button type="button" data-cmd="justifyLeft" title="Align left" aria-label="Align left"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 10h12M3 15h18M3 20h12"/></svg></button>
+                    <button type="button" data-cmd="justifyCenter" title="Align center" aria-label="Align center"><svg viewBox="0 0 24 24"><path d="M3 5h18M6 10h12M3 15h18M6 20h12"/></svg></button>
+                    <button type="button" data-cmd="justifyRight" title="Align right" aria-label="Align right"><svg viewBox="0 0 24 24"><path d="M3 5h18M9 10h12M3 15h18M9 20h12"/></svg></button>
+                    <button type="button" data-cmd="justifyFull" title="Justify" aria-label="Justify"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 10h18M3 15h18M3 20h18"/></svg></button>
+
+                    <span class="toolbar-divider"></span>
+
+                    <div class="toolbar-color-group split-color" aria-label="Text colour controls">
+                        <button type="button" class="color-main" id="textColorApply" title="Apply text colour" aria-label="Apply text colour"><span class="toolbar-color-label">A<span class="toolbar-color-underline" id="textColorSwatch"></span></span></button>
+                        <button type="button" class="color-dropdown" id="textColorDropdown" title="More text colours" aria-label="More text colours">▾</button>
+                    </div>
+                    <div class="toolbar-color-group split-color" aria-label="Highlight colour controls">
+                        <button type="button" class="color-main" id="highlightColorApply" title="Apply highlight colour" aria-label="Apply highlight colour"><span class="toolbar-color-label highlight-mark">▰<span class="toolbar-color-underline" id="highlightColorSwatch"></span></span></button>
+                        <button type="button" class="color-dropdown" id="highlightColorDropdown" title="More highlight colours" aria-label="More highlight colours">▾</button>
+                    </div>
+
+                    <button type="button" id="undoButton" title="Undo" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 6 6v2"/></svg></button>
+                    <button type="button" id="redoButton" title="Redo" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5m5 5H10a6 6 0 0 0-6 6v2"/></svg></button>
+                    <button type="button" id="clearFormat" title="Clear formatting" aria-label="Clear formatting"><svg viewBox="0 0 24 24"><path d="M4 7h10M9 7v13M6 20h6M17 8l5 5m0-5-5 5"/></svg></button>
+
+                    <span class="toolbar-spacer"></span>
+                    <button id="toggleToolbar" type="button" title="Hide/show formatting toolbar" aria-label="Hide/show formatting toolbar">⌃</button>
+                </div>
+
+                <div class="canvas">
+                    <article class="paper">
+                        <input id="pageTitle" class="page-title" value="Chapter 1" aria-label="Page title">
+                        <div id="writingArea" class="writing-area" contenteditable="true" spellcheck="true">
+                            <p>Start your story</p>
+                        </div>
+                        <footer>
+                            <span id="pageNumber">PAGE 1</span>
+                            <span id="pageWords">0 WORDS</span>
+                        </footer>
+                    </article>
+                </div>
+            </section>
+
+            <nav class="rail" aria-label="Writing resources">
+                <button class="resource active" data-tab="characters" type="button"><b>♙</b><span>Characters</span></button>
+                <button class="resource" data-tab="places" type="button"><b>⌖</b><span>Places</span></button>
+                <button class="resource" data-tab="world" type="button"><b>◉</b><span>World</span></button>
+                <button class="resource export" data-tab="export" type="button"><b>⇧</b><span>Export</span></button>
+            </nav>
+
+            <aside class="drawer" id="drawer">
+                <header>
+                    <div><small id="drawerEyebrow">STORY NOTES</small><h2 id="drawerTitle">Characters</h2></div>
+                    <button id="closeDrawer" type="button" aria-label="Close panel">×</button>
+                </header>
+                <div id="drawerContent"></div>
+            </aside>
+        </div>
+    </main>
+</div>
+
+<div id="textContextMenu" class="text-context-menu" role="menu" aria-label="Text options">
+    <button type="button" data-context-action="copy" role="menuitem">Copy</button>
+    <button type="button" data-context-action="cut" role="menuitem">Cut</button>
+    <div class="context-menu-divider"></div>
+    <div class="context-size-control">
+        <label for="contextFontSize">Text size <output id="contextFontSizeValue">16 px</output></label>
+        <input type="range" id="contextFontSize" min="8" max="72" step="1" value="16">
+        <button type="button" id="applyContextFontSize">Apply size</button>
+    </div>
+    <div class="context-menu-divider"></div>
+    <button type="button" data-context-action="highlight" role="menuitem">Highlight selected text</button>
+    <button type="button" data-context-action="remove-highlight" role="menuitem">Remove highlight</button>
+    <button type="button" id="contextTextColorButton" role="menuitem">Change text colour…</button>
+</div>
+
+
+
+<div id="confirmModal" class="modal-backdrop" aria-hidden="true">
+    <section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle">Confirm deletion</h2>
+        <p id="confirmMessage">Are you sure you want to delete this item?</p>
+        <div class="confirm-actions">
+            <button type="button" id="cancelConfirm" class="secondary">Cancel</button>
+            <button type="button" id="acceptConfirm" class="danger">Delete</button>
+        </div>
+    </section>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+
+
+      <div class="word-color-tab-panel" id="customColorPanel">
+        <div class="dialog-subtitle">Custom color</div>
+        <label class="custom-color-row">Choose a colour <input type="color" id="customColorInput" value="#171717"></label>
+        <label class="custom-color-row">Hex value <input type="text" id="customColorHex" value="#171717" maxlength="7"></label>
+      </div>
+	  
+    </div>
+    <footer class="word-color-dialog-actions">
+      <button type="button" id="confirmWordColor">OK</button>
+      <button type="button" id="cancelWordColor">Cancel</button>
+    </footer>
+  </section>
+</div>
+
+
+<div id="colorPalette" class="compact-color-popover" aria-hidden="true">
+  <div class="compact-color-header">
+    <span id="compactColorTitle">Colors</span>
+    <button type="button" id="closeColorPalette" aria-label="Close colour palette">×</button>
+  </div>
+  <div class="compact-color-grid" id="compactColorGrid"></div>
+  <div class="compact-opacity">
+    <label for="colorOpacity">OPACITY</label>
+    <div class="opacity-controls">
+      <input type="range" id="colorOpacity" min="0" max="100" value="100">
+      <output id="colorOpacityValue">100%</output>
+    </div>
+  </div>
+  <div class="compact-color-swatches" id="compactColorSwatches"></div>
+  <input type="color" id="customPopoverColor" value="#171717" aria-label="Custom colour">
+</div>
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+/* Gallery shares the site's dashboard/sidebar/top-bar styles. */
+body{margin:0;padding:0}.gallery-dashboard{width:min(1940px,calc(100vw - 28px));height:min(900px,calc(100vh - 28px));min-height:620px;margin:14px auto;grid-template-columns:210px minmax(0,1fr);background:#fff8e7}.gallery-dashboard .sidebar{height:100%;box-sizing:border-box}.gallery-main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}.gallery-page{display:flex;flex:1;flex-direction:column;gap:20px;min-width:0;min-height:0;overflow:auto;padding:clamp(18px,2.4vw,34px);background:#fff8e7}.gallery-heading{display:flex;align-items:end;justify-content:space-between;gap:20px}.gallery-eyebrow{margin:0 0 8px;color:#4c9d7e;font:800 11px Arial;letter-spacing:2px}.gallery-heading h1{margin:0;color:#111;font:800 clamp(32px,4vw,50px)/.98 'Courier New',monospace;letter-spacing:-2px}.gallery-subtitle{margin:10px 0 0;color:#333;font:14px/1.5 Arial}.add-artwork-button{min-height:42px;padding:0 16px;border:2px solid #111;border-radius:0;background:#111;color:white;font:700 12px Arial;cursor:pointer}.add-artwork-button:hover{box-shadow:3px 3px #69b08f;transform:translate(-2px,-2px)}.gallery-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0;border-block:2px solid #69b08f}.search-box{display:flex;align-items:center;gap:8px;flex:1;min-width:180px;max-width:270px;height:38px;padding:0 10px;border:2px solid #111;background:white}.search-box input{width:100%;border:0;outline:0;font-size:12px}.gallery-filters{display:flex;gap:5px;flex-wrap:wrap}.filter-button{padding:8px 11px;border:1px solid #111;background:transparent;font:700 10px Arial;cursor:pointer}.filter-button.active,.filter-button:hover{background:#ffc247}.gallery-count{margin-left:auto;font:800 10px Arial;letter-spacing:1px}.artwork-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-content:start;gap:20px}.artwork-card{min-width:0;padding:0;border:2px solid #111;background:white;text-align:left;cursor:pointer;transition:transform .16s,box-shadow .16s}.artwork-card:hover{transform:translateY(-4px);box-shadow:4px 4px #69b08f}.artwork-thumb{display:block;width:100%;aspect-ratio:4/3;background:#e9e2d5;overflow:hidden}.artwork-thumb img{width:100%;height:100%;object-fit:cover;display:block}.artwork-caption{display:flex;justify-content:space-between;gap:8px;padding:10px;color:#111}.artwork-caption strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 12px 'Courier New'}.artwork-caption small{font:9px Arial;text-transform:uppercase}.gallery-empty{grid-column:1/-1;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:2px dashed #69b08f;background:white;padding:28px}.empty-icon{font-size:44px;color:#69b08f}.gallery-empty h2{font:700 22px 'Courier New';margin:12px 0 5px}.gallery-empty p{font:13px Arial;color:#555}.gallery-footer{display:flex;justify-content:space-between;gap:12px;margin-top:auto;padding-top:12px;border-top:2px solid #69b08f;font:800 9px Arial;letter-spacing:1px}.gallery-dialog{width:min(560px,calc(100vw - 28px));max-height:calc(100vh - 32px);padding:0;border:3px solid #111;border-radius:0;background:#fff8e7;color:#111;box-shadow:7px 7px #111}.gallery-dialog::backdrop{background:#1119;backdrop-filter:blur(2px)}.dialog-form{display:flex;flex-direction:column;gap:13px;padding:22px}.dialog-heading{display:flex;justify-content:space-between;border-bottom:2px solid #69b08f;padding-bottom:12px}.dialog-heading h2,.detail-info h2{margin:0;font:700 25px 'Courier New'}.close-dialog{width:32px;height:32px;border:2px solid #111;background:white;font-size:21px;cursor:pointer}.dialog-form>label:not(.upload-drop){display:flex;flex-direction:column;gap:6px;font:700 11px Arial}.dialog-form input:not([type=file]),.dialog-form select,.dialog-form textarea{box-sizing:border-box;width:100%;padding:10px;border:1px solid #111;border-radius:0;background:white;color:#111;font:12px Arial}.upload-drop{display:flex;min-height:130px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:2px dashed #69b08f;background:white;cursor:pointer;overflow:hidden}.upload-symbol{font-size:30px}.upload-drop strong{font:700 12px Arial}.upload-drop small,.storage-note{font:10px Arial;color:#777}.upload-drop img{max-width:100%;max-height:200px;object-fit:contain}.dialog-actions,.detail-actions{display:flex;justify-content:flex-end;gap:8px}.secondary-button,.delete-button{min-height:38px;padding:0 13px;border:2px solid #111;background:white;color:#111;font:700 11px Arial;cursor:pointer}.delete-button{background:#ff5057}.artwork-dialog{width:min(1000px,calc(100vw - 28px))}.detail-content{position:relative;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,.8fr)}.detail-close{position:absolute;right:10px;top:10px;z-index:2}.detail-image-wrap{display:flex;align-items:center;justify-content:center;min-height:350px;padding:18px;background:#e9e2d5}.detail-image-wrap img{max-width:100%;max-height:70vh;object-fit:contain}.detail-info{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:35px 22px 22px}.detail-info>p:not(.gallery-eyebrow){white-space:pre-wrap;font:13px/1.6 Arial;color:#444}.detail-actions{margin-top:auto;flex-wrap:wrap}@media(max-width:1050px){.gallery-dashboard{width:100%;height:100vh;min-height:0;margin:0;grid-template-columns:180px minmax(0,1fr)}.artwork-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.gallery-page{padding:16px;gap:15px}.artwork-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.gallery-heading{align-items:flex-start;flex-direction:column}.gallery-toolbar{align-items:stretch}.search-box{max-width:none}.gallery-count{margin-left:0}.detail-content{grid-template-columns:1fr}.detail-image-wrap{min-height:220px}.detail-info{padding:18px}.gallery-footer{flex-direction:column}}@media(max-width:600px){.gallery-dashboard{display:flex;flex-direction:column;overflow:auto}.gallery-dashboard .sidebar{width:100%;height:auto}.gallery-main{overflow:visible}.gallery-page{overflow:visible}}
+
+
+/* --------------------------------------------------
+   MANUAL GALLERY IMAGE SCALING FIX
+   These selectors match the manual gallery.js markup.
+   -------------------------------------------------- */
+
+.artwork-card {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.artwork-image {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #e9e2d5;
+}
+
+.artwork-image img {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center;
+    flex: 0 1 auto;
+}
+
+.artwork-image .artwork-open {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+}
+
+.artwork-card:hover .artwork-image img {
+    transform: none;
+}
+
+/* Keep the enlarged artwork inside its detail dialog. */
+#detailImage {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 70vh !important;
+    object-fit: contain !important;
+    object-position: center;
+}

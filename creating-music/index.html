@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>The Story - Lem CO Lab</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         DASHBOARD
+    ========================== -->
+
+    <div class="dashboard">
+
+
+        <!-- =====================
+             SIDEBAR
+        ====================== -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar_brand">
+
+                <div class="brand_image">
+                    <img
+                        src="../images/lemon.png"
+                        alt="La Peace Lab"
+                    >
+                </div>
+
+                <div class="brand_text">
+                    <strong>LEM CO</strong>
+                    <span>LAB</span>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar_navigation">
+
+                <a
+                    href="../index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">⌂</span>
+                    <span id="home_link">Home</span>
+                </a>
+
+
+                <a
+                    href="../music-maker/tutorial.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">♫</span>
+                    <span id="music_link">Music Maker</span>
+                </a>
+
+
+                <a
+                    href="../gallery/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">▣</span>
+                    <span id="gallery_link">Gallery</span>
+                </a>
+
+
+                <a
+                    href="../story/index.html"
+                    class="sidebar_link active"
+                >
+                    <span class="sidebar_icon">▤</span>
+                    <span id="story_link">The Story</span>
+                </a>
+
+
+                <a
+                    href="../mission/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">★</span>
+                    <span id="mission_link">Our Mission</span>
+                </a>
+
+
+                <a
+                    href="../credits/index.html"
+                    class="sidebar_link"
+                >
+                    <span class="sidebar_icon">ⓘ</span>
+                    <span id="credits_link">Credits</span>
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar_bottom">
+
+                <a
+                    href="../story/index.html"
+                    class="sidebar_small_link"
+                >
+                    <span>?</span>
+                    <span>About</span>
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =====================
+             MAIN AREA
+        ====================== -->
+
+        <main class="main_area">
+
+
+            <!-- TOP BAR -->
+
+            <header class="top_bar">
+
+                <button
+                    class="back_button"
+                    type="button"
+                    onclick="window.history.back()"
+                >
+                    ←
+                </button>
+
+
+                <div class="top_bar_spacer"></div>
+
+
+                <div class="top_controls">
+
+                    <select id="language_selector">
+
+                        <option value="en">
+                            English
+                        </option>
+
+                        <option value="id">
+                            Indonesian
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        id="light_mode_button"
+                        class="theme_button active"
+                        type="button"
+                        title="Light mode"
+                    >
+                        ☀
+                    </button>
+
+
+                    <button
+                        id="dark_mode_button"
+                        class="theme_button"
+                        type="button"
+                        title="Dark mode"
+                    >
+                        ☾
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- =====================
+                 PAGE CONTENT
+            ====================== -->
+
+            <div class="content">
+
+                <section class="page_content">
+
+
+                    <!-- PAGE HEADER -->
+
+                    <div class="page_header">
+
+                        <span class="page_label">
+                            Lem CO
+                        </span>
+
+                        <h1>
+                            Creating Music
+                        </h1>
+
+                        <p class="page_subtitle">
+                            Learn about music creation through our article!
+                        </p>
+
+                    </div>
+
+
+                    <!-- STORY CONTENT -->
+
+                    <div class="page_body">
+
+                        <div class="story_panel">
+
+                            <span class="story_label">
+                                LEM.CO
+                            </span>
+
+
+                            <p id="story_paragraph_one">
+                                Music making often starts with a first idea, such as melody, rhythmic pattern, chord progression, or lyrical theme. The creator then develops this idea by experimenting with the melody, harmony, rhythm and lyrics, polishing how these elements work together. Decisions that are made about tempo, key, accompaniment and instrumentation help shape the characteristics of the piece. After that The music material is sorted into a structure. As the work evolves and further develops, its arrangement can be revised and prepared for a performance or recording. However, the creation of music is not always a pre defined step by step process as composition and improvisation are connected closely and different musical traditions use different methods or approaches to creating music.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- MAIN WEBSITE SCRIPT -->
+
+    <script src="../script.js"></script>
+
+</body>
+
+</html>

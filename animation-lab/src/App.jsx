@@ -9045,7 +9045,7 @@ return lines
                 <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.68)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
                     <div style={{ background: "#fff", color: "#222", borderRadius: 12, padding: 20, width: "min(560px, 95vw)", boxShadow: "0 12px 40px rgba(0,0,0,.35)" }}>
                         <h2 style={{ margin: "0 0 8px" }}>Choose animation export area</h2>
-                        <p style={{ margin: "0 0 16px", color: "#555", fontSize: 14 }}>Move or resize the blue rectangle. Only this area of every animation frame will be included in the WebM export.</p>
+                        <p style={{ margin: "0 0 16px", color: "#555", fontSize: 14 }}>Resize the blue box to your liking. Only this area of every animation frame will be included in the WebM export.</p>
                         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
                             <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13 }}>Width (px)
                                 <input type="number" min="50" max={Math.floor(stageRef.current?.width() || 500)} value={Math.round(exportCrop.width)} onChange={e => setExportCrop(c => clampExportCrop({ ...c, width: Number(e.target.value) || 50 }))} style={{ width: 120, padding: 7 }} />
